@@ -22,18 +22,19 @@ export default function GrowMySongButton() {
 
   return (
     <>
-      <button 
+      <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-10 right-10 bg-primary px-8 py-4 rounded-full text-white font-mono font-black italic tracking-widest uppercase flex items-center gap-3 shadow-[0_0_30px_rgba(255,77,0,0.4)] hover:scale-105 active:scale-95 transition-all z-50 group overflow-hidden"
+        className="fixed bottom-4 left-4 sm:bottom-6 sm:left-6 md:bottom-10 md:left-10 bg-primary px-5 sm:px-8 py-3 sm:py-4 rounded-full text-white font-mono font-black italic tracking-widest uppercase flex items-center gap-2 sm:gap-3 shadow-[0_0_30px_rgba(255,77,0,0.4)] hover:scale-105 active:scale-95 transition-all z-50 group overflow-hidden text-[10px] sm:text-xs"
       >
         <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500" />
-        <Zap className="w-5 h-5 fill-current" />
-        <span className="relative z-10">Grow My Song</span>
+        <Zap className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />
+        <span className="relative z-10 hidden xs:inline sm:inline">Grow My Song</span>
+        <span className="relative z-10 inline xs:hidden sm:hidden">Grow</span>
       </button>
 
       <AnimatePresence>
         {isOpen && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center p-6 sm:p-20">
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-12">
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -42,11 +43,11 @@ export default function GrowMySongButton() {
               className="absolute inset-0 bg-black/80 backdrop-blur-xl"
             />
 
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-2xl bg-dark border border-white/5 p-12 overflow-hidden shadow-2xl"
+              className="relative w-full max-w-2xl bg-black border border-white/5 p-6 sm:p-10 md:p-12 overflow-y-auto max-h-[90vh] shadow-2xl"
             >
               <div className="absolute top-0 right-0 p-8">
                 <button 
@@ -57,12 +58,12 @@ export default function GrowMySongButton() {
                 </button>
               </div>
 
-              <div className="flex items-center gap-4 mb-12">
-                <div className="w-10 h-10 border border-primary flex items-center justify-center">
+              <div className="flex items-center gap-4 mb-8 sm:mb-12">
+                <div className="w-10 h-10 border border-primary flex items-center justify-center shrink-0">
                   <Sparkles className="w-5 h-5 text-primary" />
                 </div>
-                <div>
-                  <h2 className="text-3xl font-black italic uppercase font-mono tracking-tighter text-white">AI Strategy Generator</h2>
+                <div className="min-w-0">
+                  <h2 className="text-xl sm:text-2xl md:text-3xl font-black italic uppercase font-mono tracking-tighter text-white">AI Strategy Generator</h2>
                   <div className="flex items-center gap-2 mt-1">
                     <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
                     <span className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] font-mono">DROPKAST_CORE Engine</span>
@@ -139,7 +140,7 @@ export default function GrowMySongButton() {
                       </div>
                    </div>
 
-                   <div className="grid grid-cols-2 gap-10">
+                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 sm:gap-10">
                       <div className="space-y-4">
                         <h3 className="text-[11px] font-bold text-primary uppercase tracking-widest font-mono italic">Suggested Influencers</h3>
                         <div className="space-y-2">

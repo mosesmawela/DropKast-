@@ -188,28 +188,28 @@ export const WelcomeScreen: React.FC<{ onComplete: () => void }> = ({ onComplete
       </div>
 
       {/* Top bar */}
-      <header className="relative z-10 flex items-center justify-between px-8 py-6">
-        <div className="flex items-center gap-3">
-          <div className="w-6 h-6 border flex items-center justify-center p-0.5" style={{ borderColor: colorObj.hex }}>
+      <header className="relative z-10 flex items-center justify-between px-4 sm:px-8 py-4 sm:py-6 gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <div className="w-6 h-6 border flex items-center justify-center p-0.5 shrink-0" style={{ borderColor: colorObj.hex }}>
             <div className="w-full h-full" style={{ backgroundColor: colorObj.hex }} />
           </div>
           <span className="text-sm font-mono font-black tracking-tighter italic">DROPKAST</span>
-          <span className="text-[9px] font-mono font-black text-white/30 tracking-[0.3em] uppercase italic ml-2">
+          <span className="hidden sm:inline text-[9px] font-mono font-black text-white/30 tracking-[0.3em] uppercase italic ml-2">
             v3.0.1 — Onboarding
           </span>
         </div>
 
         <button
           onClick={onComplete}
-          className="text-[10px] font-mono font-black text-white/30 hover:text-white tracking-[0.3em] uppercase italic flex items-center gap-2 group transition-colors"
+          className="text-[10px] font-mono font-black text-white/30 hover:text-white tracking-[0.3em] uppercase italic flex items-center gap-2 group transition-colors shrink-0"
         >
-          <span>Skip Intro</span>
+          <span>Skip</span>
           <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
         </button>
       </header>
 
       {/* Progress */}
-      <div className="relative z-10 px-8 mb-2">
+      <div className="relative z-10 px-4 sm:px-8 mb-2">
         <div className="flex gap-1 max-w-5xl mx-auto">
           {SLIDES.map((s, i) => (
             <div key={s.id} className="flex-1 h-[3px] bg-white/5 overflow-hidden">
@@ -232,8 +232,8 @@ export const WelcomeScreen: React.FC<{ onComplete: () => void }> = ({ onComplete
       </div>
 
       {/* Slide body */}
-      <main className="relative z-10 flex-1 overflow-y-auto px-8 pb-32">
-        <div className="max-w-5xl mx-auto h-full flex items-center justify-center py-8">
+      <main className="relative z-10 flex-1 overflow-y-auto px-4 sm:px-8 pb-32 overscroll-contain">
+        <div className="max-w-5xl mx-auto h-full flex items-center justify-center py-6 sm:py-8">
           <AnimatePresence mode="wait" custom={direction}>
             <motion.div
               key={slide.id}
@@ -280,22 +280,22 @@ export const WelcomeScreen: React.FC<{ onComplete: () => void }> = ({ onComplete
 
       {/* Footer nav */}
       <footer className="absolute bottom-0 left-0 right-0 z-10 border-t border-white/5 bg-black/80 backdrop-blur-xl">
-        <div className="max-w-5xl mx-auto px-8 py-5 flex items-center justify-between gap-4">
+        <div className="max-w-5xl mx-auto px-4 sm:px-8 py-4 sm:py-5 flex items-center justify-between gap-3">
           <button
             onClick={prev}
             disabled={index === 0}
             className={cn(
-              'h-12 px-6 border border-white/10 text-[10px] font-mono font-black uppercase italic tracking-[0.3em] flex items-center gap-3 transition-all',
+              'h-11 sm:h-12 px-4 sm:px-6 border border-white/10 text-[10px] font-mono font-black uppercase italic tracking-[0.2em] sm:tracking-[0.3em] flex items-center gap-2 sm:gap-3 transition-all shrink-0',
               index === 0
                 ? 'opacity-30 cursor-not-allowed'
                 : 'hover:border-white hover:text-white text-white/50',
             )}
           >
             <ChevronLeft className="w-4 h-4" />
-            Back
+            <span className="hidden sm:inline">Back</span>
           </button>
 
-          <div className="flex items-center gap-2 text-[9px] font-mono text-white/20 uppercase tracking-[0.3em] italic">
+          <div className="hidden md:flex items-center gap-2 text-[9px] font-mono text-white/20 uppercase tracking-[0.3em] italic">
             <Zap className="w-3 h-3" style={{ color: colorObj.hex }} />
             <span>Press Next to continue</span>
           </div>
@@ -303,7 +303,7 @@ export const WelcomeScreen: React.FC<{ onComplete: () => void }> = ({ onComplete
           {slide.kind !== 'portal' ? (
             <button
               onClick={next}
-              className="h-12 px-8 text-[10px] font-mono font-black uppercase italic tracking-[0.3em] flex items-center gap-3 text-black transition-all hover:scale-[1.03]"
+              className="h-11 sm:h-12 px-5 sm:px-8 text-[10px] font-mono font-black uppercase italic tracking-[0.2em] sm:tracking-[0.3em] flex items-center gap-2 sm:gap-3 text-black transition-all hover:scale-[1.03]"
               style={{ backgroundColor: colorObj.hex }}
             >
               {index === 0 ? 'Begin' : 'Next'}
@@ -315,10 +315,11 @@ export const WelcomeScreen: React.FC<{ onComplete: () => void }> = ({ onComplete
                 const portal = PORTALS.find((p) => p.id === role) ?? PORTALS[0];
                 finish(portal.route);
               }}
-              className="h-12 px-8 text-[10px] font-mono font-black uppercase italic tracking-[0.3em] flex items-center gap-3 text-black transition-all hover:scale-[1.03]"
+              className="h-11 sm:h-12 px-4 sm:px-8 text-[10px] font-mono font-black uppercase italic tracking-[0.2em] sm:tracking-[0.3em] flex items-center gap-2 sm:gap-3 text-black transition-all hover:scale-[1.03]"
               style={{ backgroundColor: colorObj.hex }}
             >
-              Enter Portal
+              <span className="hidden sm:inline">Enter Portal</span>
+              <span className="inline sm:hidden">Enter</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           )}

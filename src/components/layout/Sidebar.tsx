@@ -21,6 +21,7 @@ import {
   Video,
   CreditCard,
   ArrowLeftRight,
+  X,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useTheme } from '../../context/ThemeContext';
@@ -59,7 +60,12 @@ const djNav = [
   { id: 'd5', icon: Cpu, label: 'Settings', path: '/settings' },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+  open?: boolean;
+  onClose?: () => void;
+}
+
+export default function Sidebar({ open = false, onClose }: SidebarProps) {
   const location = useLocation();
   const { role } = useTheme();
 
@@ -71,9 +77,16 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="w-60 h-screen bg-[var(--bg-main)] border-r border-[var(--border-main)] flex flex-col z-20 backdrop-blur-md">
-      {/* Logo */}
-      <div className="px-6 py-5 border-b border-[var(--border-main)] shrink-0">
+    <aside
+      className={cn(
+        'w-72 max-w-[85vw] md:w-60 h-screen bg-[var(--bg-main)] border-r border-[var(--border-main)] flex flex-col z-40 backdrop-blur-md transition-transform duration-300 ease-out',
+        // Mobile: fixed off-canvas drawer
+        'fixed top-0 left-0 md:relative md:translate-x-0',
+        open ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
+      )}
+    >
+      {/* Logo + mobile close */}
+      <div className="px-6 py-5 border-b border-[var(--border-main)] shrink-0 flex items-center justify-between">
         <Link to="/dashboard" className="flex flex-col gap-1.5">
           <div className="flex items-center gap-2">
             <span className="text-lg font-black tracking-tight text-white leading-none font-mono italic uppercase">
@@ -85,6 +98,13 @@ export default function Sidebar() {
             Next-Gen Distribution
           </span>
         </Link>
+        <button
+          onClick={onClose}
+          className="md:hidden p-2 -mr-2 text-white/40 hover:text-white transition-colors"
+          aria-label="Close menu"
+        >
+          <X className="w-4 h-4" />
+        </button>
       </div>
 
       {/* Pinned New Release CTA — only for artists */}
@@ -101,7 +121,7 @@ export default function Sidebar() {
       )}
 
       {/* Scrollable nav */}
-      <nav className="flex-1 overflow-y-auto custom-scrollbar min-h-0 py-2">
+      <nav className="flex-1 overflow-y-auto custom-scrollbar min-h-0 py-2 overscroll-contain">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
@@ -109,7 +129,7 @@ export default function Sidebar() {
               key={item.path}
               to={item.path}
               className={cn(
-                'flex items-center gap-4 px-8 py-3.5 transition-all group relative',
+                'flex items-center gap-4 px-6 md:px-8 py-3.5 transition-all group relative',
                 isActive
                   ? 'bg-primary/5 text-primary'
                   : 'text-[var(--text-main)]/40 hover:bg-[var(--text-main)]/[0.02] hover:text-[var(--text-main)]',
@@ -126,7 +146,7 @@ export default function Sidebar() {
               </span>
               <item.icon
                 className={cn(
-                  'w-4 h-4 transition-transform',
+                  'w-4 h-4 transition-transform shrink-0',
                   isActive ? 'text-primary scale-110' : 'text-white/20 group-hover:scale-110',
                 )}
               />
