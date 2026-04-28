@@ -1,4 +1,7 @@
 import express from "express";
+import helmet from "helmet";
+import cors from "cors";
+import { rateLimit } from "express-rate-limit";
 import multer from "multer";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import { v2 as cloudinary } from "cloudinary";
@@ -52,6 +55,23 @@ function getUploadMiddleware() {
 
 export function createApiApp() {
   const app = express();
+
+  // Security: Set security-related HTTP headers
+  app.use(helmet());
+
+  // Security: Enable CORS with default settings (can be further restricted)
+  app.use(cors());
+
+  // Security: Rate limiting to prevent abuse
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    limit: 100, // Limit each IP to 100 requests per window
+    standardHeaders: 'draft-8', // Return rate limit info in the RateLimit headers
+    legacyHeaders: false, // Disable the X-RateLimit headers
+    message: { error: 'Too many requests, please try again later.' },
+  });
+  app.use('/api/', limiter);
+
   app.use(express.json({ limit: '4mb' }));
 
   const upload = getUploadMiddleware();
