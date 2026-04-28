@@ -1,13 +1,10 @@
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { 
-  Music, 
-  LayoutDashboard, 
-  Disc, 
-  BarChart3, 
-  Wallet, 
-  Users, 
+import { Link, useLocation } from 'react-router-dom';
+import {
+  LayoutDashboard,
+  Disc,
+  Wallet,
+  Users,
   PlusCircle,
-  Globe2,
   Lock,
   Megaphone,
   TrendingUp,
@@ -23,7 +20,7 @@ import {
   Package,
   Video,
   CreditCard,
-  ArrowLeftRight
+  ArrowLeftRight,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useTheme } from '../../context/ThemeContext';
@@ -64,10 +61,9 @@ const djNav = [
 
 export default function Sidebar() {
   const location = useLocation();
-  const navigate = useNavigate();
   const { role } = useTheme();
 
-  const navItems = role === 'ARTIST' ? artistNav : (role === 'INFLUENCER' ? influencerNav : djNav);
+  const navItems = role === 'ARTIST' ? artistNav : role === 'INFLUENCER' ? influencerNav : djNav;
 
   const resetPortal = () => {
     localStorage.removeItem('dropkast_welcome_seen');
@@ -75,18 +71,37 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="w-60 bg-[var(--bg-main)] border-r border-[var(--border-main)] flex flex-col z-20 backdrop-blur-md">
-      <div className="p-6 pb-8 border-b border-[var(--border-main)]">
+    <aside className="w-60 h-screen bg-[var(--bg-main)] border-r border-[var(--border-main)] flex flex-col z-20 backdrop-blur-md">
+      {/* Logo */}
+      <div className="px-6 py-5 border-b border-[var(--border-main)] shrink-0">
         <Link to="/dashboard" className="flex flex-col gap-1.5">
           <div className="flex items-center gap-2">
-            <span className="text-lg font-black tracking-tight text-white leading-none font-mono italic uppercase">DROPKAST</span>
-            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></div>
+            <span className="text-lg font-black tracking-tight text-white leading-none font-mono italic uppercase">
+              DROPKAST
+            </span>
+            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
           </div>
-          <span className="text-[8px] font-medium text-white/30 uppercase tracking-[0.2em]">Next-Gen Distribution</span>
+          <span className="text-[8px] font-medium text-white/30 uppercase tracking-[0.2em]">
+            Next-Gen Distribution
+          </span>
         </Link>
       </div>
 
-      <nav className="flex-1 mt-6">
+      {/* Pinned New Release CTA — only for artists */}
+      {role === 'ARTIST' && (
+        <div className="px-4 pt-4 pb-3 shrink-0">
+          <Link
+            to="/releases/new"
+            className="flex items-center justify-between w-full bg-white text-black font-mono font-black uppercase text-[10px] tracking-widest px-5 py-3.5 hover:bg-primary hover:text-white transition-all group active:scale-95"
+          >
+            <span>NEW_RELEASE</span>
+            <PlusCircle className="w-4 h-4 group-hover:rotate-90 transition-transform" />
+          </Link>
+        </div>
+      )}
+
+      {/* Scrollable nav */}
+      <nav className="flex-1 overflow-y-auto custom-scrollbar min-h-0 py-2">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
@@ -94,54 +109,49 @@ export default function Sidebar() {
               key={item.path}
               to={item.path}
               className={cn(
-                "flex items-center gap-4 px-8 py-4.5 transition-all group relative",
-                isActive 
-                  ? "bg-primary/5 text-primary" 
-                  : "text-[var(--text-main)]/40 hover:bg-[var(--text-main)]/[0.02] hover:text-[var(--text-main)]"
+                'flex items-center gap-4 px-8 py-3.5 transition-all group relative',
+                isActive
+                  ? 'bg-primary/5 text-primary'
+                  : 'text-[var(--text-main)]/40 hover:bg-[var(--text-main)]/[0.02] hover:text-[var(--text-main)]',
               )}
             >
               {isActive && <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />}
-              <span className={cn(
-                "text-[10px] font-mono font-bold tracking-widest",
-                isActive ? "text-primary" : "text-white/10"
-              )}>{item.id}</span>
-              <item.icon className={cn(
-                "w-4 h-4 transition-transform",
-                isActive ? "text-primary scale-110" : "text-white/20 group-hover:scale-110"
-              )} />
-              <span className="text-[11px] font-mono font-bold uppercase tracking-widest leading-none">{item.label}</span>
+              <span
+                className={cn(
+                  'text-[10px] font-mono font-bold tracking-widest',
+                  isActive ? 'text-primary' : 'text-white/10',
+                )}
+              >
+                {item.id}
+              </span>
+              <item.icon
+                className={cn(
+                  'w-4 h-4 transition-transform',
+                  isActive ? 'text-primary scale-110' : 'text-white/20 group-hover:scale-110',
+                )}
+              />
+              <span className="text-[11px] font-mono font-bold uppercase tracking-widest leading-none">
+                {item.label}
+              </span>
             </Link>
           );
         })}
       </nav>
 
-      <div className="p-8 flex flex-col gap-6">
-        <Link 
-          to="/releases/new"
-          className="flex items-center justify-between w-full bg-white text-black font-mono font-black uppercase text-[10px] tracking-widest px-6 py-4 hover:bg-primary hover:text-white transition-all group active:scale-95"
-        >
-          <span>NEW_RELEASE</span>
-          <PlusCircle className="w-4 h-4 group-hover:rotate-90 transition-transform" />
-        </Link>
+      {/* Footer */}
+      <div className="px-6 py-4 border-t border-[var(--border-main)] shrink-0 flex flex-col gap-3">
         <div className="flex items-center gap-3 text-white/20">
           <Lock className="w-3 h-3" />
           <span className="text-[9px] font-medium uppercase tracking-widest">Safe & Secure</span>
         </div>
-
-        <button 
+        <button
           onClick={resetPortal}
-          className="flex items-center justify-center gap-4 w-full h-12 border border-white/5 text-white/20 hover:text-primary hover:border-primary transition-all font-mono font-bold text-[9px] uppercase tracking-widest mt-4"
+          className="flex items-center justify-center gap-3 w-full h-10 border border-white/5 text-white/20 hover:text-primary hover:border-primary transition-all font-mono font-bold text-[9px] uppercase tracking-widest"
         >
-          <ArrowLeftRight className="w-4 h-4" />
+          <ArrowLeftRight className="w-3 h-3" />
           <span>PORTAL_REBOOT</span>
         </button>
       </div>
     </aside>
-  );
-}
-
-function Barcode({ sim }: { sim?: boolean }) {
-  return (
-    <div className={cn("h-6 w-16 opacity-20", sim && "barcode-sim")} />
   );
 }

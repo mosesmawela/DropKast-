@@ -7,9 +7,10 @@ export default defineConfig(({mode}) => {
   const env = loadEnv(mode, '.', '');
   return {
     plugins: [react(), tailwindcss()],
-    define: {
-      'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-    },
+    // NOTE: Do not expose server-only keys (GEMINI_API_KEY, ANTHROPIC_API_KEY,
+    // SUPABASE_SERVICE_ROLE_KEY, STRIPE_SECRET_KEY, etc.) via `define` —
+    // anything you put here ends up in the client bundle. Only `VITE_*`
+    // prefixed env vars are intended for the browser.
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),

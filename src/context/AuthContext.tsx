@@ -1,13 +1,17 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, AuthState } from '../types';
+import { getSupabase, isSupabaseConfigured } from '../lib/supabase';
 
 interface AuthContextType extends AuthState {
-  login: (email: string, artistName: string) => Promise<void>;
-  logout: () => void;
+  login: (email: string, artistName: string, password?: string) => Promise<void>;
+  signup: (email: string, password: string, artistName: string) => Promise<void>;
+  logout: () => Promise<void>;
   updateUser: (data: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+const LEGACY_USER_KEY = 'sw_user';
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, setState] = useState<AuthState>({
@@ -16,9 +20,36 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     isLoading: true,
   });
 
+  // Bootstrap: check Supabase session, else fall back to legacy localStorage user.
   useEffect(() => {
-    // Check localStorage on mount
-    const storedUser = localStorage.getItem('sw_user');
+    const supabase = getSupabase();
+
+    if (supabase) {
+      supabase.auth.getSession().then(({ data }) => {
+        const session = data.session;
+        if (session?.user) {
+          setState({
+            user: toAppUser(session.user),
+            isAuthenticated: true,
+            isLoading: false,
+          });
+        } else {
+          setState((s) => ({ ...s, isLoading: false }));
+        }
+      });
+
+      const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+        if (session?.user) {
+          setState({ user: toAppUser(session.user), isAuthenticated: true, isLoading: false });
+        } else {
+          setState({ user: null, isAuthenticated: false, isLoading: false });
+        }
+      });
+      return () => sub.subscription.unsubscribe();
+    }
+
+    // Legacy fallback
+    const storedUser = localStorage.getItem(LEGACY_USER_KEY);
     if (storedUser) {
       setState({
         user: JSON.parse(storedUser),
@@ -26,15 +57,63 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         isLoading: false,
       });
     } else {
-      setState(s => ({ ...s, isLoading: false }));
+      setState((s) => ({ ...s, isLoading: false }));
     }
   }, []);
 
-  const login = async (email: string, artistName: string) => {
-    setState(s => ({ ...s, isLoading: true }));
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
+  const login = async (email: string, artistName: string, password?: string) => {
+    setState((s) => ({ ...s, isLoading: true }));
+    const supabase = getSupabase();
+
+    if (supabase && password) {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        setState((s) => ({ ...s, isLoading: false }));
+        throw error;
+      }
+      if (data.user) {
+        setState({ user: toAppUser(data.user), isAuthenticated: true, isLoading: false });
+      }
+      return;
+    }
+
+    // Legacy mock path (no Supabase configured) — keeps demo working
+    await new Promise((resolve) => setTimeout(resolve, 600));
+    const newUser: User = {
+      id: Math.random().toString(36).substring(7),
+      email,
+      artistName: artistName || email.split('@')[0],
+      role: 'artist',
+      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${artistName}`,
+    };
+    localStorage.setItem(LEGACY_USER_KEY, JSON.stringify(newUser));
+    setState({ user: newUser, isAuthenticated: true, isLoading: false });
+  };
+
+  const signup = async (email: string, password: string, artistName: string) => {
+    setState((s) => ({ ...s, isLoading: true }));
+    const supabase = getSupabase();
+
+    if (supabase) {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { artist_name: artistName } },
+      });
+      if (error) {
+        setState((s) => ({ ...s, isLoading: false }));
+        throw error;
+      }
+      if (data.user) {
+        setState({ user: toAppUser(data.user), isAuthenticated: true, isLoading: false });
+      } else {
+        setState((s) => ({ ...s, isLoading: false }));
+      }
+      return;
+    }
+
+    // Legacy mock path
+    await new Promise((resolve) => setTimeout(resolve, 600));
     const newUser: User = {
       id: Math.random().toString(36).substring(7),
       email,
@@ -42,37 +121,45 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       role: 'artist',
       avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${artistName}`,
     };
-
-    localStorage.setItem('sw_user', JSON.stringify(newUser));
-    setState({
-      user: newUser,
-      isAuthenticated: true,
-      isLoading: false,
-    });
+    localStorage.setItem(LEGACY_USER_KEY, JSON.stringify(newUser));
+    setState({ user: newUser, isAuthenticated: true, isLoading: false });
   };
 
-  const logout = () => {
-    localStorage.removeItem('sw_user');
-    setState({
-      user: null,
-      isAuthenticated: false,
-      isLoading: false,
-    });
+  const logout = async () => {
+    const supabase = getSupabase();
+    if (supabase) await supabase.auth.signOut();
+    localStorage.removeItem(LEGACY_USER_KEY);
+    setState({ user: null, isAuthenticated: false, isLoading: false });
   };
 
   const updateUser = (data: Partial<User>) => {
     if (!state.user) return;
     const updatedUser = { ...state.user, ...data };
-    localStorage.setItem('sw_user', JSON.stringify(updatedUser));
-    setState(s => ({ ...s, user: updatedUser }));
+    if (!isSupabaseConfigured) {
+      localStorage.setItem(LEGACY_USER_KEY, JSON.stringify(updatedUser));
+    }
+    setState((s) => ({ ...s, user: updatedUser }));
   };
 
   return (
-    <AuthContext.Provider value={{ ...state, login, logout, updateUser }}>
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={{ ...state, login, signup, logout, updateUser }}>{children}</AuthContext.Provider>
   );
 };
+
+function toAppUser(supaUser: { id: string; email?: string; user_metadata?: any }): User {
+  const artistName =
+    supaUser.user_metadata?.artist_name ||
+    (supaUser.email ? supaUser.email.split('@')[0] : 'Artist');
+  return {
+    id: supaUser.id,
+    email: supaUser.email ?? '',
+    artistName,
+    role: (supaUser.user_metadata?.role as User['role']) || 'artist',
+    avatar:
+      supaUser.user_metadata?.avatar_url ||
+      `https://api.dicebear.com/7.x/avataaars/svg?seed=${artistName}`,
+  };
+}
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
