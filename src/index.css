@@ -1,0 +1,361 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #FF4D00; /* Technical Orange */
+  --color-primary-hover: #e64500;
+  --color-surface-low: var(--card-bg);
+  --color-surface-mid: var(--border-main);
+  --color-surface-high: var(--text-main);
+  --color-dark: var(--bg-main);
+  
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --animate-gradient: gradient 8s linear infinite;
+  @keyframes gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+}
+
+@layer base {
+  :root {
+    --bg-main: #111111;
+    --text-main: #ffffff;
+    --border-main: rgba(255, 255, 255, 0.05);
+    --card-bg: #1a1a1a;
+    --radius-card: 0px;
+    --shadow-card: 0 20px 40px rgba(0,0,0,0.4);
+    --primary-raw: 255, 77, 0;
+  }
+
+  .light {
+    --bg-main: #ffffff;
+    --text-main: #111111;
+    --border-main: rgba(0, 0, 0, 0.05);
+    --card-bg: #f5f5f5;
+  }
+
+  /* Neumorphism */
+  .theme-neumorphism {
+    --radius-card: 24px;
+    --bg-main: #121212;
+    --card-bg: #121212;
+    --border-main: transparent;
+    --shadow-card: 12px 12px 24px rgba(0,0,0,0.6), -8px -8px 24px rgba(255,255,255,0.02);
+    --shadow-inset: inset 6px 6px 12px rgba(0,0,0,0.6), inset -6px -6px 12px rgba(255,255,255,0.02);
+    --border-width: 0px;
+  }
+  .theme-neumorphism.light {
+    --bg-main: #e0e5ec;
+    --card-bg: #e0e5ec;
+    --text-main: #333333;
+    --shadow-card: 10px 10px 20px rgba(163, 177, 198, 0.5), -10px -10px 20px rgba(255, 255, 255, 0.8);
+    --shadow-inset: inset 6px 6px 12px rgba(163, 177, 198, 0.5), inset -6px -6px 12px rgba(255, 255, 255, 0.8);
+    --border-main: transparent;
+  }
+
+  /* Material */
+  .theme-material {
+    --radius-card: 12px;
+    --shadow-card: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --border-main: rgba(255,255,255,0.08);
+  }
+  .theme-material.light {
+    --shadow-card: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  }
+
+  /* Brutalism */
+  .theme-brutalism {
+    --radius-card: 0px;
+    --shadow-card: 8px 8px 0px #000000;
+    --border-main: #ffffff;
+    --border-width: 3px;
+    --bg-main: #111111;
+  }
+  .theme-brutalism.light {
+    --bg-main: #ffffff;
+    --border-main: #000000;
+    --shadow-card: 8px 8px 0px #000000;
+  }
+
+  /* Skeuomorphism */
+  .theme-skeuomorphism {
+    --radius-card: 20px;
+    --border-main: rgba(255,255,255,0.1);
+    --bg-main: #2a2a2a;
+    --card-bg: linear-gradient(145deg, #2e2e2e, #272727);
+    --shadow-card: 5px 5px 10px #222222, -5px -5px 10px #323232;
+  }
+  .theme-skeuomorphism.light {
+    --bg-main: #f0f0f0;
+    --card-bg: linear-gradient(145deg, #ffffff, #d9d9d9);
+    --shadow-card: 20px 20px 60px #bebebe, -20px -20px 60px #ffffff;
+    --border-main: rgba(255,255,255,0.5);
+  }
+
+  /* Minimalist */
+  .theme-minimalist {
+    --radius-card: 4px;
+    --shadow-card: none;
+    --border-main: rgba(255,255,255,0.1);
+    --bg-main: #0a0a0a;
+    --card-bg: transparent;
+  }
+  .theme-minimalist.light {
+    --bg-main: #ffffff;
+    --border-main: rgba(0,0,0,0.05);
+    --card-bg: transparent;
+  }
+
+  /* Glassmorphism */
+  .theme-glassmorphism {
+    --bg-main: #060606;
+    --card-bg: rgba(255, 255, 255, 0.05);
+    --border-main: rgba(255, 255, 255, 0.1);
+    --shadow-card: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+    --radius-card: 28px;
+    --glass-blur: blur(24px);
+    --border-width: 1px;
+  }
+  .theme-glassmorphism.light {
+    --bg-main: #f0f2f5;
+    --card-bg: rgba(255, 255, 255, 0.4);
+    --border-main: rgba(255, 255, 255, 0.2);
+    --shadow-card: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+    --text-main: #1a1a1a;
+    --glass-blur: blur(16px);
+  }
+
+  body {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    @apply font-sans antialiased;
+    font-variant-numeric: tabular-nums;
+    transition: background-color 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+  
+  .theme-glassmorphism body {
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(255, 77, 0, 0.15) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(255, 255, 255, 0.05) 0px, transparent 50%);
+    background-attachment: fixed;
+  }
+
+  h1, h2, h3, h4, h5, h6, button, .font-tech {
+    @apply font-mono;
+  }
+}
+
+/* Theme Transitioning Effect */
+.theme-transitioning * {
+  transition: background-color 0.8s cubic-bezier(0.25, 1, 0.5, 1), 
+              color 0.8s cubic-bezier(0.25, 1, 0.5, 1), 
+              border-color 0.8s cubic-bezier(0.25, 1, 0.5, 1),
+              box-shadow 0.8s cubic-bezier(0.25, 1, 0.5, 1),
+              border-radius 0.8s cubic-bezier(0.25, 1, 0.5, 1) !important;
+}
+
+/* Base Card & Interaction Utilities */
+/* Global Theme Overrides for Utility Classes */
+.theme-neumorphism, 
+.theme-glassmorphism, 
+.theme-material, 
+.theme-brutalism, 
+.theme-skeuomorphism, 
+.theme-minimalist {
+  /* Backgrounds */
+  .bg-black, .bg-dark, .bg-surface-low { 
+    background-color: var(--bg-main) !important; 
+  }
+  
+  /* Borders */
+  .border-white\/5, .border-white\/10, .border-white\/20, .border-white\/30 {
+    border-color: var(--border-main) !important;
+  }
+  
+  /* Text */
+  .text-white {
+    color: var(--text-main) !important;
+  }
+  
+  .text-white\/80 { color: color-mix(in srgb, var(--text-main) 80%, transparent) !important; }
+  .text-white\/60 { color: color-mix(in srgb, var(--text-main) 60%, transparent) !important; }
+  .text-white\/40 { color: color-mix(in srgb, var(--text-main) 40%, transparent) !important; }
+  .text-white\/20 { color: color-mix(in srgb, var(--text-main) 20%, transparent) !important; }
+  .text-white\/10 { color: color-mix(in srgb, var(--text-main) 10%, transparent) !important; }
+}
+
+@utility manifest-card {
+  background-color: var(--card-bg);
+  backdrop-filter: var(--glass-blur, none);
+  border: var(--border-width, 1px) solid var(--border-main);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  @apply relative p-6 overflow-hidden transition-all duration-500;
+  &:hover {
+    @apply border-primary/20 -translate-y-1 scale-[1.01];
+    box-shadow: var(--shadow-card);
+  }
+}
+
+.theme-neumorphism .manifest-card {
+  box-shadow: var(--shadow-card);
+  border: none;
+  background-color: var(--card-bg);
+}
+
+.theme-neumorphism .manifest-card:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 14px 14px 28px rgba(0,0,0,0.7), -10px -10px 28px rgba(255,255,255,0.03);
+}
+
+.theme-neumorphism button:not(.primary-button) {
+  box-shadow: var(--shadow-card);
+  border-radius: var(--radius-card);
+}
+
+.theme-neumorphism .primary-button {
+  box-shadow: var(--shadow-card);
+  border: none;
+}
+
+.theme-neumorphism.light .primary-button {
+  box-shadow: 6px 6px 12px rgba(163, 177, 198, 0.4), -6px -6px 12px rgba(255, 255, 255, 0.6);
+}
+
+.theme-neumorphism input, .theme-neumorphism textarea {
+  box-shadow: var(--shadow-inset);
+  border: none !important;
+  background-color: var(--card-bg);
+  border-radius: calc(var(--radius-card) / 2);
+}
+
+.theme-glassmorphism .manifest-card {
+  border: 1px solid var(--border-main);
+  background: var(--card-bg);
+  box-shadow: var(--shadow-card);
+}
+
+.theme-glassmorphism body {
+  background-image: 
+    radial-gradient(circle at 0% 0%, rgba(255, 77, 0, 0.15), transparent 40%),
+    radial-gradient(circle at 100% 100%, rgba(255, 255, 255, 0.05), transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(255, 77, 0, 0.03), transparent 60%);
+  background-attachment: fixed;
+}
+
+@utility interactive-hover {
+  @apply transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer;
+}
+
+@utility hover-parallax {
+  @apply transition-transform duration-500 ease-out;
+  &:hover {
+    transform: perspective(1000px) rotateX(2deg) rotateY(2deg);
+  }
+}
+
+/* Liquid Background Animation */
+@utility liquid-glass-bg {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at center, var(--color-primary) 0%, transparent 50%);
+  filter: blur(80px);
+  opacity: 0.15;
+  animation: liquid-move 20s infinite alternate linear;
+  pointer-events: none;
+  z-index: -1;
+}
+
+@keyframes liquid-move {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  33% { transform: translate(10%, 15%) rotate(120deg); }
+  66% { transform: translate(-15%, 5%) rotate(240deg); }
+  100% { transform: translate(0, 0) rotate(360deg); }
+}
+
+/* Gradient Movement Utility */
+@utility animated-gradient {
+  background: linear-gradient(-45deg, #FF4D00, #ff8c00, #222222, #333333);
+  background-size: 400% 400%;
+  animation: var(--animate-gradient);
+}
+
+@utility corner-marker {
+  @apply relative overflow-visible;
+  &::before {
+    content: '+';
+    @apply absolute top-0 left-0 text-[10px] text-white/40 p-1 font-bold pointer-events-none;
+  }
+  &::after {
+    content: '+';
+    @apply absolute bottom-0 right-0 text-[10px] text-white/40 p-1 font-bold pointer-events-none;
+  }
+}
+
+@utility glass-card {
+  @apply manifest-card corner-marker backdrop-blur-3xl;
+}
+
+@utility active-nav-item {
+  @apply bg-primary text-white font-bold border-l-4 border-l-primary;
+}
+
+@utility primary-button {
+  background-color: var(--color-primary);
+  color: #white;
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  border: var(--border-width, 0px) solid var(--border-main);
+  @apply font-black italic uppercase tracking-[0.2em] px-6 py-3 transition-all active:scale-95 text-[10px] hover:scale-105;
+}
+
+@utility secondary-button {
+  background-color: transparent;
+  border: var(--border-width, 1px) solid var(--border-main);
+  border-radius: var(--radius-card);
+  color: var(--text-main);
+  @apply opacity-70 hover:opacity-100 transition-all font-black uppercase tracking-widest text-[9px] px-6 py-3;
+}
+
+@utility barcode-sim {
+  @apply h-8 w-32 opacity-20;
+  background: repeating-linear-gradient(
+    90deg,
+    currentColor 1px,
+    currentColor 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+@utility dotted-line {
+  background-image: radial-gradient(circle, currentColor 1px, transparent 1px);
+  background-size: 8px 8px;
+  @apply h-[1px] w-full;
+}
+
+@utility technical-grid {
+  background-image: 
+    linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+@utility custom-scrollbar {
+  &::-webkit-scrollbar {
+    width: 2px;
+  }
+  &::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    @apply bg-primary;
+  }
+}

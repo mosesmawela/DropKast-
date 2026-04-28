@@ -1,0 +1,386 @@
+import { useState, useMemo } from 'react';
+import { 
+  Radio, 
+  Search, 
+  Filter, 
+  Plus, 
+  MapPin, 
+  TrendingUp, 
+  Zap, 
+  ChevronRight, 
+  Disc, 
+  Upload, 
+  CheckCircle2, 
+  Send,
+  Cpu,
+  ShieldCheck,
+  Disc3,
+  Info
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { cn } from '../lib/utils';
+import ScrollReveal from '../components/animations/ScrollReveal';
+import AnimatedBeam from '../components/animations/AnimatedBeam';
+import { useNotify } from '../context/NotificationContext';
+
+const djNodes = [
+  { id: 1, name: 'DJ Matrix', region: 'Ibiza / EU', followers: '120K', style: 'House', status: 'ACTIVE', rating: 4.9 },
+  { id: 2, name: 'Urban Sound', region: 'London / UK', followers: '85K', style: 'UK Drill', status: 'ACTIVE', rating: 4.7 },
+  { id: 3, name: 'AfroConnect', region: 'Lagos / NG', followers: '250K', style: 'Afrobeats', status: 'ACTIVE', rating: 4.8 },
+  { id: 4, name: 'Midnight Radio', region: 'NYC / US', followers: '45K', style: 'Indie', status: 'ACTIVE', rating: 4.5 },
+  { id: 5, name: 'Club Alpha', region: 'Tokyo / JP', followers: '300K', style: 'Electronic', status: 'ACTIVE', rating: 4.9 },
+];
+
+export default function DJs() {
+  const { notify } = useNotify();
+  const [activeTab, setActiveTab] = useState<'BUILD' | 'SEND' | 'VAULT'>('BUILD');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [regionFilter, setRegionFilter] = useState('ALL');
+  const [isUploading, setIsUploading] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [selectedDJs, setSelectedDJs] = useState<number[]>([]);
+
+  const filteredDJs = useMemo(() => {
+    return djNodes.filter(node => {
+      const matchesSearch = node.name.toLowerCase().includes(searchQuery.toLowerCase()) || node.style.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesRegion = regionFilter === 'ALL' || node.region.includes(regionFilter);
+      return matchesSearch && matchesRegion;
+    });
+  }, [searchQuery, regionFilter]);
+
+  const handleUpload = () => {
+    setIsUploading(true);
+    notify('ai', 'PROCESSING_STEMS', 'Analyzing track segments for optimal DJ drop points...');
+    setTimeout(() => {
+      notify('success', 'PACK_COMPLETED', 'Clean, Instrumental, and 8-Bar Intro edits finalized.');
+      setIsUploading(false);
+    }, 3000);
+  };
+
+  const toggleSelect = (id: number, name: string) => {
+    setSelectedDJs(prev => {
+      if (prev.includes(id)) return prev.filter(i => i !== id);
+      notify('info', 'DJ_NODE_READY', `${name} designated for signal broadcast.`);
+      return [...prev, id];
+    });
+  };
+
+  const handleSend = async () => {
+    setIsSending(true);
+    notify('ai', 'BROADCAST_INITIATED', `Routing DJ pack to ${selectedDJs.length} regional nodes...`);
+    
+    try {
+      const response = await fetch('/api/djs/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          djIds: selectedDJs,
+          timestamp: new Date()
+        })
+      });
+
+      if (!response.ok) throw new Error('Broadcast failed');
+
+      // Track analytics
+      selectedDJs.forEach(() => {
+        fetch('/api/analytics/track', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            releaseId: 'demo-release',
+            type: 'click',
+            platform: 'DJ_TERMINAL',
+            value: 1000
+          })
+        });
+      });
+
+      notify('success', 'SIGNAL_DELIVERED', 'Global DJ pool updated with latest assets.');
+      setSelectedDJs([]);
+    } catch (err) {
+      notify('error', 'BROADCAST_FAILED', 'Failed to route DJ signal packets.');
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  return (
+    <div className="space-y-12 max-w-7xl mx-auto py-8 font-sans">
+      <ScrollReveal direction="down">
+        <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-8 border-b border-white/5 pb-10">
+          <div>
+            <div className="flex items-center gap-2 text-primary mb-3 font-mono">
+              <Radio className="w-4 h-4" />
+              <span className="text-[11px] font-bold uppercase tracking-widest italic font-mono">Propagation Network</span>
+            </div>
+            <h1 className="text-5xl font-black tracking-tighter text-white italic font-mono uppercase">DJ Pack Control</h1>
+          </div>
+          <div className="flex bg-black border border-white/10 p-1 shrink-0">
+             {['BUILD', 'SEND', 'VAULT'].map(tab => (
+               <button 
+                  key={tab}
+                  onClick={() => setActiveTab(tab as any)}
+                  className={cn(
+                    "px-8 py-3 text-[10px] font-bold tracking-widest font-mono transition-all uppercase",
+                    activeTab === tab ? "bg-primary text-white" : "text-white/20 hover:text-white"
+                  )}
+               >
+                  {tab === 'VAULT' ? 'The Vault' : tab.charAt(0) + tab.slice(1).toLowerCase().replace('pack', '')}
+               </button>
+             ))}
+          </div>
+        </header>
+      </ScrollReveal>
+
+      <AnimatePresence mode="wait">
+        {activeTab === 'BUILD' ? (
+          <motion.div 
+            key="build"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="grid grid-cols-1 lg:grid-cols-12 gap-12"
+          >
+            {/* Left: Component Uploads */}
+            <div className="lg:col-span-12 space-y-8">
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                 {[
+                   { label: 'Instrumental', status: 'READY', icon: Disc3 },
+                   { label: 'Clean Edit', status: 'PENDING', icon: ShieldCheck },
+                   { label: 'Radio Edit', status: 'PENDING', icon: Radio },
+                 ].map((file, i) => (
+                   <div key={i} className="p-8 border border-white/5 bg-dark space-y-6 group hover:border-primary/20 transition-all">
+                      <div className="flex items-center justify-between">
+                         <div className="w-10 h-10 border border-white/10 flex items-center justify-center bg-white/5">
+                            <file.icon className="w-5 h-5 text-primary" />
+                         </div>
+                         <div className={cn("text-[9px] font-bold font-mono tracking-widest uppercase", file.status === 'READY' ? 'text-green-500' : 'text-primary')}>
+                            {file.status}
+                         </div>
+                      </div>
+                      <h3 className="text-xl font-bold font-mono italic uppercase text-white">{file.label}</h3>
+                      <button 
+                        onClick={handleUpload}
+                        className="w-full py-3 border border-white/10 text-[10px] font-bold font-mono tracking-widest uppercase hover:bg-white hover:text-black transition-all flex items-center justify-center gap-2"
+                      >
+                        <Upload className="w-3 h-3" />
+                        {file.status === 'READY' ? 'Re-Upload' : 'Upload File'}
+                      </button>
+                   </div>
+                 ))}
+               </div>
+
+               {/* Pack Logic */}
+               <div className="p-12 border border-white/5 bg-white/[0.02] space-y-8 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-8 opacity-5">
+                    <Cpu className="w-48 h-48" />
+                  </div>
+                  <div className="relative z-10 max-w-2xl">
+                    <h3 className="text-3xl font-black italic font-mono uppercase tracking-tight text-white mb-4">Auto-Stem Generation</h3>
+                    <p className="text-white/40 text-sm leading-relaxed italic font-medium mb-8">
+                       Our AI engine analyzes your master track to automatically generate clean edits, 8-bar intro/outro transitions, and high-fidelity instrumentals. All assets are packed into a professional DJ Signal file (.DJS) ready for global distribution.
+                    </p>
+                    <AnimatedBeam containerClassName="w-fit">
+                      <button 
+                        onClick={handleUpload}
+                        disabled={isUploading}
+                        className="primary-button h-16 px-12 flex items-center gap-3"
+                      >
+                        {isUploading ? <Cpu className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5" />}
+                        {isUploading ? 'Synthesizing...' : 'Build Full DJ Pack'}
+                      </button>
+                    </AnimatedBeam>
+                  </div>
+               </div>
+            </div>
+          </motion.div>
+        ) : activeTab === 'SEND' ? (
+          <motion.div 
+            key="send"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="space-y-8"
+          >
+             {/* Search & Filter */}
+             <div className="flex flex-col sm:flex-row items-center justify-between gap-6 bg-white/5 p-6 border border-white/5">
+                <div className="flex items-center gap-6 w-full sm:w-auto">
+                  <div className="relative w-full sm:w-80">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
+                    <input 
+                      type="text" 
+                      placeholder="Search DJ nodes..." 
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="bg-black border border-white/10 pl-12 pr-6 py-3 text-xs font-mono tracking-widest text-white outline-none focus:border-primary transition-all w-full uppercase"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {['ALL', 'EU', 'US', 'UK', 'NG'].map(reg => (
+                      <button 
+                        key={reg}
+                        onClick={() => setRegionFilter(reg)}
+                        className={cn(
+                          "px-4 py-2 text-[10px] font-bold tracking-widest font-mono border transition-all",
+                          regionFilter === reg ? "bg-primary border-primary text-white" : "border-white/5 text-white/20 hover:text-white"
+                        )}
+                      >
+                        {reg}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                   <div className="text-sm font-black text-white font-mono italic">{selectedDJs.length} SAVED_NODES</div>
+                   <button 
+                    onClick={handleSend}
+                    disabled={selectedDJs.length === 0 || isSending}
+                    className={cn(
+                      "primary-button h-14 px-8 flex items-center gap-3",
+                      (selectedDJs.length === 0 || isSending) && "opacity-50 grayscale cursor-not-allowed"
+                    )}
+                   >
+                     {isSending ? <Cpu className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                     {isSending ? 'Sending...' : 'Send Release'}
+                   </button>
+                </div>
+             </div>
+
+             {/* Nodes Grid */}
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredDJs.length === 0 ? (
+                   <div className="col-span-full py-24 text-center border-2 border-dashed border-white/5 bg-white/[0.01]">
+                     <div className="text-white/10 font-mono text-sm uppercase tracking-widest italic">No DJ nodes matching parameters</div>
+                   </div>
+                ) : filteredDJs.map((dj, i) => (
+                   <ScrollReveal key={dj.id} delay={i * 0.05} direction="up">
+                      <div className={cn(
+                        "p-8 border bg-dark group transition-all relative overflow-hidden",
+                        selectedDJs.includes(dj.id) ? "border-primary bg-primary/[0.02]" : "border-white/5 hover:border-white/20"
+                      )}>
+                         <div className="absolute top-0 right-0 p-4">
+                           <div className="w-10 h-10 border border-white/10 flex items-center justify-center font-mono text-primary text-[10px] font-bold">
+                             {dj.rating}
+                           </div>
+                         </div>
+                         
+                         <div className="space-y-6">
+                            <div className="flex items-center gap-4">
+                               <div className="w-12 h-12 bg-white/5 border border-white/10 flex items-center justify-center text-white/20 group-hover:text-primary transition-colors">
+                                  <Disc className="w-6 h-6" />
+                               </div>
+                               <div>
+                                  <h4 className="text-xl font-black italic font-mono uppercase text-white tracking-tight">{dj.name}</h4>
+                                  <div className="flex items-center gap-2 text-[10px] font-bold text-white/30 uppercase tracking-widest font-mono">
+                                     <MapPin className="w-3 h-3" />
+                                     {dj.region}
+                                  </div>
+                               </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4 py-4 border-y border-white/5">
+                               <div className="space-y-1">
+                                  <span className="text-[8px] font-bold text-white/20 uppercase tracking-widest font-mono">Style</span>
+                                  <div className="text-xs font-black text-white uppercase italic">{dj.style}</div>
+                               </div>
+                               <div className="space-y-1">
+                                  <span className="text-[8px] font-bold text-white/20 uppercase tracking-widest font-mono">Followers</span>
+                                  <div className="text-xs font-black text-primary font-mono italic">{dj.followers}</div>
+                               </div>
+                            </div>
+
+                            <button 
+                              onClick={() => toggleSelect(dj.id, dj.name)}
+                              className={cn(
+                                "w-full py-4 font-mono text-[10px] font-black tracking-[0.2em] uppercase italic transition-all",
+                                selectedDJs.includes(dj.id) ? "bg-primary text-white" : "border border-white/10 text-white hover:bg-white hover:text-black"
+                              )}
+                            >
+                              {selectedDJs.includes(dj.id) ? 'DESIGIN_SIGNAL' : 'QUEUE_SIGNAL'}
+                            </button>
+                         </div>
+                      </div>
+                   </ScrollReveal>
+                ))}
+             </div>
+
+             {/* Footer CTAs */}
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-12 border-t border-white/5">
+                {[
+                  { title: 'DJ Early Access', desc: 'Allow vetted DJs to preview tracks 48h before official release.', icon: Zap },
+                  { title: 'Trending Pool', desc: 'See which global DJ sets are currently playing your previous packs.', icon: TrendingUp },
+                ].map((cta, i) => (
+                  <button 
+                    key={i}
+                    onClick={() => notify('info', 'UNAVAILABLE', 'Node maintenance in progress. Access granted in 12h.')}
+                    className="p-10 border border-white/5 bg-white/[0.01] hover:border-primary/40 transition-all text-left flex items-start gap-8 group"
+                  >
+                    <div className="w-14 h-14 border border-white/10 flex items-center justify-center bg-white/5 group-hover:bg-primary/10 transition-colors">
+                      <cta.icon className="w-6 h-6 text-primary" />
+                    </div>
+                    <div className="space-y-2">
+                       <h4 className="text-2xl font-black italic font-mono uppercase tracking-tight text-white">{cta.title}</h4>
+                       <p className="text-sm text-white/30 italic font-medium leading-relaxed max-w-sm">{cta.desc}</p>
+                    </div>
+                  </button>
+                ))}
+             </div>
+          </motion.div>
+        ) : (
+          <motion.div 
+            key="vault"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="space-y-12"
+          >
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {[
+                  { title: "Ibiza Heat Vol. 1", status: "UNLOCKED", downloads: 124, tag: "EXCLUSIVE", icon: Zap },
+                  { title: "Urban Pulse 2024", status: "LOCKED", downloads: 0, tag: "ELITE_PACK", icon: ShieldCheck },
+                  { title: "Midnight Deep Nodes", status: "LOCKED", downloads: 0, tag: "LEGACY", icon: Disc3 },
+                ].map((pack, i) => (
+                   <div key={i} className={cn(
+                     "p-10 border bg-dark space-y-8 relative overflow-hidden group transition-all",
+                     pack.status === "UNLOCKED" ? "border-primary/40 bg-primary/[0.02]" : "border-white/5 grayscale"
+                   )}>
+                      <div className="flex items-center justify-between relative z-10">
+                         <div className="w-12 h-12 border border-white/10 flex items-center justify-center bg-white/5">
+                            <pack.icon className={cn("w-6 h-6", pack.status === 'UNLOCKED' ? "text-primary" : "text-white/10")} />
+                         </div>
+                         <span className={cn("text-[9px] font-black font-mono tracking-widest px-3 py-1 border uppercase italic", 
+                            pack.status === 'UNLOCKED' ? "border-primary text-primary" : "border-white/10 text-white/20")}>
+                            {pack.tag}
+                         </span>
+                      </div>
+                      
+                      <div className="relative z-10">
+                         <h3 className="text-2xl font-black italic font-mono uppercase tracking-tight text-white mb-2">{pack.title}</h3>
+                         <div className="text-[10px] font-bold text-white/30 uppercase tracking-[0.3em] font-mono italic">{pack.status}_SIGNAL</div>
+                      </div>
+
+                      <div className="relative z-10 pt-6 border-t border-white/5 flex items-center justify-between">
+                         <div className="space-y-1">
+                            <span className="text-[8px] font-black text-white/20 uppercase tracking-widest font-mono">Downloads</span>
+                            <div className="text-sm font-black text-white italic">{pack.downloads} DJs</div>
+                         </div>
+                         <button className={cn(
+                           "h-12 px-6 font-mono text-[9px] font-black uppercase tracking-widest italic transition-all",
+                           pack.status === 'UNLOCKED' ? "bg-white text-black hover:bg-primary hover:text-white" : "border border-white/10 text-white/20 cursor-not-allowed"
+                         )}>
+                            {pack.status === 'UNLOCKED' ? 'Enter Vault' : 'Locked'}
+                         </button>
+                      </div>
+
+                      <div className="absolute -bottom-4 -right-4 opacity-[0.02] group-hover:scale-110 transition-transform">
+                         <pack.icon className="w-48 h-48" />
+                      </div>
+                   </div>
+                ))}
+             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
