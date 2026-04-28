@@ -22,6 +22,7 @@ import {
   CreditCard,
   ArrowLeftRight,
   Sparkles,
+  Mail,
   X,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
@@ -29,39 +30,42 @@ import { useTheme } from '../../context/ThemeContext';
 
 const artistNav = [
   { id: '01', icon: LayoutDashboard, label: 'Home', path: '/dashboard' },
-  { id: '02', icon: Megaphone, label: 'Pre-Release', path: '/pre-release' },
-  { id: '03', icon: Target, label: 'Campaigns', path: '/campaigns' },
-  { id: '04', icon: Users, label: 'Influencers', path: '/influencers' },
-  { id: '05', icon: Package, label: 'Promo Packs', path: '/promo' },
-  { id: '06', icon: Video, label: 'UGC Studio', path: '/ugc' },
-  { id: '07', icon: Radio, label: 'DJ Packs', path: '/djs' },
-  { id: '08', icon: Zap, label: 'Reactions', path: '/reactions' },
-  { id: '09', icon: Share2, label: 'Social Ads', path: '/social' },
-  { id: '10', icon: FileText, label: 'Split Sheets', path: '/splits' },
-  { id: '11', icon: MessageSquare, label: 'A&R Feedback', path: '/anr' },
-  { id: '12', icon: BarChart, label: 'Analytics', path: '/analytics' },
-  { id: '13', icon: Wallet, label: 'Treasury', path: '/earnings' },
-  { id: '14', icon: Camera, label: 'Assets', path: '/assets' },
-  { id: '15', icon: Sparkles, label: 'AI Models', path: '/ai-providers' },
-  { id: '16', icon: Cpu, label: 'Settings', path: '/settings' },
+  { id: '02', icon: Mail, label: 'Messages', path: '/messages' },
+  { id: '03', icon: Megaphone, label: 'Pre-Release', path: '/pre-release' },
+  { id: '04', icon: Target, label: 'Campaigns', path: '/campaigns' },
+  { id: '05', icon: Users, label: 'Influencers', path: '/influencers' },
+  { id: '06', icon: Package, label: 'Promo Packs', path: '/promo' },
+  { id: '07', icon: Video, label: 'UGC Studio', path: '/ugc' },
+  { id: '08', icon: Radio, label: 'DJ Packs', path: '/djs' },
+  { id: '09', icon: Zap, label: 'Reactions', path: '/reactions' },
+  { id: '10', icon: Share2, label: 'Social Ads', path: '/social' },
+  { id: '11', icon: FileText, label: 'Split Sheets', path: '/splits' },
+  { id: '12', icon: MessageSquare, label: 'A&R Feedback', path: '/anr' },
+  { id: '13', icon: BarChart, label: 'Analytics', path: '/analytics' },
+  { id: '14', icon: Wallet, label: 'Treasury', path: '/earnings' },
+  { id: '15', icon: Camera, label: 'Assets', path: '/assets' },
+  { id: '16', icon: Sparkles, label: 'AI Models', path: '/ai-providers' },
+  { id: '17', icon: Cpu, label: 'Settings', path: '/settings' },
 ];
 
 const influencerNav = [
   { id: 'i1', icon: LayoutDashboard, label: 'Home', path: '/dashboard' },
-  { id: 'i2', icon: Target, label: 'Missions', path: '/influencer/missions' },
-  { id: 'i3', icon: CreditCard, label: 'Earnings', path: '/influencer/earnings' },
-  { id: 'i4', icon: Share2, label: 'Social Nodes', path: '/influencer/socials' },
-  { id: 'i5', icon: Sparkles, label: 'AI Models', path: '/ai-providers' },
-  { id: 'i6', icon: Cpu, label: 'Settings', path: '/settings' },
+  { id: 'i2', icon: Mail, label: 'Messages', path: '/messages' },
+  { id: 'i3', icon: Target, label: 'Missions', path: '/influencer/missions' },
+  { id: 'i4', icon: CreditCard, label: 'Earnings', path: '/influencer/earnings' },
+  { id: 'i5', icon: Share2, label: 'Social Nodes', path: '/influencer/socials' },
+  { id: 'i6', icon: Sparkles, label: 'AI Models', path: '/ai-providers' },
+  { id: 'i7', icon: Cpu, label: 'Settings', path: '/settings' },
 ];
 
 const djNav = [
   { id: 'd1', icon: LayoutDashboard, label: 'Home', path: '/dashboard' },
-  { id: 'd2', icon: Disc, label: 'DJ Packs', path: '/dj/packs' },
-  { id: 'd3', icon: MessageSquare, label: 'A&R Intel', path: '/dj/feedback' },
-  { id: 'd4', icon: TrendingUp, label: 'Charts', path: '/analytics' },
-  { id: 'd5', icon: Sparkles, label: 'AI Models', path: '/ai-providers' },
-  { id: 'd6', icon: Cpu, label: 'Settings', path: '/settings' },
+  { id: 'd2', icon: Mail, label: 'Messages', path: '/messages' },
+  { id: 'd3', icon: Disc, label: 'DJ Packs', path: '/dj/packs' },
+  { id: 'd4', icon: MessageSquare, label: 'A&R Intel', path: '/dj/feedback' },
+  { id: 'd5', icon: TrendingUp, label: 'Charts', path: '/analytics' },
+  { id: 'd6', icon: Sparkles, label: 'AI Models', path: '/ai-providers' },
+  { id: 'd7', icon: Cpu, label: 'Settings', path: '/settings' },
 ];
 
 interface SidebarProps {
@@ -71,6 +75,7 @@ interface SidebarProps {
 
 const TOUR_TARGETS: Record<string, string | undefined> = {
   '/dashboard': 'nav-dashboard',
+  '/messages': 'nav-messages',
   '/pre-release': 'nav-prerelease',
   '/campaigns': 'nav-campaigns',
   '/influencers': 'nav-influencers',

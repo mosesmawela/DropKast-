@@ -26,6 +26,7 @@ import { generateIsrc, generateUpc, isPlaceholderRegistrant } from "./_codes.js"
 import { validateAudio, validateCoverArt } from "./_audio-validate.js";
 import { assertTransition, isScheduledForLater, ReleaseTransitionError, type ReleaseStatus } from "./_release-lifecycle.js";
 import { pushEvent, listEventsFor, markRead as markInboxRead } from "./_inbox.js";
+import { listThreadsForViewer, listMessagesInThread, postMessage, markThreadRead, findThread, type Role as MsgRole } from "./_messages.js";
 
 let uploadMiddleware: any = null;
 
@@ -456,6 +457,35 @@ export function createApiApp() {
   app.post("/api/inbox/:id/read", (req, res) => {
     const ok = markInboxRead(req.params.id);
     res.json({ ok });
+  });
+
+  // --- Cross-portal direct messages ---
+  app.get("/api/messages", (req, res) => {
+    const role = String(req.query.role ?? 'ARTIST').toUpperCase() as MsgRole;
+    const userId = String(req.query.userId ?? `viewer-${role.toLowerCase()}`);
+    const threads = listThreadsForViewer(userId, role);
+    res.json({ threads });
+  });
+
+  app.get("/api/messages/:threadId", (req, res) => {
+    const thread = findThread(req.params.threadId);
+    if (!thread) return res.status(404).json({ error: 'Thread not found' });
+    const msgs = listMessagesInThread(req.params.threadId);
+    res.json({ thread, messages: msgs });
+  });
+
+  app.post("/api/messages/:threadId", (req, res) => {
+    const { senderId, body } = req.body ?? {};
+    if (!body || typeof body !== 'string') return res.status(400).json({ error: 'body required' });
+    const msg = postMessage(req.params.threadId, String(senderId ?? 'viewer'), body);
+    if (!msg) return res.status(404).json({ error: 'Thread not found' });
+    res.json({ message: msg });
+  });
+
+  app.post("/api/messages/:threadId/read", (req, res) => {
+    const role = String(req.body?.role ?? 'ARTIST').toUpperCase() as MsgRole;
+    markThreadRead(req.params.threadId, role);
+    res.json({ ok: true });
   });
 
   app.post("/api/splits", validate(splitCreateSchema), async (req, res) => {

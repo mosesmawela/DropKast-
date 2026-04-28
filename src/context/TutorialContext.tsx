@@ -23,6 +23,12 @@ const ARTIST_TOUR: TutorialStep[] = [
     placement: 'right',
   },
   {
+    target: 'data-tour="nav-messages"',
+    title: 'Messages',
+    body: 'Direct conversations with influencers and DJs. Each thread is tagged with the other person\'s portal so you always know who you\'re talking to.',
+    placement: 'right',
+  },
+  {
     target: 'data-tour="nav-prerelease"',
     title: 'Pre-Release',
     body: 'Plan the rollout BEFORE the song goes live. Hook timing, creator seeding, "Invasion Mode" coordinated drop. Get it right here and the launch does itself.',
@@ -140,6 +146,12 @@ const INFLUENCER_TOUR: TutorialStep[] = [
     placement: 'right',
   },
   {
+    target: 'data-tour="nav-messages"',
+    title: 'Messages',
+    body: 'Briefs from artists and DJs land here. Each thread shows who you are talking to with their portal label, so you always know the context.',
+    placement: 'right',
+  },
+  {
     target: 'data-tour="nav-missions"',
     title: 'Missions',
     body: 'Paid campaign missions matched to your audience. Accept, post, and verify your post URL to get paid.',
@@ -158,6 +170,12 @@ const DJ_TOUR: TutorialStep[] = [
     target: 'data-tour="sidebar-logo"',
     title: 'Welcome, Selecta',
     body: 'Quick tour of the DJ portal. Skip anytime — re-enable from Settings.',
+    placement: 'right',
+  },
+  {
+    target: 'data-tour="nav-messages"',
+    title: 'Messages',
+    body: 'Direct threads with the artists who sent you packs. Headers tag who you are talking to so context never gets lost.',
     placement: 'right',
   },
   {
