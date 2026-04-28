@@ -319,6 +319,7 @@ export default function AIAssistant() {
       </AnimatePresence>
 
       <button
+        data-tour="ai-assistant"
         onClick={() => setIsOpen(!isOpen)}
         className="w-14 h-14 sm:w-16 sm:h-16 bg-white text-black hover:bg-primary hover:text-white shadow-[0_0_50px_rgba(255,102,0,0.3)] transition-all active:scale-90 flex items-center justify-center relative group"
       >

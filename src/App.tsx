@@ -7,7 +7,10 @@ import { NotificationProvider } from './context/NotificationContext';
 import { CampaignProvider } from './context/CampaignContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { AIProvider } from './context/AIContext';
+import { TutorialProvider } from './context/TutorialContext';
+import { useTheme } from './context/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import Tutorial from './components/Tutorial';
 
 // Lazy load pages
 const Landing = lazy(() => import('./pages/Landing'));
@@ -54,6 +57,7 @@ const DJPacks = lazy(() => import('./pages/creator/dj/Packs'));
 const DJFeedback = lazy(() => import('./pages/creator/dj/Feedback'));
 
 const Layout = lazy(() => import('./components/layout/Layout'));
+const Profile = lazy(() => import('./pages/Profile'));
 
 import WelcomeScreen from './components/layout/WelcomeScreen';
 
@@ -69,12 +73,14 @@ export default function App() {
 
   return (
     <ThemeProvider>
+      <TutorialProvider>
       <AuthProvider>
         <AIProvider>
           <NotificationProvider>
             <ReleaseProvider>
               <CampaignProvider>
                 <BrowserRouter>
+                  <Tutorial />
                   <AnimatePresence mode="wait">
                     {showWelcome ? (
                       <WelcomeScreen key="welcome" onComplete={handleWelcomeComplete} />
@@ -150,6 +156,7 @@ export default function App() {
                   <Route path="/earnings" element={<Earnings />} />
                   <Route path="/assets" element={<Assets />} />
                   <Route path="/settings" element={<Settings />} />
+                  <Route path="/profile" element={<Profile />} />
                 </Route>
               </Route>
 
@@ -166,6 +173,7 @@ export default function App() {
       </NotificationProvider>
      </AIProvider>
     </AuthProvider>
+    </TutorialProvider>
    </ThemeProvider>
   );
 }

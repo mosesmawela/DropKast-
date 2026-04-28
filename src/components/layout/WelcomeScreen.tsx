@@ -332,22 +332,22 @@ export const WelcomeScreen: React.FC<{ onComplete: () => void }> = ({ onComplete
 /* ---------------- Slide bodies ---------------- */
 
 const HeroSlide: React.FC<{ accent: string }> = ({ accent }) => (
-  <div className="text-center md:text-left space-y-10">
-    <div className="flex items-center justify-center md:justify-start gap-4">
-      <div className="h-[1px] w-12" style={{ backgroundColor: accent }} />
-      <span className="text-[10px] font-mono font-black tracking-[0.4em] uppercase italic" style={{ color: accent }}>
+  <div className="text-center md:text-left space-y-6 sm:space-y-8">
+    <div className="flex items-center justify-center md:justify-start gap-3">
+      <div className="h-[1px] w-10" style={{ backgroundColor: accent }} />
+      <span className="text-[9px] font-mono font-black tracking-[0.4em] uppercase italic" style={{ color: accent }}>
         System Initiated
       </span>
     </div>
-    <h1 className="text-6xl md:text-9xl font-black italic uppercase tracking-tighter font-mono leading-[0.85]">
+    <h1 className="text-5xl sm:text-6xl md:text-7xl font-black italic uppercase tracking-tighter font-mono leading-[0.85]">
       <span className="block">DROP</span>
       <span className="block" style={{ color: accent }}>KAST</span>
     </h1>
-    <p className="max-w-2xl text-lg md:text-2xl text-white/60 leading-relaxed font-medium">
+    <p className="max-w-2xl text-sm sm:text-base md:text-lg text-white/60 leading-relaxed font-medium">
       The AI-powered command deck for independent music. Distribute to every DSP, generate viral content, deploy
       verified creator networks, and submit straight to LVRN A&R — all from one launchpad.
     </p>
-    <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-6 gap-y-2 text-[10px] font-mono font-black uppercase tracking-[0.3em] text-white/40 italic">
+    <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-4 gap-y-2 text-[9px] font-mono font-black uppercase tracking-[0.3em] text-white/40 italic">
       <span>Distribution</span>
       <span style={{ color: accent }}>•</span>
       <span>AI Content</span>
@@ -360,18 +360,18 @@ const HeroSlide: React.FC<{ accent: string }> = ({ accent }) => (
 );
 
 const PitchSlide: React.FC<{ accent: string }> = ({ accent }) => (
-  <div className="space-y-12">
-    <div className="space-y-4">
-      <span className="text-[10px] font-mono font-black tracking-[0.4em] uppercase italic" style={{ color: accent }}>
+  <div className="space-y-8">
+    <div className="space-y-3">
+      <span className="text-[9px] font-mono font-black tracking-[0.4em] uppercase italic" style={{ color: accent }}>
         What Is DropKast?
       </span>
-      <h2 className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter font-mono leading-none">
+      <h2 className="text-3xl sm:text-4xl md:text-5xl font-black italic uppercase tracking-tighter font-mono leading-none">
         Music distribution<br /> built for the<br />
         <span style={{ color: accent }}>algorithm era.</span>
       </h2>
     </div>
 
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
       {[
         {
           k: 'For Artists',
@@ -389,12 +389,12 @@ const PitchSlide: React.FC<{ accent: string }> = ({ accent }) => (
           icon: Radio,
         },
       ].map((b) => (
-        <div key={b.k} className="manifest-card p-6 border-white/10 bg-white/[0.02]">
-          <b.icon className="w-6 h-6 mb-4" style={{ color: accent }} />
-          <div className="text-[10px] font-mono font-black uppercase tracking-[0.3em] text-white/40 italic mb-2">
+        <div key={b.k} className="manifest-card p-5 border-white/10 bg-white/[0.02]">
+          <b.icon className="w-5 h-5 mb-3" style={{ color: accent }} />
+          <div className="text-[9px] font-mono font-black uppercase tracking-[0.3em] text-white/40 italic mb-1.5">
             {b.k}
           </div>
-          <p className="text-sm text-white/80 leading-relaxed">{b.v}</p>
+          <p className="text-xs sm:text-sm text-white/80 leading-relaxed">{b.v}</p>
         </div>
       ))}
     </div>
@@ -404,19 +404,19 @@ const PitchSlide: React.FC<{ accent: string }> = ({ accent }) => (
 const FeatureSlide: React.FC<{ feature: typeof FEATURES[number]; accent: string }> = ({ feature, accent }) => {
   const Icon = feature.icon;
   return (
-    <div className="grid grid-cols-1 md:grid-cols-12 gap-12 items-center">
+    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
       <div className="md:col-span-5 flex justify-center md:justify-start">
         <div
-          className="relative w-48 h-48 md:w-64 md:h-64 border-2 flex items-center justify-center"
+          className="relative w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 border-2 flex items-center justify-center"
           style={{ borderColor: accent }}
         >
           <div
             className="absolute inset-0 opacity-10"
             style={{ background: `radial-gradient(circle, ${accent} 0%, transparent 70%)` }}
           />
-          <Icon className="w-24 h-24 md:w-32 md:h-32 relative z-10" style={{ color: accent }} />
+          <Icon className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 relative z-10" style={{ color: accent }} />
           <div
-            className="absolute -top-3 -left-3 text-[9px] font-mono font-black uppercase tracking-[0.3em] italic px-2 py-1 bg-black"
+            className="absolute -top-2.5 -left-2.5 text-[9px] font-mono font-black uppercase tracking-[0.3em] italic px-2 py-1 bg-black"
             style={{ color: accent }}
           >
             {feature.tag}
@@ -424,13 +424,13 @@ const FeatureSlide: React.FC<{ feature: typeof FEATURES[number]; accent: string 
         </div>
       </div>
 
-      <div className="md:col-span-7 space-y-6">
-        <h2 className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter font-mono leading-[0.9]">
+      <div className="md:col-span-7 space-y-4 sm:space-y-5">
+        <h2 className="text-3xl sm:text-4xl md:text-5xl font-black italic uppercase tracking-tighter font-mono leading-[0.9]">
           {feature.title}
         </h2>
-        <p className="text-lg md:text-xl text-white/60 leading-relaxed font-medium">{feature.desc}</p>
-        <div className="flex items-center gap-3 text-[10px] font-mono font-black uppercase tracking-[0.4em] italic" style={{ color: accent }}>
-          <Zap className="w-4 h-4" />
+        <p className="text-sm sm:text-base md:text-lg text-white/60 leading-relaxed font-medium">{feature.desc}</p>
+        <div className="flex items-center gap-3 text-[9px] font-mono font-black uppercase tracking-[0.4em] italic" style={{ color: accent }}>
+          <Zap className="w-3.5 h-3.5" />
           <span>Ready to deploy</span>
         </div>
       </div>
@@ -603,7 +603,7 @@ const PortalSlide: React.FC<{
       </p>
     </div>
 
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {PORTALS.map((p) => {
         const active = selected === p.id;
         const Icon = p.icon;
@@ -613,33 +613,33 @@ const PortalSlide: React.FC<{
             onClick={() => onSelect(p.id)}
             onDoubleClick={() => onConfirm(p.id)}
             className={cn(
-              'manifest-card relative p-7 text-left flex flex-col gap-5 transition-all border bg-white/[0.02] hover:bg-white/[0.05] min-h-[420px]',
+              'manifest-card relative p-5 text-left flex flex-col gap-4 transition-all border bg-white/[0.02] hover:bg-white/[0.05] min-h-[280px]',
               active ? 'border-white/40 scale-[1.01]' : 'border-white/10',
             )}
             style={active ? { borderColor: accent, boxShadow: `0 0 0 1px ${accent}, 0 30px 80px ${accent}33` } : undefined}
           >
             <div
-              className="w-14 h-14 border flex items-center justify-center"
+              className="w-11 h-11 border flex items-center justify-center"
               style={{ borderColor: active ? accent : 'rgba(255,255,255,0.1)' }}
             >
-              <Icon className="w-7 h-7" style={{ color: active ? accent : 'rgba(255,255,255,0.5)' }} />
+              <Icon className="w-5 h-5" style={{ color: active ? accent : 'rgba(255,255,255,0.5)' }} />
             </div>
 
             <div>
-              <div className="text-[10px] font-mono font-black uppercase tracking-[0.3em] italic mb-2" style={{ color: active ? accent : 'rgba(255,255,255,0.4)' }}>
+              <div className="text-[9px] font-mono font-black uppercase tracking-[0.3em] italic mb-1.5" style={{ color: active ? accent : 'rgba(255,255,255,0.4)' }}>
                 {p.tagline}
               </div>
-              <h3 className="text-2xl md:text-3xl font-black italic uppercase tracking-tighter font-mono leading-none">
+              <h3 className="text-xl md:text-2xl font-black italic uppercase tracking-tighter font-mono leading-none">
                 {p.name}
               </h3>
             </div>
 
-            <p className="text-sm text-white/60 leading-relaxed">{p.desc}</p>
+            <p className="text-xs sm:text-sm text-white/60 leading-relaxed">{p.desc}</p>
 
-            <div className="mt-auto space-y-2 pt-4 border-t border-white/5">
+            <div className="mt-auto space-y-1.5 pt-3 border-t border-white/5">
               {p.perks.map((perk) => (
-                <div key={perk} className="flex items-center gap-2 text-[11px] text-white/50">
-                  <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" style={{ color: accent }} />
+                <div key={perk} className="flex items-center gap-2 text-[10px] text-white/50">
+                  <CheckCircle2 className="w-3 h-3 flex-shrink-0" style={{ color: accent }} />
                   <span>{perk}</span>
                 </div>
               ))}

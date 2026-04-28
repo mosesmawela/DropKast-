@@ -1,8 +1,9 @@
-import { Bell, Search, LogOut, Terminal, Users, Disc, Radio, Menu } from 'lucide-react';
+import { Search, LogOut, Terminal, Users, Disc, Radio, Menu, User as UserIcon } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import ThemeToggle from '../ThemeToggle';
+import NotificationsDropdown from '../NotificationsDropdown';
 import { AnimatePresence, motion } from 'motion/react';
 
 interface NavbarProps {
@@ -149,32 +150,44 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
           <div className="hidden sm:block">
             <ThemeToggle />
           </div>
-          <button className="relative p-2 text-white/20 hover:text-primary transition-all">
-            <Bell className="w-4 h-4" />
-            <span className="absolute top-0 right-0 w-1.5 h-1.5 bg-primary animate-ping" />
-          </button>
+          <NotificationsDropdown />
 
-          <div className="flex items-center gap-3 sm:gap-6 group sm:border-l sm:border-white/5 sm:pl-6 md:pl-8 h-10">
-            <div className="text-right hidden md:block">
-              <div className="text-[10px] font-black text-white italic leading-none tracking-widest uppercase">
+          <div className="flex items-center gap-3 sm:gap-5 group sm:border-l sm:border-white/5 sm:pl-4 md:pl-6 h-10">
+            <Link
+              to="/profile"
+              className="text-right hidden md:block hover:text-primary transition-colors"
+              title="View profile"
+            >
+              <div className="text-[10px] font-black text-white italic leading-none tracking-widest uppercase group-hover:text-primary transition-colors">
                 {user?.artistName || 'GENERIC_USER'}
               </div>
               <div className="text-[8px] text-white/20 font-black uppercase tracking-[0.2em] mt-1 italic">
-                VERIFIED_ARTIST
+                View Profile
               </div>
-            </div>
-            <div className="flex items-center gap-3 sm:gap-4">
-              <div className="w-8 h-8 manifest-card corner-marker p-0.5 border-white/20 shrink-0">
+            </Link>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <Link
+                to="/profile"
+                className="w-8 h-8 manifest-card corner-marker p-0.5 border-white/20 shrink-0 hover:border-primary transition-colors"
+                title="Profile"
+              >
                 <img
                   src={user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=SoundWave`}
-                  alt="AV"
+                  alt="Profile"
                   className="w-full h-full object-cover grayscale contrast-125"
                 />
-              </div>
+              </Link>
+              <Link
+                to="/profile"
+                className="md:hidden p-1.5 border border-white/5 hover:border-primary hover:text-primary text-white/40 transition-all"
+                title="Profile"
+              >
+                <UserIcon className="w-3 h-3" />
+              </Link>
               <button
                 onClick={handleLogout}
-                className="p-2 border border-white/5 hover:border-primary hover:text-primary text-white/20 transition-all"
-                title="TERMINATE_SESSION"
+                className="p-1.5 border border-white/5 hover:border-primary hover:text-primary text-white/40 transition-all"
+                title="Sign out"
               >
                 <LogOut className="w-3 h-3" />
               </button>

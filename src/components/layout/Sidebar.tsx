@@ -65,6 +65,15 @@ interface SidebarProps {
   onClose?: () => void;
 }
 
+const TOUR_TARGETS: Record<string, string | undefined> = {
+  '/campaigns': 'nav-campaigns',
+  '/anr': 'nav-anr',
+  '/influencer/missions': 'nav-missions',
+  '/influencer/earnings': 'nav-earnings',
+  '/dj/packs': 'nav-djpacks',
+  '/dj/feedback': 'nav-djfeedback',
+};
+
 export default function Sidebar({ open = false, onClose }: SidebarProps) {
   const location = useLocation();
   const { role } = useTheme();
@@ -86,7 +95,7 @@ export default function Sidebar({ open = false, onClose }: SidebarProps) {
       )}
     >
       {/* Logo + mobile close */}
-      <div className="px-5 py-4 border-b border-[var(--border-main)] shrink-0 flex items-center justify-between">
+      <div className="px-5 py-4 border-b border-[var(--border-main)] shrink-0 flex items-center justify-between" data-tour="sidebar-logo">
         <Link to="/dashboard" className="flex flex-col gap-1.5">
           <div className="flex items-center gap-2">
             <span className="text-lg font-black tracking-tight text-white leading-none font-mono italic uppercase">
@@ -112,6 +121,7 @@ export default function Sidebar({ open = false, onClose }: SidebarProps) {
         <div className="px-3 pt-3 pb-2 shrink-0">
           <Link
             to="/releases/new"
+            data-tour="new-release"
             className="flex items-center justify-between w-full bg-white text-black font-mono font-black uppercase text-[10px] tracking-widest px-4 py-2.5 hover:bg-primary hover:text-white transition-all group active:scale-95"
           >
             <span>NEW_RELEASE</span>
@@ -124,10 +134,12 @@ export default function Sidebar({ open = false, onClose }: SidebarProps) {
       <nav className="flex-1 overflow-y-auto custom-scrollbar min-h-0 py-2 overscroll-contain">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
+          const tourId = TOUR_TARGETS[item.path];
           return (
             <Link
               key={item.path}
               to={item.path}
+              data-tour={tourId}
               className={cn(
                 'flex items-center gap-3 px-5 md:px-5 py-2.5 transition-all group relative',
                 isActive

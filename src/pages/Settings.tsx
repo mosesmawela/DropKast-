@@ -1,17 +1,13 @@
-import { 
-  User, 
-  Bell, 
-  Shield, 
-  CreditCard, 
-  Globe, 
-  Database, 
-  Trash2, 
-  ChevronRight,
+import { useState } from 'react';
+import {
+  User,
+  Bell,
+  Shield,
+  CreditCard,
+  Globe,
+  Database,
   LogOut,
-  Moon,
-  Sun,
   Smartphone,
-  Plus,
   Palette,
   Zap,
   Cpu,
@@ -19,226 +15,405 @@ import {
   Minus,
   GlassWater,
   Camera,
-  Radio
+  Radio,
+  Sparkles,
+  Music,
+  Disc,
+  Plus,
+  Check,
 } from 'lucide-react';
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
+import { useNavigate } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { useTheme, VisualStyle } from '../context/ThemeContext';
 import { useAI } from '../context/AIContext';
+import { useTutorial } from '../context/TutorialContext';
+import { useAuth } from '../context/AuthContext';
 import Switch from '../components/ui/Switch';
 
 const styles: { id: VisualStyle; label: string; icon: any; desc: string }[] = [
-  { id: 'default', label: 'Technical', icon: Cpu, desc: 'Original industrial terminal aesthetics' },
-  { id: 'neumorphism', label: 'Neumorphism', icon: Smartphone, desc: 'Soft shadows and plastic surfaces' },
-  { id: 'material', label: 'Modern Material', icon: Box, desc: 'Clean shadows and flat cards' },
-  { id: 'brutalism', label: 'Neo-Brutalism', icon: Zap, desc: 'High contrast and thick borders' },
-  { id: 'skeuomorphism', label: 'Skeuomorphism', icon: Palette, desc: 'Real-world textures and depth' },
-  { id: 'minimalist', label: 'Deep Minimal', icon: Minus, desc: 'Zero distractions, absolute focus' },
-  { id: 'glassmorphism', label: 'Liquid Glass', icon: GlassWater, desc: 'Frosted surfaces and fluid motions' },
+  { id: 'default', label: 'Technical', icon: Cpu, desc: 'Industrial terminal aesthetic' },
+  { id: 'neumorphism', label: 'Neumorphism', icon: Smartphone, desc: 'Soft shadows, plastic surfaces' },
+  { id: 'material', label: 'Material', icon: Box, desc: 'Clean shadows and flat cards' },
+  { id: 'brutalism', label: 'Neo-Brutalism', icon: Zap, desc: 'High contrast, thick borders' },
+  { id: 'skeuomorphism', label: 'Skeuomorphic', icon: Palette, desc: 'Real-world textures and depth' },
+  { id: 'minimalist', label: 'Minimal', icon: Minus, desc: 'Zero distraction, absolute focus' },
+  { id: 'glassmorphism', label: 'Glass', icon: GlassWater, desc: 'Frosted surfaces, fluid motion' },
 ];
 
-export default function Settings() {
-  const { theme, visualStyle, vibe, role, toggleTheme, setVisualStyle, setVibe, setRole } = useTheme();
-  const { 
-    autoSendDJs, 
-    autoGenerateContent, 
-    autoOptimizeAds,
-    toggleAutoSendDJs,
-    toggleAutoGenerateContent,
-    toggleAutoOptimizeAds
-  } = useAI();
-  const [activeTab, setActiveTab] = useState('IDENTITY');
+const PRESET_VIBES = [
+  { id: 'TECHNICAL_ORANGE', name: 'Tech Orange', color: '#FF4D00' },
+  { id: 'LVRN_GREEN', name: 'LVRN Green', color: '#acec00' },
+  { id: 'NEON_PINK', name: 'Neon Pink', color: '#ff00ff' },
+  { id: 'CYBER_BLUE', name: 'Cyber Blue', color: '#00f2ff' },
+  { id: 'MONO_WHITE', name: 'Mono White', color: '#ffffff' },
+  { id: 'SUNSET_GOLD' as any, name: 'Sunset Gold', color: '#FFB627' },
+  { id: 'DEEP_VIOLET' as any, name: 'Deep Violet', color: '#8B5CF6' },
+  { id: 'ACID_LIME' as any, name: 'Acid Lime', color: '#84CC16' },
+  { id: 'CORAL_HEAT' as any, name: 'Coral Heat', color: '#FF5C7C' },
+  { id: 'ARCTIC_TEAL' as any, name: 'Arctic Teal', color: '#06B6D4' },
+];
 
-  const vibes = [
-    { id: 'TECHNICAL_ORANGE', name: 'TECH_ORANGE', color: '#FF4D00' },
-    { id: 'LVRN_GREEN', name: 'LVRN_GREEN', color: '#acec00' },
-    { id: 'NEON_PINK', name: 'NEON_PINK', color: '#ff00ff' },
-    { id: 'CYBER_BLUE', name: 'CYBER_BLUE', color: '#00f2ff' },
-    { id: 'MONO_WHITE', name: 'MONO_ARCHIVE', color: '#ffffff' }
-  ];
+const TABS = [
+  { id: 'IDENTITY', label: 'Identity', icon: User },
+  { id: 'APPEARANCE', label: 'Appearance', icon: Palette },
+  { id: 'AI', label: 'AI Engine', icon: Sparkles },
+  { id: 'TUTORIAL', label: 'Tutorial', icon: Zap },
+  { id: 'NOTIFICATIONS', label: 'Notifications', icon: Bell },
+  { id: 'SECURITY', label: 'Security', icon: Shield },
+  { id: 'BILLING', label: 'Billing', icon: CreditCard },
+  { id: 'GATEWAYS', label: 'Gateways', icon: Globe },
+  { id: 'DATA', label: 'Data', icon: Database },
+] as const;
+
+type TabId = (typeof TABS)[number]['id'];
+
+export default function Settings() {
+  const navigate = useNavigate();
+  const { theme, visualStyle, vibe, role, toggleTheme, setVisualStyle, setVibe, setRole } = useTheme();
+  const { autoSendDJs, autoGenerateContent, autoOptimizeAds, toggleAutoSendDJs, toggleAutoGenerateContent, toggleAutoOptimizeAds } = useAI();
+  const { enabled: tutorialEnabled, setEnabled: setTutorialEnabled, start: startTutorial } = useTutorial();
+  const { logout } = useAuth();
+
+  const [activeTab, setActiveTab] = useState<TabId>('IDENTITY');
+  const [customColor, setCustomColor] = useState('#FF4D00');
+
+  const applyCustomColor = () => {
+    document.documentElement.style.setProperty('--color-primary', customColor);
+    const rgb = hexToRgb(customColor);
+    if (rgb) document.documentElement.style.setProperty('--primary-raw', `${rgb.r}, ${rgb.g}, ${rgb.b}`);
+    localStorage.setItem('campaign-os-custom-color', customColor);
+  };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-16 pb-20 font-sans uppercase tracking-[0.05em]">
-      <header className="border-b border-white/10 pb-8 flex items-end justify-between">
+    <div className="space-y-6 pb-12">
+      <header className="flex items-end justify-between border-b border-[var(--border-main)] pb-5">
         <div>
-          <h1 className="text-5xl font-black tracking-tighter text-white italic">SYS_CONFIG</h1>
-          <p className="text-white/20 mt-2 text-[10px] font-bold lowercase italic tracking-widest">manage node identity, alert protocols, and security handshakes.</p>
+          <h1 className="text-2xl sm:text-3xl font-mono font-black tracking-tighter text-[var(--text-main)] italic uppercase">
+            Settings
+          </h1>
+          <p className="text-[var(--text-main)]/40 mt-1 text-xs">
+            Manage your identity, appearance, AI engine, and account.
+          </p>
         </div>
-        <div className="barcode-sim opacity-10" />
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
-        {/* Nav */}
-        <aside className="lg:col-span-1 space-y-[1px] bg-white/10 border border-white/10">
-          {[
-            { label: 'IDENTITY', icon: User, active: true },
-            { label: 'ALERTS', icon: Bell },
-            { label: 'V_SHIELD', icon: Shield },
-            { label: 'LEDGER_SUB', icon: CreditCard },
-            { label: 'GATEWAYS', icon: Globe },
-            { label: 'VAULT_STORE', icon: Database },
-          ].map((item) => (
-            <button
-              key={item.label}
-              className={cn(
-                "w-full flex items-center justify-between px-6 py-4 text-[10px] font-black transition-all bg-black italic tracking-widest",
-                item.active 
-                  ? "text-primary bg-primary/5" 
-                  : "text-white/20 hover:text-white hover:bg-white/[0.02]"
-              )}
-            >
-              <div className="flex items-center gap-4">
-                <item.icon className="w-3 h-3" />
-                {item.label}
-              </div>
-              {item.active && <div className="w-1.5 h-1.5 bg-primary" />}
-            </button>
-          ))}
-          <div className="h-10 bg-black" />
-          <button className="w-full flex items-center gap-4 px-6 py-4 text-[10px] font-black text-red-900 hover:bg-red-900/5 transition-all bg-black italic tracking-widest border-t border-white/10">
-             <LogOut className="w-3 h-3" />
-             TERMINATE_SESSION
+      <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr] gap-6">
+        {/* Tab nav */}
+        <aside className="space-y-1">
+          {TABS.map((t) => {
+            const Icon = t.icon;
+            const active = activeTab === t.id;
+            return (
+              <button
+                key={t.id}
+                onClick={() => setActiveTab(t.id)}
+                className={cn(
+                  'w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-mono font-black uppercase italic tracking-widest transition-all',
+                  active
+                    ? 'bg-primary/10 text-primary border-l-2 border-primary'
+                    : 'text-[var(--text-main)]/40 hover:text-[var(--text-main)] hover:bg-white/[0.02] border-l-2 border-transparent',
+                )}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                {t.label}
+              </button>
+            );
+          })}
+          <button
+            onClick={() => {
+              logout();
+              navigate('/login');
+            }}
+            className="w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-mono font-black uppercase italic tracking-widest text-red-500/60 hover:text-red-500 hover:bg-red-500/5 transition-all border-l-2 border-transparent mt-4"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            Sign Out
           </button>
         </aside>
 
-        {/* Content */}
-        <div className="lg:col-span-3 space-y-16">
-           <div className="manifest-card corner-marker p-10 bg-black">
-              <h2 className="text-xl font-black text-white italic mb-10 border-b border-white/5 pb-6">IDENTITY_PROTOCOL</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                 {[
-                   { id: 'ARTIST', label: 'ARTIST', icon: Cpu },
-                   { id: 'INFLUENCER', label: 'INFLUENCER', icon: Camera },
-                   { id: 'DJ', label: 'DJ_NODE', icon: Radio },
-                 ].map((r) => (
-                   <button
-                     key={r.id}
-                     onClick={() => setRole(r.id as any)}
-                     className={cn(
-                       "flex flex-col items-center gap-3 p-6 border transition-all",
-                       role === r.id ? "border-primary bg-primary/5 ring-1 ring-primary/20" : "border-white/5 bg-black hover:border-white/10"
-                     )}
-                   >
-                     <div className={cn(
-                       "w-12 h-12 border flex items-center justify-center transition-all",
-                       role === r.id ? "border-primary text-primary" : "border-white/10 text-white/20"
-                     )}>
-                        <r.icon className="w-5 h-5" />
-                     </div>
-                     <span className={cn(
-                       "text-[10px] font-black italic tracking-widest",
-                       role === r.id ? "text-white" : "text-white/20"
-                     )}>{r.label}</span>
-                   </button>
-                 ))}
+        {/* Tab content */}
+        <motion.main
+          key={activeTab}
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.18 }}
+          className="space-y-5"
+        >
+          {activeTab === 'IDENTITY' && (
+            <Card title="Identity Protocol" desc="Switch the active portal — your dashboard, sidebar, and tools update accordingly.">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {[
+                  { id: 'ARTIST', label: 'Artist Core', icon: Music, desc: 'Make the music' },
+                  { id: 'INFLUENCER', label: 'Creator Relay', icon: Camera, desc: 'Make content' },
+                  { id: 'DJ', label: 'Vibe Selecta', icon: Disc, desc: 'Move the floor' },
+                ].map((r) => {
+                  const Icon = r.icon;
+                  const active = role === r.id;
+                  return (
+                    <button
+                      key={r.id}
+                      onClick={() => setRole(r.id as any)}
+                      className={cn(
+                        'flex flex-col items-start gap-2 p-4 border transition-all text-left',
+                        active
+                          ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
+                          : 'border-[var(--border-main)] hover:border-white/20',
+                      )}
+                    >
+                      <Icon className={cn('w-4 h-4', active ? 'text-primary' : 'text-[var(--text-main)]/40')} />
+                      <div className="text-xs font-mono font-black italic uppercase tracking-widest">{r.label}</div>
+                      <div className="text-[9px] font-mono text-[var(--text-main)]/40 uppercase tracking-widest italic">
+                        {r.desc}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
-           </div>
+            </Card>
+          )}
 
-           <div className="manifest-card corner-marker p-10 bg-black">
-              <h2 className="text-xl font-black text-white italic mb-10 border-b border-white/5 pb-6">COLOR_MANIFEST</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
-                 {vibes.map((v) => (
-                   <button
-                     key={v.id}
-                     onClick={() => setVibe(v.id as any)}
-                     className={cn(
-                       "flex flex-col items-center gap-3 p-4 border transition-all",
-                       vibe === v.id ? "border-primary bg-primary/5 ring-1 ring-primary/20" : "border-white/5 bg-black hover:border-white/10"
-                     )}
-                   >
-                     <div 
-                       className="w-10 h-10 border border-white/10 flex items-center justify-center p-1"
-                     >
-                        <div className="w-full h-full" style={{ backgroundColor: v.color }} />
-                     </div>
-                     <span className={cn(
-                       "text-[8px] font-black italic tracking-widest",
-                       vibe === v.id ? "text-primary" : "text-white/20"
-                     )}>{v.name}</span>
-                   </button>
-                 ))}
-              </div>
-           </div>
+          {activeTab === 'APPEARANCE' && (
+            <>
+              <Card title="Theme" desc="Light or dark mode. Affects the whole app.">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-mono font-black italic uppercase tracking-widest text-[var(--text-main)]">
+                      Dark Mode
+                    </p>
+                    <p className="text-[10px] text-[var(--text-main)]/40 mt-1">Optimized for studio sessions.</p>
+                  </div>
+                  <Switch checked={theme === 'dark'} onChange={toggleTheme} />
+                </div>
+              </Card>
 
-           <div className="manifest-card corner-marker p-10 bg-black">
-              <h2 className="text-xl font-black text-white italic mb-10 border-b border-white/5 pb-6">VISUAL_ENGINES</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                 {styles.map((style) => (
-                   <button
-                     key={style.id}
-                     onClick={() => setVisualStyle(style.id)}
-                     className={cn(
-                       "p-6 border text-left transition-all group",
-                       visualStyle === style.id ? "border-primary bg-primary/5 shadow-[0_0_30px_rgba(255,77,0,0.1)]" : "border-white/5 bg-black hover:border-white/20"
-                     )}
-                   >
-                     <div className="flex items-center justify-between mb-4">
-                       <style.icon className={cn("w-5 h-5", visualStyle === style.id ? "text-primary" : "text-white/20 group-hover:text-white/40")} />
-                       {visualStyle === style.id && <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />}
-                     </div>
-                     <h3 className="text-[11px] font-black text-white italic mb-1 tracking-widest">{style.label}</h3>
-                     <p className="text-[8px] text-white/20 font-bold lowercase tracking-widest italic">{style.desc}</p>
-                   </button>
-                 ))}
-              </div>
-           </div>
+              <Card title="Accent Color — Presets" desc="The primary color used across buttons, charts, and highlights.">
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                  {PRESET_VIBES.map((v) => {
+                    const active = vibe === v.id;
+                    return (
+                      <button
+                        key={v.id}
+                        onClick={() => setVibe(v.id as any)}
+                        className={cn(
+                          'flex flex-col items-center gap-2 p-3 border transition-all',
+                          active
+                            ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
+                            : 'border-[var(--border-main)] hover:border-white/20',
+                        )}
+                      >
+                        <div
+                          className="w-8 h-8 rounded-sm relative overflow-hidden"
+                          style={{ background: `linear-gradient(135deg, ${v.color}, ${v.color}99)` }}
+                        >
+                          {active && (
+                            <Check className="absolute inset-0 m-auto w-4 h-4 text-black mix-blend-difference" />
+                          )}
+                        </div>
+                        <span className={cn('text-[9px] font-mono font-black uppercase tracking-widest italic', active ? 'text-primary' : 'text-[var(--text-main)]/50')}>
+                          {v.name}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </Card>
 
-           <div className="manifest-card corner-marker p-10 bg-black">
-              <h2 className="text-xl font-black text-white italic mb-10 border-b border-white/5 pb-6">TELEMETRY_PREFERENCES</h2>
-              <div className="space-y-10">
-                 <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-black text-white italic tracking-widest uppercase">CHROMA_DARK_MODE</p>
-                      <p className="text-[9px] text-white/20 mt-1 font-bold lowercase italic tracking-widest">optimize luminosity for extended manifest editing sessions.</p>
-                    </div>
-                    <Switch 
-                      checked={theme === 'dark'} 
-                      onChange={toggleTheme} 
+              <Card title="Accent Color — Custom Hex" desc="Pick any color. Applies immediately and persists across sessions.">
+                <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-end">
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="color"
+                      value={customColor}
+                      onChange={(e) => setCustomColor(e.target.value)}
+                      className="w-12 h-12 rounded-sm cursor-pointer border border-[var(--border-main)] bg-transparent"
                     />
-                 </div>
-                 
-                 <div className="h-px dotted-line opacity-10"></div>
-
-                 <div className="space-y-8">
-                    <div className="flex items-center justify-between">
-                       <div>
-                         <p className="text-[11px] font-black text-white italic tracking-widest uppercase">AUTO_SEND_DJS</p>
-                         <p className="text-[9px] text-white/20 mt-1 font-bold lowercase italic tracking-widest">Automated distribution to verified node clusters</p>
-                       </div>
-                       <Switch checked={autoSendDJs} onChange={toggleAutoSendDJs} />
+                    <div>
+                      <div className="text-[9px] font-mono font-black uppercase tracking-widest italic text-[var(--text-main)]/40 mb-1">
+                        Custom Color
+                      </div>
+                      <input
+                        type="text"
+                        value={customColor}
+                        onChange={(e) => /^#[0-9a-fA-F]*$/.test(e.target.value) && setCustomColor(e.target.value)}
+                        className="bg-transparent border border-[var(--border-main)] focus:border-primary outline-none px-2 py-1 text-xs font-mono uppercase tracking-widest w-32"
+                      />
                     </div>
+                  </label>
+                  <button
+                    onClick={applyCustomColor}
+                    className="h-10 px-4 bg-primary text-white text-[10px] font-mono font-black uppercase italic tracking-widest hover:scale-[1.03] active:scale-95 transition-all"
+                  >
+                    Apply Custom
+                  </button>
+                </div>
+              </Card>
 
-                    <div className="flex items-center justify-between">
-                       <div>
-                         <p className="text-[11px] font-black text-white italic tracking-widest uppercase">AUTO_CONTENT_GEN</p>
-                         <p className="text-[9px] text-white/20 mt-1 font-bold lowercase italic tracking-widest">Synthetic AI visuals for all releases</p>
-                       </div>
-                       <Switch checked={autoGenerateContent} onChange={toggleAutoGenerateContent} />
-                    </div>
+              <Card title="Visual Style" desc="The structural language of the UI. Each style re-skins cards, buttons, and surfaces.">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {styles.map((s) => {
+                    const Icon = s.icon;
+                    const active = visualStyle === s.id;
+                    return (
+                      <button
+                        key={s.id}
+                        onClick={() => setVisualStyle(s.id)}
+                        className={cn(
+                          'p-3 border text-left transition-all',
+                          active
+                            ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
+                            : 'border-[var(--border-main)] hover:border-white/20',
+                        )}
+                      >
+                        <div className="flex items-center justify-between mb-1.5">
+                          <Icon className={cn('w-4 h-4', active ? 'text-primary' : 'text-[var(--text-main)]/40')} />
+                          {active && <Check className="w-3.5 h-3.5 text-primary" />}
+                        </div>
+                        <div className="text-[11px] font-mono font-black italic uppercase tracking-widest text-[var(--text-main)]">
+                          {s.label}
+                        </div>
+                        <div className="text-[9px] font-mono text-[var(--text-main)]/40 uppercase tracking-widest italic mt-0.5">
+                          {s.desc}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </Card>
+            </>
+          )}
 
-                    <div className="flex items-center justify-between">
-                       <div>
-                         <p className="text-[11px] font-black text-white italic tracking-widest uppercase">AUTO_AD_OPTIMIZE</p>
-                         <p className="text-[9px] text-white/20 mt-1 font-bold lowercase italic tracking-widest">Algorithmic budget management across platforms</p>
-                       </div>
-                       <Switch checked={autoOptimizeAds} onChange={toggleAutoOptimizeAds} />
-                    </div>
-                 </div>
+          {activeTab === 'AI' && (
+            <Card title="AI Automation" desc="Permissions for the on-board AI assistant.">
+              <ToggleRow label="Auto-send to DJs" desc="Automated distribution to verified DJ clusters" checked={autoSendDJs} onChange={toggleAutoSendDJs} />
+              <ToggleRow label="Auto content generation" desc="Generate covers, viral ideas, captions on each new release" checked={autoGenerateContent} onChange={toggleAutoGenerateContent} />
+              <ToggleRow label="Auto ad optimization" desc="Algorithmic budget management across paid platforms" checked={autoOptimizeAds} onChange={toggleAutoOptimizeAds} />
+            </Card>
+          )}
+
+          {activeTab === 'TUTORIAL' && (
+            <Card title="Tutorial Tour" desc="Spotlight walkthrough of the main features.">
+              <ToggleRow
+                label="Tutorial enabled"
+                desc="Show the onboarding tour on first dashboard load. Disable to never see it again."
+                checked={tutorialEnabled}
+                onChange={() => setTutorialEnabled(!tutorialEnabled)}
+              />
+              <div className="flex items-center justify-between pt-4 border-t border-[var(--border-main)]">
+                <div>
+                  <p className="text-xs font-mono font-black italic uppercase tracking-widest text-[var(--text-main)]">
+                    Replay tour
+                  </p>
+                  <p className="text-[10px] text-[var(--text-main)]/40 mt-1">Step through the tutorial again right now.</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setTutorialEnabled(true);
+                    localStorage.removeItem('dropkast_tutorial_seen');
+                    startTutorial();
+                  }}
+                  className="h-9 px-4 bg-primary text-white text-[10px] font-mono font-black uppercase italic tracking-widest hover:scale-[1.03] active:scale-95 transition-all"
+                >
+                  Start tour
+                </button>
               </div>
-           </div>
+            </Card>
+          )}
 
-           <div className="manifest-card p-10 bg-red-900/5 border border-red-900/10 flex flex-col sm:flex-row sm:items-center justify-between gap-10">
-              <div>
-                <p className="text-[11px] font-black text-red-900 italic tracking-[0.3em] mb-2 uppercase">TERMINATION_PROTOCOL</p>
-                <p className="text-[10px] text-white/20 max-w-sm font-bold lowercase italic leading-relaxed">permanently wipe artist directory from global grid. this operation is irreversible. 100% loss of telemetry.</p>
+          {activeTab === 'NOTIFICATIONS' && (
+            <Card title="Notification Preferences" desc="Control what shows in the bell inbox and as toasts.">
+              <p className="text-xs text-[var(--text-main)]/40 italic">
+                Notifications are persistent (kept in your inbox until cleared) and ephemeral (toasts that auto-dismiss after 5s). Granular per-event settings ship in the next update.
+              </p>
+            </Card>
+          )}
+
+          {activeTab === 'SECURITY' && (
+            <Card title="Security" desc="Account-level security. More options arrive when Supabase Auth is fully configured.">
+              <p className="text-xs text-[var(--text-main)]/40 italic">
+                Currently using {import.meta.env.VITE_SUPABASE_URL ? 'Supabase Auth' : 'mock localStorage auth (demo mode)'}.
+              </p>
+            </Card>
+          )}
+
+          {activeTab === 'BILLING' && (
+            <Card title="Billing" desc="Subscriptions, invoices, and AI usage budget.">
+              <p className="text-xs text-[var(--text-main)]/40 italic">
+                Stripe integration ships in Phase 3. AI usage budget defaults to $1/day per user — override via the
+                <code className="font-mono mx-1 text-primary">AI_DAILY_BUDGET_CENTS</code> env var.
+              </p>
+            </Card>
+          )}
+
+          {activeTab === 'GATEWAYS' && (
+            <Card title="Distribution Gateways" desc="Which DSPs you publish to.">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {['Spotify', 'Apple Music', 'YouTube Music', 'Tidal', 'SoundCloud', 'Amazon Music'].map((p) => (
+                  <div key={p} className="flex items-center gap-2 p-3 border border-[var(--border-main)] bg-[var(--card-bg)]">
+                    <Check className="w-3 h-3 text-green-500" />
+                    <span className="text-[10px] font-mono font-black uppercase tracking-widest italic text-[var(--text-main)]/80">
+                      {p}
+                    </span>
+                  </div>
+                ))}
               </div>
-              <button className="h-12 px-8 border border-red-900 text-red-900 font-black text-[10px] italic tracking-widest hover:bg-red-900 hover:text-white transition-all uppercase">
-                INIT_WIPE_SEQUENCE
-              </button>
-           </div>
-        </div>
+            </Card>
+          )}
+
+          {activeTab === 'DATA' && (
+            <>
+              <Card title="Export Data" desc="Download a JSON archive of your releases, campaigns, and analytics.">
+                <button className="h-10 px-4 border border-[var(--border-main)] hover:border-primary hover:text-primary text-[var(--text-main)]/60 text-[10px] font-mono font-black uppercase italic tracking-widest transition-all">
+                  Request Export
+                </button>
+              </Card>
+              <Card title="Danger Zone" desc="Permanent and irreversible." danger>
+                <button className="h-10 px-4 border border-red-500/50 text-red-500 text-[10px] font-mono font-black uppercase italic tracking-widest hover:bg-red-500 hover:text-white transition-all">
+                  Delete Account
+                </button>
+              </Card>
+            </>
+          )}
+        </motion.main>
       </div>
     </div>
   );
+}
+
+function Card({ title, desc, children, danger }: { title: string; desc?: string; children: React.ReactNode; danger?: boolean }) {
+  return (
+    <section
+      className={cn(
+        'manifest-card border p-5 bg-[var(--card-bg)]',
+        danger ? 'border-red-500/20' : 'border-[var(--border-main)]',
+      )}
+    >
+      <div className="mb-4">
+        <h2 className={cn('text-xs font-mono font-black uppercase tracking-[0.3em] italic', danger ? 'text-red-500' : 'text-primary')}>
+          {title}
+        </h2>
+        {desc && <p className="text-[10px] text-[var(--text-main)]/40 mt-1 italic">{desc}</p>}
+      </div>
+      <div className="space-y-4">{children}</div>
+    </section>
+  );
+}
+
+function ToggleRow({ label, desc, checked, onChange }: { label: string; desc: string; checked: boolean; onChange: () => void }) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <div className="min-w-0">
+        <p className="text-xs font-mono font-black italic uppercase tracking-widest text-[var(--text-main)]">{label}</p>
+        <p className="text-[10px] text-[var(--text-main)]/40 mt-0.5">{desc}</p>
+      </div>
+      <Switch checked={checked} onChange={onChange} />
+    </div>
+  );
+}
+
+function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result
+    ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) }
+    : null;
 }

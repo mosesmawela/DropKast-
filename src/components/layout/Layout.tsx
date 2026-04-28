@@ -6,15 +6,25 @@ import UnicornBackground from '../animations/UnicornBackground';
 import LiquidBackground from './LiquidBackground';
 import GrowMySongButton from './AIActionButton';
 import AIAssistant from '../AIAssistant';
+import { useTutorial } from '../../context/TutorialContext';
 
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
+  const { maybeAutoStart } = useTutorial();
 
   // Close sidebar drawer on navigation (mobile)
   useEffect(() => {
     setSidebarOpen(false);
   }, [location.pathname]);
+
+  // Auto-start tutorial on first dashboard load (after layout mounts so
+  // the data-tour targets are present in the DOM).
+  useEffect(() => {
+    if (location.pathname === '/dashboard') {
+      maybeAutoStart();
+    }
+  }, [location.pathname, maybeAutoStart]);
 
   return (
     <div className="flex h-screen bg-[var(--bg-main)] overflow-hidden relative transition-colors duration-1000">

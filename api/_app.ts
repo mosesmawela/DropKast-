@@ -24,6 +24,7 @@ import { handleAiChat } from "./_ai-chat.js";
 import { generateIsrc, generateUpc, isPlaceholderRegistrant } from "./_codes.js";
 import { validateAudio, validateCoverArt } from "./_audio-validate.js";
 import { assertTransition, isScheduledForLater, ReleaseTransitionError, type ReleaseStatus } from "./_release-lifecycle.js";
+import { pushEvent, listEventsFor, markRead as markInboxRead } from "./_inbox.js";
 
 let uploadMiddleware: any = null;
 
@@ -414,6 +415,13 @@ export function createApiApp() {
         timestamp: new Date(),
       };
       await store.insertInfluencerCampaign(send);
+      pushEvent({
+        receiverId: infId,
+        type: 'info',
+        title: 'NEW_MISSION',
+        message: `An artist has invited you to campaign ${campaignId}.`,
+        href: '/influencer/missions',
+      });
       sends.push(send);
     }
     res.json({ success: true, sends });
@@ -422,7 +430,26 @@ export function createApiApp() {
   app.post("/api/djs/send", async (req, res) => {
     const log = { id: Date.now().toString(), ...req.body, status: 'sent', timestamp: new Date() };
     await store.insertDjSend(log);
+    if (req.body?.djId) {
+      pushEvent({
+        receiverId: String(req.body.djId),
+        type: 'info',
+        title: 'PACK_RECEIVED',
+        message: `New DJ pack from ${req.body.artistName ?? 'an artist'} ready for review.`,
+        href: '/dj/packs',
+      });
+    }
     res.json({ success: true, message: "Pack transmitted to DJ terminals", log });
+  });
+
+  // --- Cross-portal inbox APIs ---
+  app.get("/api/inbox/:userId", (req, res) => {
+    res.json(listEventsFor(req.params.userId));
+  });
+
+  app.post("/api/inbox/:id/read", (req, res) => {
+    const ok = markInboxRead(req.params.id);
+    res.json({ ok });
   });
 
   app.post("/api/splits", validate(splitCreateSchema), async (req, res) => {
