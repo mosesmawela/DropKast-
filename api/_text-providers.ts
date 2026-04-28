@@ -57,7 +57,7 @@ const CONFIG: Record<TextProviderId, ProviderConfig> = {
     name: 'OpenRouter',
     envVar: 'OPENROUTER_API_KEY',
     baseUrl: 'https://openrouter.ai/api/v1',
-    defaultModel: 'deepseek/deepseek-r1:free',
+    defaultModel: 'meta-llama/llama-3.3-70b-instruct:free',
   },
 };
 
