@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { 
   Target, 
   Plus, 
@@ -40,6 +40,8 @@ export default function Campaigns() {
       notify('error', 'CAMPAIGN_TERMINATED', `Mission ${id} has been wiped from the hub.`);
     }
   };
+
+  const searchId = React.useId();
 
   return (
     <div className="space-y-12 max-w-7xl mx-auto py-8">
@@ -91,8 +93,10 @@ export default function Campaigns() {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-6 p-6">
         <div className="flex items-center gap-4">
           <div className="relative">
+            <label htmlFor={searchId} className="sr-only">Search campaigns</label>
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
             <input 
+              id={searchId}
               type="text" 
               placeholder="Search campaigns..." 
               value={searchQuery}
@@ -154,6 +158,7 @@ export default function Campaigns() {
                       <button 
                         onClick={() => handleDelete(camp.id, camp.title)}
                         className="opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:text-red-500"
+                        aria-label={`Terminate campaign ${camp.title}`}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>

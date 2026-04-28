@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState, useId } from 'react';
 import {
   User,
   Bell,
@@ -70,6 +70,7 @@ type TabId = (typeof TABS)[number]['id'];
 
 export default function Settings() {
   const navigate = useNavigate();
+  const customColorId = useId();
   const { theme, visualStyle, vibe, role, toggleTheme, setVisualStyle, setVibe, setRole } = useTheme();
   const { autoSendDJs, autoGenerateContent, autoOptimizeAds, toggleAutoSendDJs, toggleAutoGenerateContent, toggleAutoOptimizeAds } = useAI();
   const { enabled: tutorialEnabled, setEnabled: setTutorialEnabled, start: startTutorial } = useTutorial();
@@ -100,16 +101,20 @@ export default function Settings() {
 
       <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr] gap-6">
         {/* Tab nav */}
-        <aside className="space-y-1">
+        <aside className="space-y-1" role="tablist" aria-orientation="vertical">
           {TABS.map((t) => {
             const Icon = t.icon;
             const active = activeTab === t.id;
             return (
               <button
                 key={t.id}
+                role="tab"
+                aria-selected={active}
+                aria-controls={`panel-${t.id}`}
+                id={`tab-${t.id}`}
                 onClick={() => setActiveTab(t.id)}
                 className={cn(
-                  'w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-mono font-black uppercase italic tracking-widest transition-all',
+                  'w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-mono font-black uppercase italic tracking-widest transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none focus-visible:z-10',
                   active
                     ? 'bg-primary/10 text-primary border-l-2 border-primary'
                     : 'text-[var(--text-main)]/40 hover:text-[var(--text-main)] hover:bg-white/[0.02] border-l-2 border-transparent',
@@ -135,6 +140,9 @@ export default function Settings() {
         {/* Tab content */}
         <motion.main
           key={activeTab}
+          role="tabpanel"
+          id={`panel-${activeTab}`}
+          aria-labelledby={`tab-${activeTab}`}
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.18 }}
@@ -142,7 +150,7 @@ export default function Settings() {
         >
           {activeTab === 'IDENTITY' && (
             <Card title="Identity Protocol" desc="Switch the active portal — your dashboard, sidebar, and tools update accordingly.">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3" role="radiogroup" aria-label="Identity Portal">
                 {[
                   { id: 'ARTIST', label: 'Artist Core', icon: Music, desc: 'Make the music' },
                   { id: 'INFLUENCER', label: 'Creator Relay', icon: Camera, desc: 'Make content' },
@@ -153,9 +161,11 @@ export default function Settings() {
                   return (
                     <button
                       key={r.id}
+                      role="radio"
+                      aria-checked={active}
                       onClick={() => setRole(r.id as any)}
                       className={cn(
-                        'flex flex-col items-start gap-2 p-4 border transition-all text-left',
+                        'flex flex-col items-start gap-2 p-4 border transition-all text-left focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none',
                         active
                           ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
                           : 'border-[var(--border-main)] hover:border-white/20',
@@ -188,15 +198,18 @@ export default function Settings() {
               </Card>
 
               <Card title="Accent Color — Presets" desc="The primary color used across buttons, charts, and highlights.">
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2" role="radiogroup" aria-label="Accent Color Preset">
                   {PRESET_VIBES.map((v) => {
                     const active = vibe === v.id;
                     return (
                       <button
                         key={v.id}
+                        role="radio"
+                        aria-checked={active}
+                        aria-label={v.name}
                         onClick={() => setVibe(v.id as any)}
                         className={cn(
-                          'flex flex-col items-center gap-2 p-3 border transition-all',
+                          'flex flex-col items-center gap-2 p-3 border transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none',
                           active
                             ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
                             : 'border-[var(--border-main)] hover:border-white/20',
@@ -221,25 +234,33 @@ export default function Settings() {
 
               <Card title="Accent Color — Custom Hex" desc="Pick any color. Applies immediately and persists across sessions.">
                 <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-end">
-                  <label className="flex items-center gap-3 cursor-pointer">
-                    <input
-                      type="color"
-                      value={customColor}
-                      onChange={(e) => setCustomColor(e.target.value)}
-                      className="w-12 h-12 rounded-sm cursor-pointer border border-[var(--border-main)] bg-transparent"
-                    />
-                    <div>
-                      <div className="text-[9px] font-mono font-black uppercase tracking-widest italic text-[var(--text-main)]/40 mb-1">
-                        Custom Color
-                      </div>
+                  <div className="flex items-center gap-3">
+                    <label htmlFor={`${customColorId}-picker`} className="cursor-pointer">
                       <input
+                        id={`${customColorId}-picker`}
+                        type="color"
+                        value={customColor}
+                        onChange={(e) => setCustomColor(e.target.value)}
+                        className="w-12 h-12 rounded-sm cursor-pointer border border-[var(--border-main)] bg-transparent"
+                        aria-label="Custom color picker"
+                      />
+                    </label>
+                    <div>
+                      <label
+                        htmlFor={customColorId}
+                        className="block text-[9px] font-mono font-black uppercase tracking-widest italic text-[var(--text-main)]/40 mb-1"
+                      >
+                        Custom Color Hex
+                      </label>
+                      <input
+                        id={customColorId}
                         type="text"
                         value={customColor}
                         onChange={(e) => /^#[0-9a-fA-F]*$/.test(e.target.value) && setCustomColor(e.target.value)}
-                        className="bg-transparent border border-[var(--border-main)] focus:border-primary outline-none px-2 py-1 text-xs font-mono uppercase tracking-widest w-32"
+                        className="bg-transparent border border-[var(--border-main)] focus:border-primary outline-none px-2 py-1 text-xs font-mono uppercase tracking-widest w-32 focus-visible:ring-1 focus-visible:ring-primary"
                       />
                     </div>
-                  </label>
+                  </div>
                   <button
                     onClick={applyCustomColor}
                     className="h-10 px-4 bg-primary text-white text-[10px] font-mono font-black uppercase italic tracking-widest hover:scale-[1.03] active:scale-95 transition-all"
@@ -250,16 +271,18 @@ export default function Settings() {
               </Card>
 
               <Card title="Visual Style" desc="The structural language of the UI. Each style re-skins cards, buttons, and surfaces.">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2" role="radiogroup" aria-label="Visual Style">
                   {styles.map((s) => {
                     const Icon = s.icon;
                     const active = visualStyle === s.id;
                     return (
                       <button
                         key={s.id}
+                        role="radio"
+                        aria-checked={active}
                         onClick={() => setVisualStyle(s.id)}
                         className={cn(
-                          'p-3 border text-left transition-all',
+                          'p-3 border text-left transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none',
                           active
                             ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
                             : 'border-[var(--border-main)] hover:border-white/20',

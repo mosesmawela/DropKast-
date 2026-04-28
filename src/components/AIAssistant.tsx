@@ -371,7 +371,9 @@ export default function AIAssistant() {
       <button
         data-tour="ai-assistant"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-14 h-14 sm:w-16 sm:h-16 bg-white text-black hover:bg-primary hover:text-white shadow-[0_0_50px_rgba(255,102,0,0.3)] transition-all active:scale-90 flex items-center justify-center relative group"
+        aria-label={isOpen ? "Close AI Assistant" : "Open AI Assistant"}
+        aria-expanded={isOpen}
+        className="w-14 h-14 sm:w-16 sm:h-16 bg-white text-black hover:bg-primary hover:text-white shadow-[0_0_50px_rgba(255,102,0,0.3)] transition-all active:scale-90 flex items-center justify-center relative group focus-visible:ring-4 focus-visible:ring-primary focus-visible:outline-none"
       >
         <Zap className={cn('w-6 h-6 transition-transform duration-500', isOpen ? 'rotate-180' : 'group-hover:scale-125')} />
         {!isOpen && <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full animate-ping" />}

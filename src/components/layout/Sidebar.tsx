@@ -144,8 +144,9 @@ export default function Sidebar({ open = false, onClose }: SidebarProps) {
               key={item.path}
               to={item.path}
               data-tour={tourId}
+              aria-current={isActive ? 'page' : undefined}
               className={cn(
-                'flex items-center gap-3 px-5 md:px-5 py-2.5 transition-all group relative',
+                'flex items-center gap-3 px-5 md:px-5 py-2.5 transition-all group relative outline-none focus-visible:bg-white/5',
                 isActive
                   ? 'bg-primary/5 text-primary'
                   : 'text-[var(--text-main)]/40 hover:bg-[var(--text-main)]/[0.02] hover:text-[var(--text-main)]',

@@ -25,10 +25,12 @@ export default function ThemeToggle() {
         <button
           onClick={() => setShowDropdown(!showDropdown)}
           className={cn(
-            "w-10 h-10 flex items-center justify-center transition-all hover:bg-white/5 border-r border-white/5 group",
+            "w-10 h-10 flex items-center justify-center transition-all hover:bg-white/5 border-r border-white/5 group outline-none focus-visible:bg-white/10",
             showDropdown && "bg-primary text-white"
           )}
           aria-label="Change Visual Style"
+          aria-haspopup="true"
+          aria-expanded={showDropdown}
         >
           <Palette className={cn("w-4 h-4 transition-transform", showDropdown ? "scale-110" : "text-white/40 group-hover:text-white")} />
         </button>
@@ -36,8 +38,8 @@ export default function ThemeToggle() {
         {/* Dark/Light Toggle */}
         <button
           onClick={toggleTheme}
-          className="w-10 h-10 flex items-center justify-center hover:bg-white/5 transition-all group"
-          aria-label="Toggle Mode"
+          className="w-10 h-10 flex items-center justify-center hover:bg-white/5 transition-all group outline-none focus-visible:bg-white/10"
+          aria-label={theme === 'dark' ? "Switch to light mode" : "Switch to dark mode"}
         >
           <AnimatePresence mode="wait">
             {theme === 'dark' ? (
@@ -85,7 +87,7 @@ export default function ThemeToggle() {
               <div className="p-2 border-b border-white/5 bg-white/5">
                 <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-white/40 px-2">Visual Engine</span>
               </div>
-              <div className="p-1">
+              <div className="p-1" role="menu">
                 {styles.map((style) => (
                   <button
                     key={style.id}
@@ -93,8 +95,10 @@ export default function ThemeToggle() {
                       setVisualStyle(style.id);
                       setShowDropdown(false);
                     }}
+                    role="menuitemradio"
+                    aria-checked={visualStyle === style.id}
                     className={cn(
-                      "w-full px-3 py-2 flex items-center gap-3 transition-all hover:bg-white/5 group",
+                      "w-full px-3 py-2 flex items-center gap-3 transition-all hover:bg-white/5 group outline-none focus-visible:bg-white/10",
                       visualStyle === style.id ? "text-primary" : "text-white/60 hover:text-white"
                     )}
                   >

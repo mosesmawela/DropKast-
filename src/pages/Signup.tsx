@@ -8,6 +8,11 @@ export default function Signup() {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const aliasId = React.useId();
+  const emailId = React.useId();
+  const countryId = React.useId();
+  const passwordId = React.useId();
+  const confirmPasswordId = React.useId();
   const [formData, setFormData] = useState({
     artistName: '',
     email: '',
@@ -59,10 +64,16 @@ export default function Signup() {
 
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-10">
             <div className="space-y-3 md:col-span-2">
-              <label className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic">INPUT::ALIAS_ID</label>
+              <label
+                htmlFor={aliasId}
+                className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic cursor-pointer"
+              >
+                INPUT::ALIAS_ID
+              </label>
               <div className="relative group">
                 <User className="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-3 text-white/20 group-focus-within:text-white transition-colors" />
                 <input 
+                  id={aliasId}
                   type="text" 
                   required
                   value={formData.artistName}
@@ -74,10 +85,16 @@ export default function Signup() {
             </div>
 
             <div className="space-y-3">
-              <label className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic">INPUT::COMM_NODE</label>
+              <label
+                htmlFor={emailId}
+                className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic cursor-pointer"
+              >
+                INPUT::COMM_NODE
+              </label>
               <div className="relative group">
                 <Mail className="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-3 text-white/20 group-focus-within:text-white transition-colors" />
                 <input 
+                  id={emailId}
                   type="email" 
                   required
                   value={formData.email}
@@ -89,10 +106,16 @@ export default function Signup() {
             </div>
 
             <div className="space-y-3">
-              <label className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic">INPUT::JURISDICTION</label>
+              <label
+                htmlFor={countryId}
+                className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic cursor-pointer"
+              >
+                INPUT::JURISDICTION
+              </label>
               <div className="relative group">
                 <Globe className="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-3 text-white/20 group-focus-within:text-white transition-colors" />
                 <select 
+                  id={countryId}
                   value={formData.country}
                   onChange={e => setFormData({ ...formData, country: e.target.value })}
                   className="w-full bg-transparent border-b border-white/10 py-5 pl-8 pr-4 text-white focus:outline-none appearance-none cursor-crosshair text-sm font-black uppercase italic"
@@ -108,10 +131,16 @@ export default function Signup() {
             </div>
 
             <div className="space-y-3">
-              <label className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic">INPUT::HEX_PASS</label>
+              <label
+                htmlFor={passwordId}
+                className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic cursor-pointer"
+              >
+                INPUT::HEX_PASS
+              </label>
               <div className="relative group">
                 <Lock className="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-3 text-white/20 group-focus-within:text-white transition-colors" />
                 <input 
+                  id={passwordId}
                   type="password" 
                   required
                   value={formData.password}
@@ -123,10 +152,16 @@ export default function Signup() {
             </div>
 
             <div className="space-y-3">
-              <label className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic">INPUT::HEX_VERIFY</label>
+              <label
+                htmlFor={confirmPasswordId}
+                className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic cursor-pointer"
+              >
+                INPUT::HEX_VERIFY
+              </label>
               <div className="relative group">
                 <Lock className="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-3 text-white/20 group-focus-within:text-white transition-colors" />
                 <input 
+                  id={confirmPasswordId}
                   type="password" 
                   required
                   value={formData.confirmPassword}

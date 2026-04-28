@@ -1,3 +1,4 @@
+import React from 'react';
 import { Search, LogOut, Terminal, Users, Disc, Radio, Menu, User as UserIcon } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
@@ -17,6 +18,7 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
   const [results, setResults] = useState<any[]>([]);
   const [isFocused, setIsFocused] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
+  const searchInputId = React.useId();
 
   const handleLogout = () => {
     logout();
@@ -65,8 +67,10 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
         <div className="relative group flex items-center gap-2 sm:gap-4">
           <Terminal className="w-3 h-3 text-primary animate-pulse hidden sm:block" />
           <div className="relative flex-1 min-w-0">
+            <label htmlFor={searchInputId} className="sr-only">Global Search</label>
             <Search className="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-3 text-white/20 group-focus-within:text-white transition-colors" />
             <input
+              id={searchInputId}
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}

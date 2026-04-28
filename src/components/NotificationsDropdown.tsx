@@ -40,8 +40,10 @@ export default function NotificationsDropdown() {
       <button
         data-tour="navbar-bell"
         onClick={() => setOpen((v) => !v)}
-        className="relative p-2 text-white/40 hover:text-primary transition-all"
-        aria-label="Notifications"
+        className="relative p-2 text-white/40 hover:text-primary transition-all outline-none focus-visible:text-primary"
+        aria-label={unreadCount > 0 ? `Notifications (${unreadCount} unread)` : "Notifications"}
+        aria-haspopup="true"
+        aria-expanded={open}
       >
         <Bell className="w-4 h-4" />
         {unreadCount > 0 && (
@@ -74,8 +76,8 @@ export default function NotificationsDropdown() {
               </div>
               <button
                 onClick={() => setOpen(false)}
-                className="text-white/40 hover:text-white transition-colors"
-                aria-label="Close"
+                className="text-white/40 hover:text-white transition-colors outline-none focus-visible:text-white"
+                aria-label="Close notifications"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -104,7 +106,7 @@ export default function NotificationsDropdown() {
                       }
                     }}
                     className={cn(
-                      'w-full text-left flex gap-3 px-4 py-3 border-b border-white/5 last:border-0 transition-colors',
+                      'w-full text-left flex gap-3 px-4 py-3 border-b border-white/5 last:border-0 transition-colors outline-none focus-visible:bg-white/5',
                       n.read ? 'bg-transparent hover:bg-white/[0.02]' : 'bg-primary/[0.04] hover:bg-primary/[0.08]',
                     )}
                   >

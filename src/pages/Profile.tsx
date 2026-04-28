@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useReleases } from '../context/ReleaseContext';
@@ -251,14 +251,19 @@ function Field({
   readonly?: boolean;
   full?: boolean;
 }) {
+  const id = React.useId();
   return (
     <div className={cn(full ? 'md:col-span-2' : '')}>
-      <label className="text-[9px] font-mono font-black uppercase tracking-[0.3em] text-[var(--text-main)]/40 italic block mb-1.5">
+      <label
+        htmlFor={id}
+        className="text-[9px] font-mono font-black uppercase tracking-[0.3em] text-[var(--text-main)]/40 italic block mb-1.5 cursor-pointer"
+      >
         {label}
       </label>
       {editing && !readonly ? (
         multiline ? (
           <textarea
+            id={id}
             value={value}
             onChange={(e) => onChange(e.target.value)}
             rows={3}
@@ -266,6 +271,7 @@ function Field({
           />
         ) : (
           <input
+            id={id}
             value={value}
             onChange={(e) => onChange(e.target.value)}
             className="w-full bg-transparent border border-[var(--border-main)] focus:border-primary outline-none px-3 py-2 text-sm text-[var(--text-main)] font-medium transition-colors"

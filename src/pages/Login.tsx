@@ -49,6 +49,8 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [form, setForm] = useState({ email: '', password: '' });
+  const emailId = React.useId();
+  const passwordId = React.useId();
 
   const selectedPortal = PORTALS.find((p) => p.id === role) ?? PORTALS[0];
 
@@ -109,6 +111,8 @@ export default function Login() {
                       setRole(p.id);
                       setStep('creds');
                     }}
+                    role="radio"
+                    aria-checked={active}
                     className={cn(
                       'manifest-card relative p-7 text-left flex flex-col gap-5 transition-all border bg-white/[0.02] hover:bg-white/[0.05] min-h-[300px] group',
                       active ? 'border-primary scale-[1.02]' : 'border-white/10',
@@ -218,12 +222,16 @@ export default function Login() {
 
               <form onSubmit={handleSubmit} className="space-y-8">
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic">
+                  <label
+                    htmlFor={emailId}
+                    className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic cursor-pointer"
+                  >
                     INPUT::USER_IDENTITY
                   </label>
                   <div className="relative group">
                     <Mail className="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-3 text-white/20 group-focus-within:text-white transition-colors" />
                     <input
+                      id={emailId}
                       type="email"
                       required
                       value={form.email}
@@ -236,13 +244,17 @@ export default function Login() {
 
                 <div className="space-y-3">
                   <div className="flex justify-between items-center px-0">
-                    <label className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic">
+                    <label
+                      htmlFor={passwordId}
+                      className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic cursor-pointer"
+                    >
                       INPUT::SECURITY_HEX
                     </label>
                   </div>
                   <div className="relative group">
                     <Lock className="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-3 text-white/20 group-focus-within:text-white transition-colors" />
                     <input
+                      id={passwordId}
                       type={showPassword ? 'text' : 'password'}
                       required
                       value={form.password}
@@ -253,6 +265,7 @@ export default function Login() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? "Hide password" : "Show password"}
                       className="absolute right-0 top-1/2 -translate-y-1/2 text-white/20 hover:text-white transition-colors px-2"
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
