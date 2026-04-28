@@ -74,6 +74,7 @@ export const aiChatSchema = z.object({
   message: z.string().min(1).max(4000),
   conversationId: z.string().optional(),
   userId: z.string().optional(),
+  provider: z.enum(['anthropic', 'nvidia', 'groq', 'cerebras', 'openrouter']).optional(),
 });
 
 export const preReleaseCreateSchema = z.object({

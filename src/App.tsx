@@ -58,6 +58,7 @@ const DJFeedback = lazy(() => import('./pages/creator/dj/Feedback'));
 
 const Layout = lazy(() => import('./components/layout/Layout'));
 const Profile = lazy(() => import('./pages/Profile'));
+const AIProviders = lazy(() => import('./pages/AIProviders'));
 
 import WelcomeScreen from './components/layout/WelcomeScreen';
 
@@ -157,6 +158,7 @@ export default function App() {
                   <Route path="/assets" element={<Assets />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/profile" element={<Profile />} />
+                  <Route path="/ai-providers" element={<AIProviders />} />
                 </Route>
               </Route>
 

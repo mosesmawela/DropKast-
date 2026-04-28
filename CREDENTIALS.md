@@ -6,20 +6,35 @@ For Vercel: **Project Settings → Environment Variables**. For local dev: copy 
 
 ---
 
-## 1. Anthropic (Claude) — Highest impact
+## 1. Anthropic (Claude) — Highest impact, **but optional**
 
-Without this key the AI assistant returns "AI not configured", A&R critique returns a placeholder, and campaign strategy uses static fallbacks. **Add this first.**
+You can run the chat assistant with **free providers** (Section 1b) instead of Claude. Claude is the primary because it supports tool use (the assistant can pull live data) and prompt caching. If you skip it, the assistant works but can only answer general questions, not pull your specific releases/analytics/campaigns.
 
 | Variable | Where | Notes |
 |---|---|---|
 | `ANTHROPIC_API_KEY` | https://console.anthropic.com/settings/keys | Server-only. Put it in Vercel and your local `.env`. |
 
-After adding: A&R submissions get real critiques, the floating chat assistant streams Claude responses with tool use over your real data.
-
 **Cost expectation** with prompt caching enabled (already wired):
 - Sonnet 4.6 chat: ~$0.02–0.05 per 10-message session
 - Haiku 4.5 viral ideas: ~$0.001 per call
 - Sonnet A&R critique: ~$0.05 per submission
+
+---
+
+## 1b. Free chat providers (NVIDIA / Groq / Cerebras / OpenRouter)
+
+OpenAI-compatible endpoints — wired through a single adapter. Add **any** of these and the user can pick them in the assistant's provider dropdown. Useful for free fallback when Claude budget is hit.
+
+| Variable | Where | Free tier |
+|---|---|---|
+| `NVIDIA_API_KEY` | https://build.nvidia.com | 40 RPM, indefinite. Llama 3.3 70B + Mistral + Qwen. |
+| `GROQ_API_KEY` | https://console.groq.com/keys | 1M tokens/day, fastest inference. |
+| `CEREBRAS_API_KEY` | https://cloud.cerebras.ai | 1M tokens/day, 8K context cap. |
+| `OPENROUTER_API_KEY` | https://openrouter.ai/keys | 50 req/day free, 1000/day with $10 balance. Many models. |
+
+These providers do NOT support tool use through the adapter, so the assistant becomes a plain chatbot when one of them is selected. Use Claude for catalog-aware answers; free providers for general questions or when you want to save Anthropic credits.
+
+See [`/ai-providers`](https://dropkast.vercel.app/ai-providers) inside the app for the full tier list, pricing, and signup links.
 
 ---
 

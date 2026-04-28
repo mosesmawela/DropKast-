@@ -1,10 +1,19 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MessageSquare, X, Send, Zap, ChevronRight, Sliders, Wrench, Loader2 } from 'lucide-react';
+import { MessageSquare, X, Send, Zap, Sliders, Wrench, Loader2, ChevronDown } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { useAI } from '../context/AIContext';
 import Switch from './ui/Switch';
 import { toast } from 'sonner';
+
+type ProviderId = 'anthropic' | 'nvidia' | 'groq' | 'cerebras' | 'openrouter';
+const PROVIDER_LABELS: Record<ProviderId, string> = {
+  anthropic: 'Claude (Anthropic)',
+  nvidia: 'NVIDIA NIM (free)',
+  groq: 'Groq (free)',
+  cerebras: 'Cerebras (free)',
+  openrouter: 'OpenRouter',
+};
 
 type Message = {
   role: 'user' | 'ai';
@@ -19,6 +28,31 @@ export default function AIAssistant() {
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
+  const [provider, setProvider] = useState<ProviderId>(() =>
+    (localStorage.getItem('dropkast_chat_provider') as ProviderId) || 'anthropic',
+  );
+  const [providerStatus, setProviderStatus] = useState<Record<ProviderId, boolean>>({
+    anthropic: false,
+    nvidia: false,
+    groq: false,
+    cerebras: false,
+    openrouter: false,
+  });
+
+  useEffect(() => {
+    fetch('/api/ai/providers')
+      .then((r) => r.json())
+      .then((d) => {
+        const map: any = {};
+        for (const p of d.providers || []) map[p.id] = p.configured;
+        setProviderStatus(map);
+      })
+      .catch(() => undefined);
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('dropkast_chat_provider', provider);
+  }, [provider]);
 
   const {
     autoSendDJs,
@@ -60,7 +94,7 @@ export default function AIAssistant() {
       const res = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: sendText }),
+        body: JSON.stringify({ message: sendText, provider }),
         signal: controller.signal,
       });
 
@@ -192,6 +226,22 @@ export default function AIAssistant() {
                 <span className="text-[10px] font-black text-white uppercase tracking-widest italic">
                   {activeTab === 'CHAT' ? 'Node_Chat' : 'Sys_Config'}
                 </span>
+                {activeTab === 'CHAT' && (
+                  <div className="relative">
+                    <select
+                      value={provider}
+                      onChange={(e) => setProvider(e.target.value as ProviderId)}
+                      className="ml-2 bg-black border border-white/10 hover:border-primary text-white text-[9px] font-mono font-black uppercase tracking-widest italic pl-2 pr-6 py-1 appearance-none cursor-pointer focus:outline-none focus:border-primary transition-colors"
+                    >
+                      {(Object.keys(PROVIDER_LABELS) as ProviderId[]).map((id) => (
+                        <option key={id} value={id} disabled={!providerStatus[id]}>
+                          {PROVIDER_LABELS[id]}{providerStatus[id] ? '' : ' — no key'}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="w-3 h-3 absolute right-1 top-1/2 -translate-y-1/2 pointer-events-none text-white/40" />
+                  </div>
+                )}
               </div>
               <button onClick={() => setIsOpen(false)} className="text-white/20 hover:text-white transition-colors">
                 <X className="w-4 h-4" />

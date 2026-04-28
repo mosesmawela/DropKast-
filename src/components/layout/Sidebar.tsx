@@ -21,6 +21,7 @@ import {
   Video,
   CreditCard,
   ArrowLeftRight,
+  Sparkles,
   X,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
@@ -41,7 +42,8 @@ const artistNav = [
   { id: '12', icon: BarChart, label: 'Analytics', path: '/analytics' },
   { id: '13', icon: Wallet, label: 'Treasury', path: '/earnings' },
   { id: '14', icon: Camera, label: 'Assets', path: '/assets' },
-  { id: '15', icon: Cpu, label: 'Settings', path: '/settings' },
+  { id: '15', icon: Sparkles, label: 'AI Models', path: '/ai-providers' },
+  { id: '16', icon: Cpu, label: 'Settings', path: '/settings' },
 ];
 
 const influencerNav = [
@@ -49,7 +51,8 @@ const influencerNav = [
   { id: 'i2', icon: Target, label: 'Missions', path: '/influencer/missions' },
   { id: 'i3', icon: CreditCard, label: 'Earnings', path: '/influencer/earnings' },
   { id: 'i4', icon: Share2, label: 'Social Nodes', path: '/influencer/socials' },
-  { id: 'i5', icon: Cpu, label: 'Settings', path: '/settings' },
+  { id: 'i5', icon: Sparkles, label: 'AI Models', path: '/ai-providers' },
+  { id: 'i6', icon: Cpu, label: 'Settings', path: '/settings' },
 ];
 
 const djNav = [
@@ -57,7 +60,8 @@ const djNav = [
   { id: 'd2', icon: Disc, label: 'DJ Packs', path: '/dj/packs' },
   { id: 'd3', icon: MessageSquare, label: 'A&R Intel', path: '/dj/feedback' },
   { id: 'd4', icon: TrendingUp, label: 'Charts', path: '/analytics' },
-  { id: 'd5', icon: Cpu, label: 'Settings', path: '/settings' },
+  { id: 'd5', icon: Sparkles, label: 'AI Models', path: '/ai-providers' },
+  { id: 'd6', icon: Cpu, label: 'Settings', path: '/settings' },
 ];
 
 interface SidebarProps {

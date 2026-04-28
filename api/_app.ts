@@ -21,6 +21,7 @@ import {
   validate,
 } from "./_schemas.js";
 import { handleAiChat } from "./_ai-chat.js";
+import { listAvailableTextProviders } from "./_text-providers.js";
 import { generateIsrc, generateUpc, isPlaceholderRegistrant } from "./_codes.js";
 import { validateAudio, validateCoverArt } from "./_audio-validate.js";
 import { assertTransition, isScheduledForLater, ReleaseTransitionError, type ReleaseStatus } from "./_release-lifecycle.js";
@@ -71,6 +72,11 @@ export function createApiApp() {
 
   // --- AI Chat (streaming SSE with tool use) ---
   app.post("/api/ai/chat", validate(aiChatSchema), handleAiChat);
+
+  // --- AI providers — which keys are configured ---
+  app.get("/api/ai/providers", (_req, res) => {
+    res.json({ providers: listAvailableTextProviders() });
+  });
 
   // --- A&R critique (Claude-powered) ---
   app.post("/api/anr", validate(anrSubmitSchema), async (req, res) => {

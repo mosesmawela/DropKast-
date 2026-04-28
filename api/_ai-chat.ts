@@ -19,6 +19,7 @@ import type { Request, Response } from 'express';
 import Anthropic from '@anthropic-ai/sdk';
 import { store } from './_store.js';
 import { isOverBudget, recordUsage } from './_ai-budget.js';
+import { streamOpenAICompatible, type TextProviderId } from './_text-providers.js';
 
 const SONNET = 'claude-sonnet-4-6';
 
@@ -111,18 +112,60 @@ async function runTool(name: string, input: Record<string, unknown>): Promise<un
 }
 
 export async function handleAiChat(req: Request, res: Response): Promise<void> {
-  const key = process.env.ANTHROPIC_API_KEY;
-  if (!key) {
+  const { message, userId, provider } = req.body as { message: string; userId?: string; provider?: TextProviderId };
+  const chosenProvider: TextProviderId = provider ?? 'anthropic';
+
+  // Anthropic path requires its key. Other providers handled below.
+  if (chosenProvider === 'anthropic' && !process.env.ANTHROPIC_API_KEY) {
     res.status(503).json({
       error: 'AI not configured',
-      message: 'Set ANTHROPIC_API_KEY in your environment to enable chat.',
+      message: 'Set ANTHROPIC_API_KEY in your environment, or pass provider="nvidia"/"groq"/"cerebras"/"openrouter".',
     });
     return;
   }
-
-  const { message, userId } = req.body as { message: string; userId?: string };
   if (!message) {
     res.status(400).json({ error: 'message required' });
+    return;
+  }
+
+  // SSE setup is shared for both code paths.
+  const initSSE = () => {
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache, no-transform',
+      Connection: 'keep-alive',
+      'X-Accel-Buffering': 'no',
+    });
+  };
+  const send = (event: string, data: unknown) => {
+    res.write(`event: ${event}\n`);
+    res.write(`data: ${JSON.stringify(data)}\n\n`);
+  };
+
+  // ---- OpenAI-compatible providers (NVIDIA / Groq / Cerebras / OpenRouter)
+  // These don't support tool use through this adapter, so the assistant
+  // can't call your data — it's a plain chatbot until you switch back to
+  // Anthropic. Useful for free fallback when Claude budget is hit.
+  if (chosenProvider !== 'anthropic') {
+    initSSE();
+    try {
+      const messages: { role: 'system' | 'user' | 'assistant'; content: string }[] = [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user', content: message },
+      ];
+      for await (const chunk of streamOpenAICompatible(chosenProvider, messages)) {
+        if (chunk.error) send('error', { message: chunk.error });
+        else if (chunk.token) send('token', { text: chunk.token });
+        else if (chunk.done) {
+          send('done', { ok: true, provider: chosenProvider });
+          break;
+        }
+      }
+    } catch (err) {
+      send('error', { message: err instanceof Error ? err.message : 'unknown error' });
+    } finally {
+      res.end();
+    }
     return;
   }
 
@@ -138,19 +181,10 @@ export async function handleAiChat(req: Request, res: Response): Promise<void> {
     return;
   }
 
-  // SSE setup
-  res.writeHead(200, {
-    'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache, no-transform',
-    Connection: 'keep-alive',
-    'X-Accel-Buffering': 'no',
-  });
-  const send = (event: string, data: unknown) => {
-    res.write(`event: ${event}\n`);
-    res.write(`data: ${JSON.stringify(data)}\n\n`);
-  };
+  // ---- Anthropic path: streaming + tool use + prompt caching.
+  initSSE();
 
-  const client = new Anthropic({ apiKey: key });
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
   const conversation: Anthropic.MessageParam[] = [{ role: 'user', content: message }];
 
   try {
