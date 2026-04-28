@@ -34,7 +34,7 @@ export default function Layout() {
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <Navbar onMenuClick={() => setSidebarOpen(true)} />
-        <main className="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-6 md:p-10 relative">
+        <main className="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-5 md:p-6 lg:p-8 relative">
           <Outlet />
         </main>
       </div>

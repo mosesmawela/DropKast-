@@ -21,6 +21,9 @@ import {
   validate,
 } from "./_schemas.js";
 import { handleAiChat } from "./_ai-chat.js";
+import { generateIsrc, generateUpc, isPlaceholderRegistrant } from "./_codes.js";
+import { validateAudio, validateCoverArt } from "./_audio-validate.js";
+import { assertTransition, isScheduledForLater, ReleaseTransitionError, type ReleaseStatus } from "./_release-lifecycle.js";
 
 let uploadMiddleware: any = null;
 
@@ -200,10 +203,56 @@ export function createApiApp() {
     { name: "audio", maxCount: 1 },
     { name: "artwork", maxCount: 1 },
   ]), async (req: any, res) => {
-    const { platforms, ...metadata } = req.body;
+    const { platforms, releaseDate, ...metadata } = req.body;
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
-    const audioUrl = files?.['audio']?.[0]?.path || "https://example.com/mock-audio.wav";
-    const artworkUrl = files?.['artwork']?.[0]?.path || "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=3270";
+    const audioFile = files?.['audio']?.[0];
+    const artworkFile = files?.['artwork']?.[0];
+
+    // ---- Phase 1: validate audio + cover before accepting the release.
+    const errors: string[] = [];
+    const warnings: string[] = [];
+    let audioMeta: any = undefined;
+
+    if (audioFile?.buffer) {
+      const v = await validateAudio({ buffer: audioFile.buffer, mimeType: audioFile.mimetype });
+      errors.push(...v.errors);
+      warnings.push(...v.warnings);
+      audioMeta = v.meta;
+    } else if (audioFile?.path && !audioFile.path.startsWith('http')) {
+      const v = await validateAudio({ path: audioFile.path, mimeType: audioFile.mimetype });
+      errors.push(...v.errors);
+      warnings.push(...v.warnings);
+      audioMeta = v.meta;
+    }
+
+    if (artworkFile?.buffer) {
+      const v = await validateCoverArt({ buffer: artworkFile.buffer, mimeType: artworkFile.mimetype });
+      errors.push(...v.errors);
+      warnings.push(...v.warnings);
+    }
+
+    if (errors.length > 0) {
+      return res.status(422).json({
+        error: 'Release validation failed',
+        errors,
+        warnings,
+      });
+    }
+
+    const audioUrl = audioFile?.path || "https://example.com/mock-audio.wav";
+    const artworkUrl = artworkFile?.path || "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=3270";
+
+    // ---- Phase 1: ISRC + UPC at create time.
+    const isrc = generateIsrc();
+    const upc = generateUpc();
+    if (isPlaceholderRegistrant()) {
+      warnings.push('ISRC/UPC use placeholder registrant codes. Configure ISRC_REGISTRANT and UPC_COMPANY_PREFIX before real distribution.');
+    }
+
+    // ---- Phase 1: scheduling + lifecycle.
+    const parsedReleaseDate = releaseDate ? new Date(releaseDate) : null;
+    const scheduled = isScheduledForLater(parsedReleaseDate);
+    const initialStatus: ReleaseStatus = scheduled ? 'approved' : 'submitted';
 
     const release = {
       id: `REL-${Math.floor(Math.random() * 100000)}`,
@@ -212,20 +261,69 @@ export function createApiApp() {
       genre: metadata.genre || "Unknown Genre",
       audioUrl,
       artworkUrl,
-      metadata,
+      isrc,
+      upc,
+      releaseDate: parsedReleaseDate,
+      metadata: { ...metadata, audioMeta, validationWarnings: warnings },
       platforms: (Array.isArray(platforms) ? platforms : [platforms || 'spotify']).map((p: any) => ({
         id: typeof p === 'string' ? p : p.id,
         name: typeof p === 'string' ? p.charAt(0).toUpperCase() + p.slice(1) : p.name,
         status: 'pending',
       })),
-      status: 'processing',
+      status: initialStatus,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
     await store.insertRelease(release);
-    processRelease(release.id);
-    res.status(201).json(release);
+
+    // Only kick off the simulated DSP delivery if not scheduled for later.
+    if (!scheduled) {
+      processRelease(release.id);
+    }
+
+    res.status(201).json({ ...release, warnings });
+  });
+
+  /**
+   * Explicit lifecycle transitions. Validates via the state machine and
+   * surfaces a clean 409 on illegal transitions.
+   */
+  app.post("/api/releases/:id/transition", async (req, res) => {
+    const release = await store.getRelease(req.params.id);
+    if (!release) return res.status(404).json({ error: 'Release not found' });
+    const target = (req.body?.status ?? '') as ReleaseStatus;
+    try {
+      assertTransition(release.status as ReleaseStatus, target);
+    } catch (err) {
+      if (err instanceof ReleaseTransitionError) {
+        return res.status(409).json({ error: err.message, from: err.from, to: err.to });
+      }
+      throw err;
+    }
+    const updated = await store.patchRelease(req.params.id, { status: target });
+    res.json(updated);
+  });
+
+  /**
+   * Takedown — convenience wrapper for live → taken_down.
+   */
+  app.post("/api/releases/:id/takedown", async (req, res) => {
+    const release = await store.getRelease(req.params.id);
+    if (!release) return res.status(404).json({ error: 'Release not found' });
+    try {
+      assertTransition(release.status as ReleaseStatus, 'taken_down');
+    } catch (err) {
+      if (err instanceof ReleaseTransitionError) {
+        return res.status(409).json({ error: err.message });
+      }
+      throw err;
+    }
+    const updated = await store.patchRelease(req.params.id, {
+      status: 'taken_down',
+      metadata: { ...(release.metadata || {}), takedownReason: req.body?.reason || 'unspecified' },
+    });
+    res.json(updated);
   });
 
   app.get("/api/releases", async (_req, res) => {

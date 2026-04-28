@@ -50,7 +50,7 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
   }, [query]);
 
   return (
-    <header className="h-16 sm:h-20 bg-[var(--card-bg)] backdrop-blur-xl border-b border-[var(--border-main)] px-4 sm:px-6 md:px-8 flex items-center justify-between gap-3 z-10 technical-grid">
+    <header className="h-14 sm:h-16 bg-[var(--card-bg)] backdrop-blur-xl border-b border-[var(--border-main)] px-4 sm:px-6 md:px-8 flex items-center justify-between gap-3 z-10 technical-grid">
       {/* Mobile menu button */}
       <button
         onClick={onMenuClick}

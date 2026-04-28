@@ -18,6 +18,7 @@
 import type { Request, Response } from 'express';
 import Anthropic from '@anthropic-ai/sdk';
 import { store } from './_store.js';
+import { isOverBudget, recordUsage } from './_ai-budget.js';
 
 const SONNET = 'claude-sonnet-4-6';
 
@@ -119,9 +120,21 @@ export async function handleAiChat(req: Request, res: Response): Promise<void> {
     return;
   }
 
-  const { message } = req.body as { message: string };
+  const { message, userId } = req.body as { message: string; userId?: string };
   if (!message) {
     res.status(400).json({ error: 'message required' });
+    return;
+  }
+
+  // Cost guardrail: refuse if user is over their daily AI budget.
+  const budget = await isOverBudget(userId);
+  if (budget.over) {
+    res.status(429).json({
+      error: 'AI budget exceeded',
+      message: `Daily AI budget of $${(budget.budgetCents / 100).toFixed(2)} reached. Resets at midnight UTC.`,
+      spent_cents: budget.spentCents,
+      budget_cents: budget.budgetCents,
+    });
     return;
   }
 
@@ -169,6 +182,17 @@ export async function handleAiChat(req: Request, res: Response): Promise<void> {
       const finalMsg = await stream.finalMessage();
       assistantBlocks = finalMsg.content;
       stopReason = finalMsg.stop_reason;
+
+      // Track token usage for the budget guardrail.
+      const usage = finalMsg.usage;
+      if (usage) {
+        await recordUsage(userId, {
+          model: 'sonnet',
+          inputTokens: usage.input_tokens ?? 0,
+          cachedReadTokens: (usage as any).cache_read_input_tokens ?? 0,
+          outputTokens: usage.output_tokens ?? 0,
+        });
+      }
 
       conversation.push({ role: 'assistant', content: assistantBlocks });
 

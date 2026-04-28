@@ -21,6 +21,19 @@
 }
 
 @layer base {
+  /* Scale the whole UI down to standard SaaS density.
+     Tailwind sizing is rem-based, so reducing the root font-size
+     proportionally shrinks padding, gaps, font sizes, and component
+     dimensions across the entire app. 14px ≈ 87.5% of the 16px default. */
+  html {
+    font-size: 14px;
+  }
+  @media (min-width: 1280px) {
+    html {
+      font-size: 15px;
+    }
+  }
+
   :root {
     --bg-main: #111111;
     --text-main: #ffffff;

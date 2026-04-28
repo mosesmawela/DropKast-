@@ -79,14 +79,14 @@ export default function Sidebar({ open = false, onClose }: SidebarProps) {
   return (
     <aside
       className={cn(
-        'w-72 max-w-[85vw] md:w-60 h-screen bg-[var(--bg-main)] border-r border-[var(--border-main)] flex flex-col z-40 backdrop-blur-md transition-transform duration-300 ease-out',
+        'w-72 max-w-[85vw] md:w-56 h-screen bg-[var(--bg-main)] border-r border-[var(--border-main)] flex flex-col z-40 backdrop-blur-md transition-transform duration-300 ease-out',
         // Mobile: fixed off-canvas drawer
         'fixed top-0 left-0 md:relative md:translate-x-0',
         open ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
       )}
     >
       {/* Logo + mobile close */}
-      <div className="px-6 py-5 border-b border-[var(--border-main)] shrink-0 flex items-center justify-between">
+      <div className="px-5 py-4 border-b border-[var(--border-main)] shrink-0 flex items-center justify-between">
         <Link to="/dashboard" className="flex flex-col gap-1.5">
           <div className="flex items-center gap-2">
             <span className="text-lg font-black tracking-tight text-white leading-none font-mono italic uppercase">
@@ -109,10 +109,10 @@ export default function Sidebar({ open = false, onClose }: SidebarProps) {
 
       {/* Pinned New Release CTA — only for artists */}
       {role === 'ARTIST' && (
-        <div className="px-4 pt-4 pb-3 shrink-0">
+        <div className="px-3 pt-3 pb-2 shrink-0">
           <Link
             to="/releases/new"
-            className="flex items-center justify-between w-full bg-white text-black font-mono font-black uppercase text-[10px] tracking-widest px-5 py-3.5 hover:bg-primary hover:text-white transition-all group active:scale-95"
+            className="flex items-center justify-between w-full bg-white text-black font-mono font-black uppercase text-[10px] tracking-widest px-4 py-2.5 hover:bg-primary hover:text-white transition-all group active:scale-95"
           >
             <span>NEW_RELEASE</span>
             <PlusCircle className="w-4 h-4 group-hover:rotate-90 transition-transform" />
@@ -129,7 +129,7 @@ export default function Sidebar({ open = false, onClose }: SidebarProps) {
               key={item.path}
               to={item.path}
               className={cn(
-                'flex items-center gap-4 px-6 md:px-8 py-3.5 transition-all group relative',
+                'flex items-center gap-3 px-5 md:px-5 py-2.5 transition-all group relative',
                 isActive
                   ? 'bg-primary/5 text-primary'
                   : 'text-[var(--text-main)]/40 hover:bg-[var(--text-main)]/[0.02] hover:text-[var(--text-main)]',
@@ -159,7 +159,7 @@ export default function Sidebar({ open = false, onClose }: SidebarProps) {
       </nav>
 
       {/* Footer */}
-      <div className="px-6 py-4 border-t border-[var(--border-main)] shrink-0 flex flex-col gap-3">
+      <div className="px-5 py-3 border-t border-[var(--border-main)] shrink-0 flex flex-col gap-2">
         <div className="flex items-center gap-3 text-white/20">
           <Lock className="w-3 h-3" />
           <span className="text-[9px] font-medium uppercase tracking-widest">Safe & Secure</span>
