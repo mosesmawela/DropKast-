@@ -9,6 +9,8 @@ import StudioGenreSelector from "./StudioGenreSelector";
 import StudioCameraSelector from "./StudioCameraSelector";
 import StudioStyleSelector from "./StudioStyleSelector";
 import { cn } from "../../lib/utils";
+import ModelPicker from "../../components/ModelPicker";
+import { RECOMMENDATIONS } from "../../lib/ai-recommendations";
 
 interface CreateAssetModalProps {
   onClose: () => void;
@@ -324,7 +326,9 @@ export default function CreateAssetModal({ onClose }: CreateAssetModalProps) {
                     </button>
                  </div>
 
-                 <button 
+                 <ModelPicker recommendation={type === 'video' ? RECOMMENDATIONS['music-video'] : RECOMMENDATIONS['cover-art']} variant="full" />
+
+                 <button
                   onClick={handleGenerate}
                   disabled={!prompt}
                   className={cn(

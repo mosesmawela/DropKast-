@@ -2,6 +2,8 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Sparkles, MessageSquare, Image as ImageIcon, Rocket, X, Send, TrendingUp, Lightbulb, CheckCircle2 } from "lucide-react";
 import { cn } from "../../lib/utils";
+import ModelPicker from "../../components/ModelPicker";
+import { RECOMMENDATIONS } from "../../lib/ai-recommendations";
 
 interface ViralIdeaGeneratorProps {
   onClose: () => void;
@@ -128,7 +130,12 @@ export default function ViralIdeaGenerator({ onClose }: ViralIdeaGeneratorProps)
                </div>
             </div>
 
-            <button 
+            <div className="flex items-center justify-between gap-3 flex-wrap mb-3">
+              <span className="text-[10px] font-mono font-black uppercase tracking-widest text-white/40 italic">AI model</span>
+              <ModelPicker recommendation={RECOMMENDATIONS['viral-ideas']} variant="full" />
+            </div>
+
+            <button
               onClick={generateIdeas}
               disabled={loading}
               className="w-full h-16 bg-primary text-white text-[11px] font-black uppercase italic tracking-widest flex items-center justify-center gap-4 hover:bg-white hover:text-black transition-all disabled:opacity-50 shadow-[0_10px_30px_rgba(255,77,0,0.2)]"

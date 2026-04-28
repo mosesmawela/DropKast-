@@ -21,6 +21,8 @@ import ScrollReveal from '../components/animations/ScrollReveal';
 import AnimatedBeam from '../components/animations/AnimatedBeam';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNotify } from '../context/NotificationContext';
+import ModelPicker from '../components/ModelPicker';
+import { RECOMMENDATIONS } from '../lib/ai-recommendations';
 
 const feedbackItemsData: any[] = [];
 
@@ -85,9 +87,10 @@ export default function ANR() {
             </div>
             <h1 className="text-5xl font-black tracking-tighter text-white italic font-mono uppercase">A&R Protocol</h1>
           </div>
-          <div className="flex items-center gap-4">
-             <AnimatedBeam containerClassName="w-fit">
-              <button 
+          <div className="flex flex-col items-end gap-2">
+            <ModelPicker recommendation={RECOMMENDATIONS['anr-critique']} variant="full" />
+            <AnimatedBeam containerClassName="w-fit">
+              <button
                 onClick={handleSubmitNew}
                 disabled={isSubmitting}
                 className="primary-button h-14 flex items-center gap-3 px-10"

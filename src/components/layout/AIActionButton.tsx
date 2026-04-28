@@ -5,6 +5,8 @@ import { useAI } from '../../context/AIContext';
 import { useAuth } from '../../context/AuthContext';
 import { useGrowSong } from '../../context/GrowSongContext';
 import { cn } from '../../lib/utils';
+import ModelPicker from '../ModelPicker';
+import { RECOMMENDATIONS } from '../../lib/ai-recommendations';
 
 /**
  * Modal-only — no floating button. The trigger lives in Navbar
@@ -104,7 +106,14 @@ export default function GrowMySongModal() {
                     </div>
                   )}
 
-                  <button 
+                  <div className="flex items-center justify-between gap-3 flex-wrap">
+                    <span className="text-[10px] font-mono font-black uppercase tracking-widest text-white/40 italic">
+                      AI model
+                    </span>
+                    <ModelPicker recommendation={RECOMMENDATIONS['campaign-strategy']} variant="full" />
+                  </div>
+
+                  <button
                     onClick={handleGenerate}
                     disabled={!releaseTitle || isLoading}
                     className="w-full py-6 bg-white text-black font-mono font-black italic uppercase tracking-[0.2em] hover:bg-primary hover:text-white transition-all disabled:opacity-20 flex items-center justify-center gap-4 text-xs"
