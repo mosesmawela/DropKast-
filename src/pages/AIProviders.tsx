@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import {
   MessageSquare,
   ImageIcon,
@@ -9,6 +9,10 @@ import {
   AlertCircle,
   Sparkles,
   TrendingUp,
+  ChevronDown,
+  Crown,
+  KeyRound,
+  GraduationCap,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import {
@@ -53,10 +57,35 @@ export default function AIProviders() {
           Models, Prices, Free Tiers
         </h1>
         <p className="text-[var(--text-main)]/40 mt-1 text-xs max-w-2xl">
-          Every model DropKast can route through, ranked by tier. Add an API key to enable a provider and use it anywhere
-          inside the app — chat, A&R critique, cover art, video teasers.
+          Every model DropKast can route through, ranked by tier. Pick the right tool for the job. New to AI? Read the
+          three options below first.
         </p>
       </header>
+
+      {/* Education preamble: 3 ways to use AI on DropKast */}
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <PathCard
+          icon={GraduationCap}
+          color="text-blue-400"
+          title="Use System AI"
+          desc="Free out of the box. We've already wired NVIDIA, Groq, and OpenRouter free tiers — start chatting now, no signup needed."
+          cta={{ label: 'Open assistant', href: '/dashboard' }}
+        />
+        <PathCard
+          icon={KeyRound}
+          color="text-green-500"
+          title="Use My Own Keys"
+          desc="Already have an OpenAI / Anthropic / fal.ai key? Plug it in and pay your own bill. Keys stay in your browser."
+          cta={{ label: 'Configure keys', href: '/settings' }}
+        />
+        <PathCard
+          icon={Crown}
+          color="text-primary"
+          title="Premium ($15 / mo)"
+          desc="Unlimited Claude chat, Flux Pro images, Veo 3 + Kling 3 video, and priority queues. Skip the per-call billing."
+          cta={{ label: 'Coming soon', href: '/settings' }}
+        />
+      </section>
 
       <div className="flex flex-wrap gap-2">
         {TABS.map((t) => {
@@ -114,78 +143,129 @@ function Section({ title, subtitle, items, accent }: { title: string; subtitle: 
 
 function ProviderCard({ m }: { m: ProviderModel }) {
   const tier = TIER_BADGE[m.tier];
+  const [expanded, setExpanded] = useState(false);
+  const headlinePrice = m.pricing[0];
   return (
     <motion.div
+      layout
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      className="manifest-card border border-[var(--border-main)] p-4 bg-[var(--card-bg)] flex flex-col gap-3 hover:border-primary/40 transition-colors"
+      className="manifest-card border border-[var(--border-main)] bg-[var(--card-bg)] hover:border-primary/40 transition-colors"
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
+      {/* Always-visible compact header */}
+      <button
+        onClick={() => setExpanded((v) => !v)}
+        className="w-full p-3 flex items-start gap-3 text-left"
+      >
+        <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <span className={cn('text-[8px] font-mono font-black uppercase tracking-widest italic px-1.5 py-0.5 border', tier.color)}>
               {tier.label}
             </span>
-            <span className="text-[9px] font-mono font-black uppercase tracking-[0.3em] text-[var(--text-main)]/40 italic">
+            <span className="text-[9px] font-mono font-black uppercase tracking-[0.3em] text-[var(--text-main)]/40 italic truncate">
               {m.vendor}
             </span>
           </div>
           <h3 className="text-sm font-mono font-black italic text-[var(--text-main)] truncate">{m.name}</h3>
-        </div>
-        {m.implemented ? (
-          <span title="Adapter implemented" className="text-green-500 shrink-0">
-            <CheckCircle2 className="w-4 h-4" />
-          </span>
-        ) : (
-          <span title="Not yet wired — add API key + adapter" className="text-[var(--text-main)]/30 shrink-0">
-            <AlertCircle className="w-4 h-4" />
-          </span>
-        )}
-      </div>
-
-      <p className="text-xs text-[var(--text-main)]/60 leading-relaxed">{m.blurb}</p>
-
-      <div className="space-y-1">
-        <div className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-main)]/40 italic">
-          Pricing
-        </div>
-        {m.pricing.map((p, i) => (
-          <div key={i} className="text-[11px] text-[var(--text-main)]/80 font-medium">
-            {p}
+          <div className="flex items-center gap-2 mt-1">
+            <span className="text-[10px] text-[var(--text-main)]/60 font-medium">{headlinePrice}</span>
+            {m.freeTier && (
+              <span className="text-[9px] text-green-500/80 italic">· free tier</span>
+            )}
           </div>
-        ))}
-      </div>
-
-      {m.freeTier && (
-        <div className="text-[10px] text-green-500/80 italic border-l-2 border-green-500/30 pl-2">
-          Free: {m.freeTier}
         </div>
-      )}
+        <div className="flex items-center gap-2 shrink-0">
+          {m.implemented ? (
+            <span title="Wired" className="text-green-500"><CheckCircle2 className="w-4 h-4" /></span>
+          ) : (
+            <span title="Add key + adapter to enable" className="text-[var(--text-main)]/30"><AlertCircle className="w-4 h-4" /></span>
+          )}
+          <ChevronDown className={cn('w-4 h-4 text-[var(--text-main)]/40 transition-transform', expanded && 'rotate-180')} />
+        </div>
+      </button>
 
-      <div className="flex flex-wrap gap-1.5">
-        {m.bestFor.map((b) => (
-          <span
-            key={b}
-            className="text-[9px] font-mono uppercase tracking-widest text-[var(--text-main)]/50 px-1.5 py-0.5 bg-white/[0.03] border border-[var(--border-main)]"
+      {/* Expanded details */}
+      <AnimatePresence>
+        {expanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden border-t border-[var(--border-main)]"
           >
-            {b}
-          </span>
-        ))}
-      </div>
+            <div className="p-3 space-y-3">
+              <p className="text-xs text-[var(--text-main)]/70 leading-relaxed">{m.blurb}</p>
 
-      <div className="flex items-center justify-between pt-2 border-t border-[var(--border-main)]">
-        <code className="text-[9px] font-mono text-[var(--text-main)]/40">{m.envVar}</code>
-        <a
-          href={m.signupUrl}
-          target="_blank"
-          rel="noreferrer"
-          className="flex items-center gap-1 text-[10px] font-mono font-black uppercase tracking-widest italic text-primary hover:text-primary/70 transition-colors"
-        >
-          Get Key
-          <ExternalLink className="w-3 h-3" />
-        </a>
-      </div>
+              {m.pricing.length > 1 && (
+                <div>
+                  <div className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-main)]/40 italic mb-1">
+                    Full pricing
+                  </div>
+                  {m.pricing.map((p, i) => (
+                    <div key={i} className="text-[11px] text-[var(--text-main)]/80 font-medium">
+                      {p}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {m.freeTier && (
+                <div className="text-[10px] text-green-500/80 italic border-l-2 border-green-500/30 pl-2">
+                  <strong className="not-italic">Free tier: </strong>
+                  {m.freeTier}
+                </div>
+              )}
+
+              <div>
+                <div className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-main)]/40 italic mb-1.5">
+                  Best for
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {m.bestFor.map((b) => (
+                    <span
+                      key={b}
+                      className="text-[9px] font-mono uppercase tracking-widest text-[var(--text-main)]/60 px-1.5 py-0.5 bg-white/[0.03] border border-[var(--border-main)]"
+                    >
+                      {b}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-2 border-t border-[var(--border-main)]">
+                <code className="text-[9px] font-mono text-[var(--text-main)]/40 truncate">{m.envVar}</code>
+                <a
+                  href={m.signupUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="flex items-center gap-1 text-[10px] font-mono font-black uppercase tracking-widest italic text-primary hover:text-primary/70 transition-colors shrink-0"
+                >
+                  Get Key
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
+  );
+}
+
+function PathCard({ icon: Icon, color, title, desc, cta }: { icon: any; color: string; title: string; desc: string; cta: { label: string; href: string } }) {
+  return (
+    <a
+      href={cta.href}
+      className="manifest-card border border-[var(--border-main)] bg-[var(--card-bg)] p-4 hover:border-primary/40 transition-colors flex flex-col gap-2"
+    >
+      <Icon className={cn('w-4 h-4', color)} />
+      <h3 className="text-sm font-mono font-black uppercase italic tracking-tight text-[var(--text-main)]">{title}</h3>
+      <p className="text-[11px] text-[var(--text-main)]/60 leading-relaxed flex-1">{desc}</p>
+      <div className="text-[10px] font-mono font-black uppercase tracking-widest italic text-primary mt-1 flex items-center gap-1">
+        {cta.label} <ExternalLink className="w-3 h-3" />
+      </div>
+    </a>
   );
 }
 

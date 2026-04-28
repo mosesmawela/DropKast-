@@ -461,7 +461,8 @@ const ColorSlide: React.FC<{
       </p>
     </div>
 
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+    {/* Mobile: compact swatch grid (no big cards). Desktop: card grid. */}
+    <div className="grid grid-cols-5 gap-2 sm:hidden">
       {colors.map((c) => {
         const active = selected === c.id;
         return (
@@ -469,30 +470,68 @@ const ColorSlide: React.FC<{
             key={c.id}
             onClick={() => onSelect(c.id)}
             className={cn(
-              'manifest-card relative p-5 text-left transition-all border bg-white/[0.02] hover:bg-white/[0.04]',
+              'aspect-square relative border-2 transition-all',
+              active ? 'scale-110' : 'border-white/10 hover:border-white/30',
+            )}
+            style={{
+              background: `linear-gradient(135deg, ${c.hex}, ${c.hex}88)`,
+              borderColor: active ? c.hex : undefined,
+              boxShadow: active ? `0 0 0 2px ${c.hex}66` : undefined,
+            }}
+            aria-label={c.name}
+            title={c.name}
+          >
+            {active && (
+              <CheckCircle2
+                className="absolute inset-0 m-auto w-4 h-4 mix-blend-difference"
+                style={{ color: '#000' }}
+              />
+            )}
+          </button>
+        );
+      })}
+    </div>
+    <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-5 gap-3">
+      {colors.map((c) => {
+        const active = selected === c.id;
+        return (
+          <button
+            key={c.id}
+            onClick={() => onSelect(c.id)}
+            className={cn(
+              'manifest-card relative p-4 text-left transition-all border bg-white/[0.02] hover:bg-white/[0.04]',
               active ? 'border-white/40' : 'border-white/10',
             )}
             style={active ? { borderColor: c.hex, boxShadow: `0 0 0 1px ${c.hex}, 0 20px 60px ${c.hex}33` } : undefined}
           >
             <div
-              className="w-full aspect-square mb-4 rounded-sm"
+              className="w-full aspect-square mb-3 rounded-sm"
               style={{
                 background: `linear-gradient(135deg, ${c.hex} 0%, ${c.hex}88 100%)`,
                 boxShadow: `inset 0 0 30px rgba(0,0,0,0.3)`,
               }}
             />
-            <div className="text-sm font-mono font-black uppercase tracking-tight italic">{c.name}</div>
-            <div className="text-[9px] font-mono font-bold uppercase tracking-[0.2em] text-white/40 italic mt-1">
+            <div className="text-xs font-mono font-black uppercase tracking-tight italic">{c.name}</div>
+            <div className="text-[9px] font-mono font-bold uppercase tracking-[0.2em] text-white/40 italic mt-0.5">
               {c.tagline}
             </div>
             {active && (
-              <div className="absolute top-3 right-3">
+              <div className="absolute top-2 right-2">
                 <CheckCircle2 className="w-4 h-4" style={{ color: c.hex }} />
               </div>
             )}
           </button>
         );
       })}
+    </div>
+    {/* Mobile: show selected color name beneath the swatches */}
+    <div className="sm:hidden text-center pt-1">
+      <div className="text-xs font-mono font-black uppercase italic tracking-widest">
+        {colors.find((c) => c.id === selected)?.name}
+      </div>
+      <div className="text-[9px] font-mono text-white/40 uppercase tracking-widest italic">
+        {colors.find((c) => c.id === selected)?.tagline}
+      </div>
     </div>
   </div>
 );
@@ -603,7 +642,7 @@ const PortalSlide: React.FC<{
       </p>
     </div>
 
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
       {PORTALS.map((p) => {
         const active = selected === p.id;
         const Icon = p.icon;
@@ -613,36 +652,38 @@ const PortalSlide: React.FC<{
             onClick={() => onSelect(p.id)}
             onDoubleClick={() => onConfirm(p.id)}
             className={cn(
-              'manifest-card relative p-5 text-left flex flex-col gap-4 transition-all border bg-white/[0.02] hover:bg-white/[0.05] min-h-[280px]',
+              'manifest-card relative p-3 sm:p-5 text-left flex flex-row md:flex-col gap-3 sm:gap-4 transition-all border bg-white/[0.02] hover:bg-white/[0.05] md:min-h-[260px]',
               active ? 'border-white/40 scale-[1.01]' : 'border-white/10',
             )}
             style={active ? { borderColor: accent, boxShadow: `0 0 0 1px ${accent}, 0 30px 80px ${accent}33` } : undefined}
           >
             <div
-              className="w-11 h-11 border flex items-center justify-center"
+              className="w-9 h-9 sm:w-11 sm:h-11 border flex items-center justify-center shrink-0 self-start"
               style={{ borderColor: active ? accent : 'rgba(255,255,255,0.1)' }}
             >
-              <Icon className="w-5 h-5" style={{ color: active ? accent : 'rgba(255,255,255,0.5)' }} />
+              <Icon className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: active ? accent : 'rgba(255,255,255,0.5)' }} />
             </div>
 
-            <div>
-              <div className="text-[9px] font-mono font-black uppercase tracking-[0.3em] italic mb-1.5" style={{ color: active ? accent : 'rgba(255,255,255,0.4)' }}>
-                {p.tagline}
-              </div>
-              <h3 className="text-xl md:text-2xl font-black italic uppercase tracking-tighter font-mono leading-none">
-                {p.name}
-              </h3>
-            </div>
-
-            <p className="text-xs sm:text-sm text-white/60 leading-relaxed">{p.desc}</p>
-
-            <div className="mt-auto space-y-1.5 pt-3 border-t border-white/5">
-              {p.perks.map((perk) => (
-                <div key={perk} className="flex items-center gap-2 text-[10px] text-white/50">
-                  <CheckCircle2 className="w-3 h-3 flex-shrink-0" style={{ color: accent }} />
-                  <span>{perk}</span>
+            <div className="flex-1 min-w-0 flex flex-col gap-2 md:gap-3">
+              <div>
+                <div className="text-[9px] font-mono font-black uppercase tracking-[0.3em] italic mb-1" style={{ color: active ? accent : 'rgba(255,255,255,0.4)' }}>
+                  {p.tagline}
                 </div>
-              ))}
+                <h3 className="text-base md:text-xl lg:text-2xl font-black italic uppercase tracking-tighter font-mono leading-none">
+                  {p.name}
+                </h3>
+              </div>
+
+              <p className="text-[11px] sm:text-xs text-white/60 leading-relaxed line-clamp-2 md:line-clamp-none">{p.desc}</p>
+
+              <div className="hidden md:block space-y-1 pt-2 border-t border-white/5">
+                {p.perks.map((perk) => (
+                  <div key={perk} className="flex items-center gap-2 text-[10px] text-white/50">
+                    <CheckCircle2 className="w-3 h-3 flex-shrink-0" style={{ color: accent }} />
+                    <span>{perk}</span>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {active && (

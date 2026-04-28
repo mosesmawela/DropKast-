@@ -3,10 +3,16 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Zap, Sparkles, X, ChevronRight, Loader2 } from 'lucide-react';
 import { useAI } from '../../context/AIContext';
 import { useAuth } from '../../context/AuthContext';
+import { useGrowSong } from '../../context/GrowSongContext';
 import { cn } from '../../lib/utils';
 
-export default function GrowMySongButton() {
-  const [isOpen, setIsOpen] = useState(false);
+/**
+ * Modal-only — no floating button. The trigger lives in Navbar
+ * (`GrowSongTrigger`), state is shared via `GrowSongContext`. Mounted
+ * globally inside `Layout` so the modal is available from anywhere.
+ */
+export default function GrowMySongModal() {
+  const { isOpen, close } = useGrowSong();
   const [step, setStep] = useState(1);
   const [releaseTitle, setReleaseTitle] = useState('');
   const [goal, setGoal] = useState('Viral Growth');
@@ -22,16 +28,6 @@ export default function GrowMySongButton() {
 
   return (
     <>
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 left-4 sm:bottom-6 sm:left-6 md:bottom-10 md:left-10 bg-primary px-5 sm:px-8 py-3 sm:py-4 rounded-full text-white font-mono font-black italic tracking-widest uppercase flex items-center gap-2 sm:gap-3 shadow-[0_0_30px_rgba(255,77,0,0.4)] hover:scale-105 active:scale-95 transition-all z-50 group overflow-hidden text-[10px] sm:text-xs"
-      >
-        <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500" />
-        <Zap className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />
-        <span className="relative z-10 hidden xs:inline sm:inline">Grow My Song</span>
-        <span className="relative z-10 inline xs:hidden sm:hidden">Grow</span>
-      </button>
-
       <AnimatePresence>
         {isOpen && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-12">
@@ -39,7 +35,7 @@ export default function GrowMySongButton() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setIsOpen(false)}
+              onClick={() => close()}
               className="absolute inset-0 bg-black/80 backdrop-blur-xl"
             />
 
@@ -51,7 +47,7 @@ export default function GrowMySongButton() {
             >
               <div className="absolute top-0 right-0 p-8">
                 <button 
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => close()}
                   className="text-white/20 hover:text-white transition-colors"
                 >
                   <X className="w-6 h-6" />
@@ -173,7 +169,7 @@ export default function GrowMySongButton() {
                         Refine Parameters
                       </button>
                       <button 
-                         onClick={() => setIsOpen(false)}
+                         onClick={() => close()}
                          className="flex-1 py-4 bg-primary text-white font-mono font-black italic uppercase tracking-[0.2em] text-[10px] hover:bg-primary/80 transition-all"
                       >
                          Launch Campaign

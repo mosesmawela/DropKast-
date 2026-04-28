@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import ThemeToggle from '../ThemeToggle';
 import NotificationsDropdown from '../NotificationsDropdown';
+import GrowSongTrigger from '../GrowSongTrigger';
 import { AnimatePresence, motion } from 'motion/react';
 
 interface NavbarProps {
@@ -164,6 +165,7 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
           >
             <GraduationCap className="w-4 h-4" />
           </Link>
+          <GrowSongTrigger />
           <div className="hidden sm:block">
             <ThemeToggle />
           </div>
