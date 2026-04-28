@@ -1,4 +1,4 @@
-import { Search, LogOut, Terminal, Users, Disc, Radio, Menu, User as UserIcon } from 'lucide-react';
+import { Search, LogOut, Terminal, Users, Disc, Radio, Menu, User as UserIcon, GraduationCap } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
@@ -147,6 +147,23 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
         </div>
 
         <div className="flex items-center gap-3 sm:gap-5 md:gap-8">
+          <Link
+            to="/academy"
+            data-tour="navbar-academy"
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 border border-primary/30 hover:border-primary text-primary text-[10px] font-mono font-black uppercase italic tracking-widest transition-all"
+            title="DropKast Academy"
+          >
+            <GraduationCap className="w-3.5 h-3.5" />
+            <span className="hidden lg:inline">Academy</span>
+          </Link>
+          <Link
+            to="/academy"
+            data-tour="navbar-academy-mobile"
+            className="sm:hidden p-2 text-primary hover:text-primary/70 transition-colors"
+            title="Academy"
+          >
+            <GraduationCap className="w-4 h-4" />
+          </Link>
           <div className="hidden sm:block">
             <ThemeToggle />
           </div>
@@ -155,6 +172,7 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
           <div className="flex items-center gap-3 sm:gap-5 group sm:border-l sm:border-white/5 sm:pl-4 md:pl-6 h-10">
             <Link
               to="/profile"
+              data-tour="navbar-profile"
               className="text-right hidden md:block hover:text-primary transition-colors"
               title="View profile"
             >

@@ -70,10 +70,24 @@ interface SidebarProps {
 }
 
 const TOUR_TARGETS: Record<string, string | undefined> = {
+  '/dashboard': 'nav-dashboard',
+  '/pre-release': 'nav-prerelease',
   '/campaigns': 'nav-campaigns',
+  '/influencers': 'nav-influencers',
+  '/promo': 'nav-promo',
+  '/ugc': 'nav-ugc',
+  '/djs': 'nav-djs',
+  '/reactions': 'nav-reactions',
+  '/social': 'nav-social',
+  '/splits': 'nav-splits',
   '/anr': 'nav-anr',
+  '/analytics': 'nav-analytics',
+  '/earnings': 'nav-earnings',
+  '/assets': 'nav-assets',
+  '/ai-providers': 'nav-ai-providers',
+  '/settings': 'nav-settings',
   '/influencer/missions': 'nav-missions',
-  '/influencer/earnings': 'nav-earnings',
+  '/influencer/earnings': 'nav-influencer-earnings',
   '/dj/packs': 'nav-djpacks',
   '/dj/feedback': 'nav-djfeedback',
 };

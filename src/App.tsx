@@ -59,6 +59,7 @@ const DJFeedback = lazy(() => import('./pages/creator/dj/Feedback'));
 const Layout = lazy(() => import('./components/layout/Layout'));
 const Profile = lazy(() => import('./pages/Profile'));
 const AIProviders = lazy(() => import('./pages/AIProviders'));
+const Academy = lazy(() => import('./pages/Academy'));
 
 import WelcomeScreen from './components/layout/WelcomeScreen';
 
@@ -159,6 +160,7 @@ export default function App() {
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/ai-providers" element={<AIProviders />} />
+                  <Route path="/academy" element={<Academy />} />
                 </Route>
               </Route>
 
