@@ -29,7 +29,8 @@ import {
 import { cn } from '../../lib/utils';
 import { useTheme } from '../../context/ThemeContext';
 import { useWorkspace } from '../../context/WorkspaceContext';
-import type { ModuleId } from '../../lib/workspace';
+import { PRESETS, type ModuleId, type WorkspacePreset } from '../../lib/workspace';
+import { toast } from 'sonner';
 
 const artistNav: Array<{ id: string; icon: any; label: string; path: string; moduleId: ModuleId }> = [
   { id: '01', icon: LayoutDashboard, label: 'Home',         path: '/dashboard',     moduleId: 'home' },
@@ -100,10 +101,32 @@ const TOUR_TARGETS: Record<string, string | undefined> = {
   '/dj/feedback': 'nav-djfeedback',
 };
 
+/** Detect which preset (if any) the current enabled-module set matches exactly. */
+function detectActivePreset(enabled: Set<ModuleId>): WorkspacePreset | 'custom' {
+  const presetKeys: WorkspacePreset[] = ['minimal', 'creator', 'full'];
+  for (const key of presetKeys) {
+    const presetModules = new Set(PRESETS[key].modules);
+    if (presetModules.size !== enabled.size) continue;
+    let match = true;
+    for (const id of presetModules) {
+      if (!enabled.has(id)) { match = false; break; }
+    }
+    if (match) return key;
+  }
+  return 'custom';
+}
+
+const PRESET_BUTTONS: Array<{ id: WorkspacePreset; short: string; label: string }> = [
+  { id: 'minimal', short: 'Min',     label: 'Minimal' },
+  { id: 'creator', short: 'Creator', label: 'Creator' },
+  { id: 'full',    short: 'Full',    label: 'Full' },
+];
+
 export default function Sidebar({ open = false, onClose }: SidebarProps) {
   const location = useLocation();
   const { role } = useTheme();
-  const { isEnabled } = useWorkspace();
+  const { enabled, isEnabled, setPreset } = useWorkspace();
+  const activePreset = detectActivePreset(enabled);
 
   const labelNav: typeof artistNav = [
     { id: '00', icon: Building2, label: 'Roster', path: '/roster', moduleId: 'home' },
@@ -219,18 +242,68 @@ export default function Sidebar({ open = false, onClose }: SidebarProps) {
       </nav>
 
       {/* Footer */}
-      <div className="px-5 py-3 border-t border-[var(--border-main)] shrink-0 flex flex-col gap-2">
-        <div className="flex items-center gap-3 text-white/20">
-          <Lock className="w-3 h-3" />
-          <span className="text-[9px] font-medium uppercase tracking-widest">Encrypted</span>
-        </div>
-        <button
-          onClick={resetPortal}
-          className="flex items-center justify-center gap-3 w-full h-10 border border-white/5 text-white/20 hover:text-primary hover:border-primary transition-all font-mono font-bold text-[9px] uppercase tracking-widest"
+      <div className="px-3 py-3 border-t border-[var(--border-main)] shrink-0 flex flex-col gap-2.5">
+        {/* Quick preset switcher — only for artist/label workspaces */}
+        {(role === 'ARTIST' || role === 'LABEL') && (
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center justify-between px-1">
+              <span className="text-[8px] font-mono font-black text-white/30 tracking-[0.3em] uppercase italic">
+                Workspace
+              </span>
+              <span className="text-[8px] font-mono font-black text-primary tracking-[0.2em] uppercase italic">
+                {activePreset === 'custom' ? 'Custom' : PRESETS[activePreset].label}
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-1">
+              {PRESET_BUTTONS.map((p) => {
+                const isActive = activePreset === p.id;
+                return (
+                  <button
+                    key={p.id}
+                    onClick={() => {
+                      setPreset(p.id);
+                      toast.success(`Switched to ${PRESETS[p.id].label}`, {
+                        description: `${PRESETS[p.id].modules.length} modules enabled`,
+                      });
+                    }}
+                    title={`${PRESETS[p.id].label} — ${PRESETS[p.id].description}`}
+                    className={cn(
+                      'h-9 text-[9px] font-mono font-black uppercase tracking-widest italic transition-all relative overflow-hidden',
+                      isActive
+                        ? 'bg-primary text-white preset-glow'
+                        : 'border border-white/10 text-white/40 hover:border-primary hover:text-white',
+                    )}
+                  >
+                    {p.short}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Home shortcut (replaces useless Switch Portal) */}
+        <Link
+          to="/dashboard"
+          className="flex items-center justify-center gap-2 w-full h-9 border border-white/5 text-white/30 hover:text-primary hover:border-primary transition-all font-mono font-black text-[9px] uppercase tracking-widest italic"
         >
-          <ArrowLeftRight className="w-3 h-3" />
-          <span>Switch Portal</span>
-        </button>
+          <LayoutDashboard className="w-3 h-3" />
+          <span>Home</span>
+        </Link>
+
+        <div className="flex items-center justify-between px-1 pt-1">
+          <div className="flex items-center gap-1.5 text-white/15">
+            <Lock className="w-2.5 h-2.5" />
+            <span className="text-[8px] font-medium uppercase tracking-widest">Encrypted</span>
+          </div>
+          <button
+            onClick={resetPortal}
+            className="text-white/15 hover:text-white/40 transition-colors text-[8px] font-mono font-black uppercase tracking-widest italic"
+            title="Switch portal"
+          >
+            <ArrowLeftRight className="w-3 h-3" />
+          </button>
+        </div>
       </div>
     </aside>
   );
