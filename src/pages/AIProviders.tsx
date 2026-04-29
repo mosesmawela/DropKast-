@@ -10,7 +10,6 @@ import {
   Sparkles,
   TrendingUp,
   ChevronDown,
-  Crown,
   KeyRound,
   GraduationCap,
 } from 'lucide-react';
@@ -62,29 +61,37 @@ export default function AIProviders() {
         </p>
       </header>
 
-      {/* Education preamble: 3 ways to use AI on DropKast */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      {/* Education preamble: 2 ways to use AI on DropKast */}
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <PathCard
           icon={GraduationCap}
-          color="text-blue-400"
-          title="Use System AI"
-          desc="Free out of the box. We've already wired NVIDIA, Groq, and OpenRouter free tiers — start chatting now, no signup needed."
-          cta={{ label: 'Open assistant', href: '/dashboard' }}
+          color="text-green-500"
+          title="System AI (Free)"
+          desc="Already wired and ready. NVIDIA, Groq, and OpenRouter free tiers power the chat assistant out of the box. Zero signup, zero cost."
+          cta={{ label: 'Open chat assistant', href: '/dashboard' }}
         />
         <PathCard
           icon={KeyRound}
-          color="text-green-500"
-          title="Use My Own Keys"
-          desc="Already have an OpenAI / Anthropic / fal.ai key? Plug it in and pay your own bill. Keys stay in your browser."
-          cta={{ label: 'Configure keys', href: '/settings' }}
-        />
-        <PathCard
-          icon={Crown}
           color="text-primary"
-          title="Premium ($15 / mo)"
-          desc="Unlimited Claude chat, Flux Pro images, Veo 3 + Kling 3 video, and priority queues. Skip the per-call billing."
-          cta={{ label: 'Coming soon', href: '/settings' }}
+          title="Bring Your Own Key"
+          desc="Have an Anthropic / OpenAI / fal.ai key? Add it to Settings and DropKast routes through it for higher quality and tool use."
+          cta={{ label: 'Add API keys', href: '/settings' }}
         />
+      </section>
+
+      {/* What works right now */}
+      <section className="manifest-card border border-green-500/20 bg-green-500/5 p-4">
+        <div className="flex items-center gap-2 mb-2">
+          <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
+          <span className="text-[10px] font-mono font-black uppercase tracking-[0.3em] text-green-500 italic">
+            Live & Working Today
+          </span>
+        </div>
+        <p className="text-xs text-[var(--text-main)]/70 leading-relaxed">
+          Chat assistant + A&R critique + campaign strategy + viral ideas all run through our wired text providers.
+          Image and video generation are stubbed — pick a model in the catalog below and we'll wire the adapter when
+          you're ready (most just need an API key in Settings).
+        </p>
       </section>
 
       <div className="flex flex-wrap gap-2">

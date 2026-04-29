@@ -41,7 +41,45 @@ export default function AIAssistant() {
   const [chosenModel, setChosenModel] = useState<string>(() => {
     return localStorage.getItem(RECOMMENDATIONS.chat.storageKey) || RECOMMENDATIONS.chat.recommendedId;
   });
+  const [providerStatus, setProviderStatus] = useState<Record<ProviderId, boolean>>({
+    anthropic: false,
+    nvidia: false,
+    groq: false,
+    cerebras: false,
+    openrouter: false,
+  });
   const provider: ProviderId = modelIdToProvider(chosenModel);
+
+  // On mount, check which providers are configured. If the user's chosen
+  // provider has no key, transparently fall back to the first available
+  // free provider so the first message doesn't 503.
+  useEffect(() => {
+    fetch('/api/ai/providers')
+      .then((r) => r.json())
+      .then((d) => {
+        const map: Record<ProviderId, boolean> = {
+          anthropic: false, nvidia: false, groq: false, cerebras: false, openrouter: false,
+        };
+        for (const p of d.providers || []) map[p.id as ProviderId] = !!p.configured;
+        setProviderStatus(map);
+
+        // Smart fallback: if current provider is unconfigured, pick a working one.
+        if (!map[provider]) {
+          const fallbackOrder: ProviderId[] = ['anthropic', 'groq', 'nvidia', 'cerebras', 'openrouter'];
+          const fallback = fallbackOrder.find((p) => map[p]);
+          if (fallback) {
+            const targetModel = fallback === 'anthropic' ? 'anthropic-sonnet'
+              : fallback === 'groq' ? 'groq'
+              : fallback === 'nvidia' ? 'nvidia-nim'
+              : fallback === 'cerebras' ? 'cerebras'
+              : 'openrouter-free';
+            setChosenModel(targetModel);
+          }
+        }
+      })
+      .catch(() => undefined);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const {
     autoSendDJs,
