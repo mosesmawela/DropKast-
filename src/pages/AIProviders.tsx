@@ -94,6 +94,33 @@ export default function AIProviders() {
         </p>
       </section>
 
+      {/* The differentiator */}
+      <section className="manifest-card border border-primary/30 bg-gradient-to-br from-primary/5 to-transparent p-5">
+        <div className="flex items-center gap-2 mb-2">
+          <Sparkles className="w-4 h-4 text-primary" />
+          <span className="text-[10px] font-mono font-black uppercase tracking-[0.3em] text-primary italic">
+            Trained By Music Professionals
+          </span>
+        </div>
+        <h2 className="text-lg sm:text-xl font-mono font-black uppercase italic tracking-tight text-[var(--text-main)] mb-2">
+          The brain swaps. The expertise stays.
+        </h2>
+        <p className="text-xs text-[var(--text-main)]/70 leading-relaxed mb-3">
+          Pick any model — Claude, GPT-5, Gemini, Kimi K2.6, or a free Llama. The same playbook runs on top: A&R execs,
+          campaign directors, sync agents, and DJ curators authored every prompt that drives the AI in DropKast. That's
+          why our A&R critique sounds like a label exec, not a chatbot.
+        </p>
+        <a
+          href="https://github.com/mosesmawela/DropKast-/tree/main/personas"
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-1 text-[10px] font-mono font-black uppercase tracking-widest italic text-primary hover:underline"
+        >
+          See the AI employees
+          <ExternalLink className="w-3 h-3" />
+        </a>
+      </section>
+
       <div className="flex flex-wrap gap-2">
         {TABS.map((t) => {
           const Icon = t.icon;

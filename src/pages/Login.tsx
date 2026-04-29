@@ -68,7 +68,7 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-black flex items-center justify-center p-6 relative overflow-hidden font-sans uppercase tracking-[0.05em] technical-grid">
       <div className="absolute top-0 left-0 w-full p-8 flex justify-between items-start pointer-events-none opacity-20">
-        <div className="text-[10px] font-black text-white/50 tracking-[0.5em] italic">SECURE_INGESTION_v4.2</div>
+        <div className="text-[10px] font-black text-white/50 tracking-[0.5em] italic">DropKast · Sign In</div>
         <div className="barcode-sim h-8 w-24" />
       </div>
 
@@ -209,17 +209,17 @@ export default function Login() {
                   </div>
                 </div>
                 <h1 className="text-4xl md:text-5xl font-black text-white mb-2 leading-none uppercase italic font-mono">
-                  Terminal Access
+                  Sign In
                 </h1>
-                <p className="text-white/20 text-[9px] font-black tracking-[0.4em] italic uppercase">
-                  Awaiting Identity Credentials
+                <p className="text-white/30 text-[9px] font-black tracking-[0.4em] italic uppercase">
+                  Welcome back
                 </p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-8">
                 <div className="space-y-3">
                   <label className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic">
-                    INPUT::USER_IDENTITY
+                    Email
                   </label>
                   <div className="relative group">
                     <Mail className="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-3 text-white/20 group-focus-within:text-white transition-colors" />
@@ -228,7 +228,7 @@ export default function Login() {
                       required
                       value={form.email}
                       onChange={(e) => setForm({ ...form, email: e.target.value })}
-                      placeholder="ID@STORAGE.CORE"
+                      placeholder="you@email.com"
                       className="w-full bg-transparent border-b border-white/10 py-5 pl-8 pr-4 text-white placeholder:text-white/5 focus:outline-none focus:border-primary transition-all text-sm font-black uppercase italic"
                     />
                   </div>
@@ -237,7 +237,7 @@ export default function Login() {
                 <div className="space-y-3">
                   <div className="flex justify-between items-center px-0">
                     <label className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic">
-                      INPUT::SECURITY_HEX
+                      Password
                     </label>
                   </div>
                   <div className="relative group">
@@ -265,7 +265,7 @@ export default function Login() {
                   className="primary-button w-full h-16 bg-white text-black hover:bg-primary hover:text-white active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-between px-8"
                 >
                   <span className="text-[12px] font-black tracking-widest uppercase italic">
-                    {isLoading ? 'PROVISIONING...' : `ENTER ${selectedPortal.name.toUpperCase()}`}
+                    {isLoading ? 'Signing in...' : `Continue as ${selectedPortal.name}`}
                   </span>
                   <Terminal className="w-4 h-4" />
                 </button>
@@ -275,7 +275,7 @@ export default function Login() {
                 <div className="flex items-center gap-4">
                   <div className="h-[1px] flex-1 bg-white/5" />
                   <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.5em] italic">
-                    EXTERNAL_NODES
+                    Or sign in with
                   </span>
                   <div className="h-[1px] flex-1 bg-white/5" />
                 </div>
@@ -292,10 +292,10 @@ export default function Login() {
 
             <div className="mt-10 text-center relative">
               <div className="barcode-sim h-4 w-20 mx-auto opacity-10 mb-4" />
-              <p className="text-white/20 text-[9px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-4">
-                NO_IDENTITY?{' '}
+              <p className="text-white/30 text-[9px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-4">
+                New here?{' '}
                 <Link to="/signup" className="text-primary hover:underline italic">
-                  PROVISION_NEW_RECORD
+                  Create an account
                 </Link>
               </p>
             </div>

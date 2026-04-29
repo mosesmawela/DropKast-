@@ -33,7 +33,7 @@ export default function ANR() {
 
   const handleSubmitNew = async () => {
     setIsSubmitting(true);
-    notify('ai', 'ASSET_INGESTION', 'Analyzing sonic integrity and preparing editorial packet...');
+    notify('ai', 'Submitting...', 'Sending your track to A&R for review.');
     
     try {
       const response = await fetch('/api/anr', {
@@ -57,23 +57,23 @@ export default function ANR() {
         feedback: "Scan complete. Initial benchmarks show high suitability for Sync licensing. Full report pending."
       };
       setFeedbackItems([newItem, ...feedbackItems]);
-      notify('success', 'SUBMISSION_VERIFIED', 'Submission successfully pushed to A&R queue.');
+      notify('success', 'Submitted', 'Your track is in the A&R queue. Critique drops in a few minutes.');
     } catch (err) {
-      notify('error', 'SUBMISSION_FAILED', 'Failed to reach A&R node.');
+      notify('error', 'Submission failed', 'Could not reach A&R. Try again in a moment.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleAudit = (tier: string) => {
-    notify('ai', 'PROTOCOL_ENGAGED', `Initializing ${tier} audit sequence...`);
+    notify('ai', 'Starting review', `Beginning ${tier.toLowerCase()} review...`);
     setTimeout(() => {
-      notify('success', 'AUDIT_LOCKED', `Assigned specialist code 4082 to current session.`);
+      notify('success', 'Reviewer assigned', `An A&R specialist is now on your submission.`);
     }, 1500);
   };
 
   const viewFullAnalysis = (track: string) => {
-    notify('info', 'DECRYPTING_REPORT', `Loading deep-scan data for ${track}...`);
+    notify('info', 'Loading report', `Pulling the full critique for ${track}...`);
   };
 
   return (
@@ -83,9 +83,9 @@ export default function ANR() {
           <div>
             <div className="flex items-center gap-2 text-primary mb-3 font-mono">
               <MessageSquare className="w-4 h-4" />
-              <span className="text-[11px] font-bold uppercase tracking-widest italic font-mono">Editorial Feedback Portal</span>
+              <span className="text-[11px] font-bold uppercase tracking-widest italic font-mono">A&R · Track Critique</span>
             </div>
-            <h1 className="text-5xl font-black tracking-tighter text-white italic font-mono uppercase">A&R Protocol</h1>
+            <h1 className="text-5xl font-black tracking-tighter text-white italic font-mono uppercase">A&R Feedback</h1>
           </div>
           <div className="flex flex-col items-end gap-2">
             <ModelPicker recommendation={RECOMMENDATIONS['anr-critique']} variant="full" />

@@ -127,7 +127,7 @@ export default function Sidebar({ open = false, onClose }: SidebarProps) {
             <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
           </div>
           <span className="text-[8px] font-medium text-white/30 uppercase tracking-[0.2em]">
-            Next-Gen Distribution
+            Music distribution
           </span>
         </Link>
         <button
@@ -147,7 +147,7 @@ export default function Sidebar({ open = false, onClose }: SidebarProps) {
             data-tour="new-release"
             className="flex items-center justify-between w-full bg-white text-black font-mono font-black uppercase text-[10px] tracking-widest px-4 py-2.5 hover:bg-primary hover:text-white transition-all group active:scale-95"
           >
-            <span>NEW_RELEASE</span>
+            <span>New Release</span>
             <PlusCircle className="w-4 h-4 group-hover:rotate-90 transition-transform" />
           </Link>
         </div>
@@ -197,14 +197,14 @@ export default function Sidebar({ open = false, onClose }: SidebarProps) {
       <div className="px-5 py-3 border-t border-[var(--border-main)] shrink-0 flex flex-col gap-2">
         <div className="flex items-center gap-3 text-white/20">
           <Lock className="w-3 h-3" />
-          <span className="text-[9px] font-medium uppercase tracking-widest">Safe & Secure</span>
+          <span className="text-[9px] font-medium uppercase tracking-widest">Encrypted</span>
         </div>
         <button
           onClick={resetPortal}
           className="flex items-center justify-center gap-3 w-full h-10 border border-white/5 text-white/20 hover:text-primary hover:border-primary transition-all font-mono font-bold text-[9px] uppercase tracking-widest"
         >
           <ArrowLeftRight className="w-3 h-3" />
-          <span>PORTAL_REBOOT</span>
+          <span>Switch Portal</span>
         </button>
       </div>
     </aside>

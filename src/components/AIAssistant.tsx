@@ -93,7 +93,7 @@ export default function AIAssistant() {
   const [history, setHistory] = useState<Message[]>([
     {
       role: 'ai',
-      text: "Master Node connection established. I have live access to your releases, analytics, campaigns, and influencer roster. Ask me anything — \"how is my latest release doing?\", \"what should I post about Buddy Kay this week?\", or \"who should I send my new track to?\"",
+      text: "Hey — I'm your DropKast strategist. I can see your releases, analytics, campaigns, and creator roster in real time. Try asking: \"how is my latest release doing?\", \"what should I post about [your song] this week?\", or \"who should I send my new track to?\"",
     },
   ]);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -251,7 +251,7 @@ export default function AIAssistant() {
                 </button>
                 <div className="w-[1px] h-4 bg-[var(--border-main)] mx-1" />
                 <span className="text-[10px] font-black text-white uppercase tracking-widest italic">
-                  {activeTab === 'CHAT' ? 'Chat' : 'Config'}
+                  {activeTab === 'CHAT' ? 'Strategist' : 'Settings'}
                 </span>
               </div>
               <button onClick={() => setIsOpen(false)} className="text-white/20 hover:text-white transition-colors">
@@ -321,10 +321,10 @@ export default function AIAssistant() {
                   >
                     <div className="space-y-2">
                       <h4 className="text-[10px] font-black italic text-primary uppercase tracking-widest">
-                        Automation Engine
+                        Automation
                       </h4>
-                      <p className="text-[9px] text-white/30 uppercase leading-relaxed">
-                        Modify autonomous permissions for Node_Assistant.
+                      <p className="text-[9px] text-white/40 leading-relaxed">
+                        Let DropKast handle these tasks without asking each time.
                       </p>
                     </div>
 
@@ -341,10 +341,10 @@ export default function AIAssistant() {
                     <div className="pt-8 border-t border-white/5">
                       <div className="p-4 bg-primary/5 border border-primary/20 space-y-2">
                         <div className="flex items-center gap-2 text-[8px] font-black text-primary uppercase italic">
-                          <Zap className="w-3 h-3" /> System Status
+                          <Zap className="w-3 h-3" /> Connected
                         </div>
-                        <p className="text-[8px] text-white/40 uppercase">
-                          Powered by Claude Sonnet 4.6 with live tool access to your catalog data.
+                        <p className="text-[8px] text-white/50 leading-relaxed">
+                          Strategist persona with live access to your catalog. Switch the brain (Claude / GPT-5 / Kimi / NVIDIA / Groq) from the model picker.
                         </p>
                       </div>
                     </div>
@@ -366,7 +366,7 @@ export default function AIAssistant() {
                     onChange={(e) => setMessage(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                     disabled={isSending}
-                    placeholder={isSending ? 'Streaming...' : 'Ask about your releases, analytics, campaigns...'}
+                    placeholder={isSending ? 'Thinking...' : 'Ask about your releases, analytics, campaigns...'}
                     className="w-full bg-[var(--bg-main)] border border-[var(--border-main)] h-12 px-4 pr-12 text-[10px] font-medium text-white placeholder:text-white/20 focus:border-primary outline-none transition-all font-mono disabled:opacity-50"
                   />
                   <button

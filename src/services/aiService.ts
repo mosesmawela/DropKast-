@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { PERSONAS } from '../lib/ai-personas.js';
 
 const SONNET = 'claude-sonnet-4-6';
 const HAIKU = 'claude-haiku-4-5-20251001';
@@ -25,9 +26,8 @@ export async function generateStrategy(releaseTitle: string, genre: string): Pro
   try {
     const res = await c.messages.create({
       model: SONNET,
-      max_tokens: 1024,
-      system:
-        'You are a senior music marketing strategist. Reply with ONLY valid JSON (no prose, no code fences) matching the requested schema.',
+      max_tokens: PERSONAS['campaign-director'].maxTokens ?? 1024,
+      system: PERSONAS['campaign-director'].systemPrompt,
       messages: [
         {
           role: 'user',
@@ -59,9 +59,8 @@ export async function generateViralIdeas(releaseTitle: string) {
   try {
     const res = await c.messages.create({
       model: HAIKU,
-      max_tokens: 768,
-      system:
-        'You generate scrollable, hyper-current TikTok/Reels concepts. Reply with ONLY a JSON array (no prose, no code fences).',
+      max_tokens: PERSONAS['viral-strategist'].maxTokens ?? 768,
+      system: PERSONAS['viral-strategist'].systemPrompt,
       messages: [
         {
           role: 'user',
@@ -128,13 +127,8 @@ export async function critiqueSubmission(input: {
   try {
     const res = await c.messages.create({
       model: SONNET,
-      max_tokens: 2048,
-      system: `You are a senior A&R executive at a major label (think LVRN, Top Dawg, Quality Control). You give blunt, useful feedback that helps independent artists actually break through. You don't sugar-coat.
-
-Reply in two parts:
-1. JSON metadata (single line): {"score": 1-10, "tags": ["string","string","string"]}
-2. ---
-3. Markdown critique with these sections: ## Hook & Memorability / ## Production / ## Lyrical Themes / ## Positioning / ## Comp Artists / ## What To Fix First`,
+      max_tokens: PERSONAS['ar-critic'].maxTokens ?? 2048,
+      system: PERSONAS['ar-critic'].systemPrompt,
       messages: [
         {
           role: 'user',

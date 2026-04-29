@@ -13,7 +13,7 @@
  * separate function-calling protocols). Use Claude (Anthropic) for tool use.
  */
 
-export type TextProviderId = 'anthropic' | 'nvidia' | 'groq' | 'cerebras' | 'openrouter';
+export type TextProviderId = 'anthropic' | 'nvidia' | 'groq' | 'cerebras' | 'openrouter' | 'moonshot' | 'openai' | 'google';
 
 interface ProviderConfig {
   id: TextProviderId;
@@ -58,6 +58,28 @@ const CONFIG: Record<TextProviderId, ProviderConfig> = {
     envVar: 'OPENROUTER_API_KEY',
     baseUrl: 'https://openrouter.ai/api/v1',
     defaultModel: 'meta-llama/llama-3.3-70b-instruct:free',
+  },
+  moonshot: {
+    id: 'moonshot',
+    name: 'Moonshot Kimi K2.6',
+    envVar: 'MOONSHOT_API_KEY',
+    baseUrl: 'https://api.moonshot.ai/v1',
+    defaultModel: 'moonshot-v1-128k',
+  },
+  openai: {
+    id: 'openai',
+    name: 'OpenAI GPT-5',
+    envVar: 'OPENAI_API_KEY',
+    baseUrl: 'https://api.openai.com/v1',
+    defaultModel: 'gpt-5',
+  },
+  google: {
+    id: 'google',
+    name: 'Google Gemini 2.5 Pro',
+    envVar: 'GOOGLE_API_KEY',
+    // Gemini's OpenAI-compatible endpoint (drop-in for OpenAI SDK)
+    baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai',
+    defaultModel: 'gemini-2.5-pro',
   },
 };
 

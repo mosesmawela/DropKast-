@@ -72,7 +72,7 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onFocus={() => setIsFocused(true)}
-              placeholder="SEARCH..."
+              placeholder="Search..."
               className="w-full bg-transparent border-none py-2.5 pl-6 sm:pl-8 pr-2 text-[9px] font-black tracking-widest focus:ring-0 transition-all text-white placeholder:text-white/10 uppercase font-mono"
             />
 
@@ -86,8 +86,8 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
                   className="absolute top-full left-0 right-0 mt-4 bg-black border border-white/10 shadow-2xl backdrop-blur-2xl z-50 overflow-hidden"
                 >
                   <div className="px-6 py-4 border-b border-white/5 bg-white/[0.02]">
-                    <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.4em] italic font-mono">
-                      Creative_Relay_Results
+                    <span className="text-[8px] font-black text-white/30 uppercase tracking-[0.4em] italic font-mono">
+                      Search results
                     </span>
                   </div>
                   <div className="max-h-[300px] overflow-y-auto">
@@ -107,23 +107,23 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
                           {res.type === 'reaction' && <Disc className="w-3.5 h-3.5 text-primary" />}
                           <div>
                             <p className="text-[10px] font-black text-white uppercase italic tracking-tighter">{res.name}</p>
-                            <p className="text-[8px] font-bold text-white/20 uppercase tracking-widest mt-0.5">
-                              {res.type}_NODE
+                            <p className="text-[8px] font-bold text-white/30 uppercase tracking-widest mt-0.5">
+                              {res.type}
                             </p>
                           </div>
                         </button>
                       ))
                     ) : (
                       <div className="px-6 py-8 text-center bg-white/[0.01]">
-                        <p className="text-[9px] font-bold text-white/20 uppercase tracking-widest italic">
-                          Zero matches in current sector
+                        <p className="text-[9px] font-bold text-white/30 uppercase tracking-widest italic">
+                          No matches
                         </p>
                       </div>
                     )}
                   </div>
                   <div className="px-6 py-3 bg-primary/5 text-right">
                     <span className="text-[7px] font-black text-primary uppercase tracking-widest italic">
-                      Protocol: DISCOVERY_v2.1
+                      Search · v2
                     </span>
                   </div>
                 </motion.div>
@@ -136,13 +136,13 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
       <div className="flex items-center gap-3 sm:gap-6 md:gap-12 h-full shrink-0">
         <div className="hidden xl:flex items-center gap-8 h-full border-x border-white/5 px-8 opacity-40">
           <div className="flex flex-col gap-1">
-            <span className="text-[7px] font-black uppercase text-white tracking-widest leading-none">CORE_S_UPTIME</span>
+            <span className="text-[7px] font-black uppercase text-white tracking-widest leading-none">Uptime</span>
             <span className="text-[9px] font-black text-primary leading-none">99.98%</span>
           </div>
           <div className="flex flex-col gap-1">
-            <span className="text-[7px] font-black uppercase text-white tracking-widest leading-none">P_IDENTITY</span>
+            <span className="text-[7px] font-black uppercase text-white tracking-widest leading-none">User ID</span>
             <span className="text-[9px] font-black text-primary leading-none uppercase">
-              {user?.id?.slice(0, 8) || 'S-ARCHIVE'}
+              {user?.id?.slice(0, 8) || 'guest'}
             </span>
           </div>
         </div>
@@ -179,7 +179,7 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
               title="View profile"
             >
               <div className="text-[10px] font-black text-white italic leading-none tracking-widest uppercase group-hover:text-primary transition-colors">
-                {user?.artistName || 'GENERIC_USER'}
+                {user?.artistName || 'Your Profile'}
               </div>
               <div className="text-[8px] text-white/20 font-black uppercase tracking-[0.2em] mt-1 italic">
                 View Profile
