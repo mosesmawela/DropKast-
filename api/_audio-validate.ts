@@ -78,6 +78,22 @@ export async function validateAudio(input: { buffer?: Buffer; path?: string; mim
     errors.push(`MP3 bitrate ${bitrateKbps}kbps is below ${MIN_MP3_BITRATE_KBPS}kbps. Provide a higher-quality file.`);
   }
 
+  // ---- Loudness / mastering check ----
+  // We don't run a full ITU BS.1770 LUFS analysis here (that needs ffmpeg
+  // or wasm decoding which is heavy for serverless). Instead we read the
+  // declared replay-gain / peak metadata when present and flag obvious
+  // over-mastering: peak > -0.5 dBFS = clipping risk, expected for streaming
+  // is -1.0 dBFS true peak, integrated -14 LUFS.
+  const peakDb = parseReplayGainPeak((metadata as any).native, (metadata as any).common);
+  const integratedLufs = parseReplayGainLufs((metadata as any).native, (metadata as any).common);
+  if (peakDb !== null && peakDb > -0.5) {
+    warnings.push(`Peak ${peakDb.toFixed(2)} dBFS — risk of clipping after streaming codec. Aim for true-peak ≤ -1.0 dBFS.`);
+  }
+  if (integratedLufs !== null) {
+    if (integratedLufs > -8) warnings.push(`Integrated loudness ${integratedLufs.toFixed(1)} LUFS is hot. Streaming target is -14 LUFS; you'll be turned down.`);
+    if (integratedLufs < -20) warnings.push(`Integrated loudness ${integratedLufs.toFixed(1)} LUFS is quiet. Streaming target is -14 LUFS; track will sound weak next to peers.`);
+  }
+
   return {
     ok: errors.length === 0,
     errors,
@@ -90,8 +106,52 @@ export async function validateAudio(input: { buffer?: Buffer; path?: string; mim
       container,
       codec,
       bitrateKbps,
+      peakDb: peakDb ?? undefined,
+      integratedLufs: integratedLufs ?? undefined,
     },
   };
+}
+
+/** Pull a peak-amplitude value (dBFS) out of any embedded ReplayGain tags. */
+function parseReplayGainPeak(native: any, common: any): number | null {
+  // Standard music-metadata exposes ReplayGain in `common.replaygain_track_peak.dB`.
+  const rg = common?.replaygain_track_peak ?? common?.replaygain_album_peak;
+  if (rg && typeof rg.dB === 'number') return rg.dB;
+  if (rg && typeof rg.ratio === 'number' && rg.ratio > 0) return 20 * Math.log10(rg.ratio);
+  // Fallback: scan native tags for REPLAYGAIN_TRACK_PEAK / R128_TRACK_GAIN
+  if (!native) return null;
+  for (const groups of Object.values(native) as any[]) {
+    if (!Array.isArray(groups)) continue;
+    for (const tag of groups) {
+      if (typeof tag?.id === 'string' && /TRACK_PEAK|TRUE_PEAK/i.test(tag.id) && tag.value) {
+        const num = parseFloat(String(tag.value));
+        if (!Number.isNaN(num)) return num <= 0 ? num : 20 * Math.log10(num);
+      }
+    }
+  }
+  return null;
+}
+
+/** Pull an integrated-loudness (LUFS) value out of embedded tags if present. */
+function parseReplayGainLufs(native: any, common: any): number | null {
+  const rg = common?.replaygain_track_gain;
+  // Replay-gain target for streaming services is roughly -18 LUFS reference.
+  // gain_dB is the difference from that reference. So LUFS ≈ -18 - gain.
+  if (rg && typeof rg.dB === 'number') return -18 - rg.dB;
+  if (!native) return null;
+  for (const groups of Object.values(native) as any[]) {
+    if (!Array.isArray(groups)) continue;
+    for (const tag of groups) {
+      if (typeof tag?.id === 'string' && /R128_TRACK_GAIN|INTEGRATED_LOUDNESS|REPLAYGAIN_TRACK_GAIN/i.test(tag.id) && tag.value !== undefined) {
+        const num = parseFloat(String(tag.value));
+        if (Number.isNaN(num)) continue;
+        // R128_TRACK_GAIN is in Q7.8 units relative to -23 LUFS
+        if (/R128/i.test(tag.id)) return -23 - num / 256;
+        return -18 - num;
+      }
+    }
+  }
+  return null;
 }
 
 const MIN_COVER_PX = 3000;

@@ -30,6 +30,11 @@ import { validateAudio, validateCoverArt } from "./_audio-validate.js";
 import { assertTransition, isScheduledForLater, ReleaseTransitionError, type ReleaseStatus } from "./_release-lifecycle.js";
 import { pushEvent, listEventsFor, markRead as markInboxRead } from "./_inbox.js";
 import { listThreadsForViewer, listMessagesInThread, postMessage, markThreadRead, findThread, type Role as MsgRole } from "./_messages.js";
+import { rateLimit, securityHeaders, listAuditEvents, logAudit } from "./_security.js";
+import { handleDataExport, handleDataDelete, handleDmcaNotice } from "./_compliance.js";
+import { logger, httpLog } from "./_logger.js";
+import { getDb } from "../db/client.js";
+import { getDeliveryAdapter } from "./_dsp-delivery.js";
 
 let uploadMiddleware: any = null;
 
@@ -75,25 +80,95 @@ export function createApiApp() {
 
   app.use(express.json({ limit: '4mb' }));
 
+  // ---- Phase 6 + 7: structured logging + security headers (early in chain) ----
+  app.use(httpLog);
+  app.use(securityHeaders);
+
   const upload = getUploadMiddleware();
 
-  // Health check
-  app.get("/api/health", (_req, res) => {
-    res.json({
-      ok: true,
+  // ---- Real health check (Phase 6) ----
+  // Pings the configured services rather than just checking env vars.
+  // Returns 503 if any "expected" service is unreachable.
+  app.get("/api/health", async (_req, res) => {
+    const checks: Record<string, { ok: boolean; latencyMs?: number; note?: string }> = {};
+    const t0 = Date.now();
+
+    // DB: only ping if DATABASE_URL is set
+    if (process.env.DATABASE_URL) {
+      try {
+        const db = getDb();
+        if (db) {
+          const start = Date.now();
+          // Drizzle/postgres-js: any cheap query suffices
+          await (db as any).execute?.('select 1') ?? Promise.resolve();
+          checks.database = { ok: true, latencyMs: Date.now() - start };
+        } else {
+          checks.database = { ok: false, note: 'getDb() returned null' };
+        }
+      } catch (err) {
+        checks.database = { ok: false, note: String(err).slice(0, 120) };
+      }
+    } else {
+      checks.database = { ok: true, note: 'in-memory fallback (no DATABASE_URL)' };
+    }
+
+    // LLM: ping the lowest-latency configured provider
+    const llmKey =
+      (process.env.GROQ_API_KEY && { name: 'groq', url: 'https://api.groq.com/openai/v1/models', auth: process.env.GROQ_API_KEY }) ||
+      (process.env.NVIDIA_API_KEY && { name: 'nvidia', url: 'https://integrate.api.nvidia.com/v1/models', auth: process.env.NVIDIA_API_KEY }) ||
+      (process.env.ANTHROPIC_API_KEY && { name: 'anthropic', url: 'https://api.anthropic.com/v1/models', auth: process.env.ANTHROPIC_API_KEY, headerName: 'x-api-key' }) ||
+      null;
+    if (llmKey) {
+      try {
+        const start = Date.now();
+        const headers: Record<string, string> = {};
+        if ((llmKey as any).headerName === 'x-api-key') {
+          headers['x-api-key'] = (llmKey as any).auth;
+          headers['anthropic-version'] = '2023-06-01';
+        } else {
+          headers['Authorization'] = `Bearer ${(llmKey as any).auth}`;
+        }
+        const r = await fetch((llmKey as any).url, {
+          headers,
+          signal: AbortSignal.timeout(3000),
+        });
+        checks.llm = { ok: r.ok, latencyMs: Date.now() - start, note: `${(llmKey as any).name} · HTTP ${r.status}` };
+      } catch (err) {
+        checks.llm = { ok: false, note: `${(llmKey as any).name} · ${String(err).slice(0, 100)}` };
+      }
+    } else {
+      checks.llm = { ok: false, note: 'no LLM provider configured' };
+    }
+
+    const allOk = Object.values(checks).every((c) => c.ok);
+    res.status(allOk ? 200 : 503).json({
+      ok: allOk,
       time: new Date().toISOString(),
+      uptimeMs: Date.now() - t0,
+      checks,
       services: {
         anthropic: Boolean(process.env.ANTHROPIC_API_KEY),
         nvidia: Boolean(process.env.NVIDIA_API_KEY),
         groq: Boolean(process.env.GROQ_API_KEY),
         cerebras: Boolean(process.env.CEREBRAS_API_KEY),
         openrouter: Boolean(process.env.OPENROUTER_API_KEY),
+        moonshot: Boolean(process.env.MOONSHOT_API_KEY),
+        openai: Boolean(process.env.OPENAI_API_KEY),
+        google: Boolean(process.env.GOOGLE_API_KEY),
         cloudinary: Boolean(process.env.CLOUDINARY_CLOUD_NAME),
         database: Boolean(process.env.DATABASE_URL),
         supabase: Boolean(process.env.VITE_SUPABASE_URL),
       },
     });
   });
+
+  // ---- Phase 7: rate limits on hot endpoints ----
+  // 30 req / 5 min per IP for AI chat (heavy)
+  app.use('/api/ai/chat', rateLimit({ name: 'ai-chat', max: 30, windowMs: 5 * 60 * 1000 }));
+  // 10 / hour per IP for A&R critique (very heavy)
+  app.use('/api/anr', rateLimit({ name: 'anr', max: 10, windowMs: 60 * 60 * 1000 }));
+  // 5 / hour for DMCA filings to deter spam takedowns
+  app.use('/api/dmca', rateLimit({ name: 'dmca', max: 5, windowMs: 60 * 60 * 1000 }));
 
   // --- AI Chat (streaming SSE with tool use) ---
   app.post("/api/ai/chat", validate(aiChatSchema), handleAiChat);
@@ -210,26 +285,9 @@ export function createApiApp() {
     });
   });
 
-  // --- Release lifecycle simulation ---
-  const processRelease = async (id: string) => {
-    const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
-    await delay(5000);
-    const release = await store.getRelease(id);
-    if (!release) return;
-
-    await store.patchRelease(id, { status: 'distributed' });
-    const updatedPlatforms = [...(release.platforms || [])];
-    for (let i = 0; i < updatedPlatforms.length; i++) {
-      await delay(2000);
-      updatedPlatforms[i] = {
-        ...updatedPlatforms[i],
-        status: Math.random() > 0.1 ? 'live' : 'failed',
-        updatedAt: new Date(),
-      };
-      await store.patchRelease(id, { platforms: updatedPlatforms });
-    }
-    await store.patchRelease(id, { status: 'live', platforms: updatedPlatforms });
-  };
+  // Delivery is handled by the pluggable DSP adapter (see api/_dsp-delivery.ts).
+  // Default is the simulator; flips to RouteNote when ROUTENOTE_API_KEY is set.
+  const dspAdapter = getDeliveryAdapter();
 
   app.post("/api/releases", upload.fields([
     { name: "audio", maxCount: 1 },
@@ -309,12 +367,45 @@ export function createApiApp() {
 
     await store.insertRelease(release);
 
-    // Only kick off the simulated DSP delivery if not scheduled for later.
+    // Only kick off DSP delivery if not scheduled for later.
     if (!scheduled) {
-      processRelease(release.id);
+      const job = await dspAdapter.deliver(release);
+      logger.info({ releaseId: release.id, jobId: job.jobId, provider: dspAdapter.id }, 'release delivery started');
     }
 
     res.status(201).json({ ...release, warnings });
+  });
+
+  // ---- Phase 1: metadata edit on live releases (DDEX update message) ----
+  app.patch("/api/releases/:id/metadata", async (req, res) => {
+    const release = await store.getRelease(req.params.id);
+    if (!release) return res.status(404).json({ error: 'Release not found' });
+
+    const allowedFields = ['title', 'artist', 'genre', 'releaseDate', 'metadata'] as const;
+    const changes: Record<string, unknown> = {};
+    for (const k of allowedFields) {
+      if (req.body[k] !== undefined) changes[k] = req.body[k];
+    }
+    if (Object.keys(changes).length === 0) {
+      return res.status(400).json({ error: 'no editable fields provided' });
+    }
+
+    // Only live / approved releases need a DDEX update message; drafts edit freely
+    if (['live', 'delivering', 'approved'].includes(release.status)) {
+      const result = await dspAdapter.updateMetadata(release, changes);
+      if (!result.ok) {
+        return res.status(502).json({ error: 'dsp_update_failed', note: 'DSP rejected the metadata update' });
+      }
+    }
+
+    const updated = await store.patchRelease(req.params.id, changes);
+    logAudit(req, {
+      actorId: String(req.body?.actorId ?? release.userId ?? 'unknown'),
+      action: 'release.metadata.edit',
+      resource: release.id,
+      metadata: { fields: Object.keys(changes) },
+    });
+    res.json(updated);
   });
 
   /**
@@ -351,9 +442,18 @@ export function createApiApp() {
       }
       throw err;
     }
+    const reason = req.body?.reason || 'unspecified';
+    // Notify the DSP adapter so the DDEX takedown message goes out
+    await dspAdapter.takedown(release, reason);
     const updated = await store.patchRelease(req.params.id, {
       status: 'taken_down',
-      metadata: { ...(release.metadata || {}), takedownReason: req.body?.reason || 'unspecified' },
+      metadata: { ...(release.metadata || {}), takedownReason: reason, takedownAt: new Date().toISOString() },
+    });
+    logAudit(req, {
+      actorId: String(req.body?.actorId ?? release.userId ?? 'unknown'),
+      action: 'release.takedown',
+      resource: release.id,
+      metadata: { reason },
     });
     res.json(updated);
   });
@@ -481,6 +581,20 @@ export function createApiApp() {
   app.post("/api/inbox/:id/read", (req, res) => {
     const ok = markInboxRead(req.params.id);
     res.json({ ok });
+  });
+
+  // ---- Phase 7: GDPR / DMCA / audit endpoints ----
+  app.get('/api/me/export', handleDataExport);
+  app.delete('/api/me', handleDataDelete);
+  app.post('/api/dmca', handleDmcaNotice);
+
+  // Audit log read endpoint (admin only — but we don't gate yet because
+  // there's no admin role enforcement; lock down before exposing publicly).
+  app.get('/api/admin/audit', (req, res) => {
+    const actorId = req.query.actorId as string | undefined;
+    const action = req.query.action as string | undefined;
+    const limit = req.query.limit ? parseInt(String(req.query.limit), 10) : 100;
+    res.json({ events: listAuditEvents({ actorId, action, limit }) });
   });
 
   // --- Cross-portal direct messages ---

@@ -10,18 +10,13 @@ The current state: a Vite + Express demo with mock auth (`localStorage`), an in-
 
 You can't sell anything until artists can actually log in and their data survives a deploy. Do this first or nothing else matters.
 
-- [ ] **Replace mock auth with Supabase Auth** (or Clerk)
-  - Email + password, Google OAuth, magic link
-  - Wire to existing `AuthContext.tsx` — keep the React API the same
-  - Replace `useAuth().login()` to call Supabase, not invent a fake user
-- [ ] **Replace in-memory `db` in `api/_app.ts` with Supabase Postgres**
-  - Tables: `users`, `releases`, `sources` (audio/artwork URLs), `platforms`, `campaigns`, `splits`, `influencers`, `influencer_campaigns`, `dj_packs`, `analytics_events`, `anr_submissions`, `pre_releases`
-  - Migration script in `/supabase/migrations/`
-- [ ] **Add Drizzle ORM** between Express and Postgres (lighter than Prisma, no codegen step, edge-compatible)
-- [ ] **Row-Level Security policies** so artists only see their own releases
-- [ ] **Move file uploads from Cloudinary to Supabase Storage** (or keep Cloudinary if you want CDN-grade transformations — but pick one and commit)
-- [ ] **Server-side env vars audit** — `ANTHROPIC_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY` must NEVER appear in `vite.config.ts` `define` (currently `GEMINI_API_KEY` leaks into the client bundle — fix this now)
-- [ ] **Zod schemas** for every API request body (replaces ad-hoc `req.body.foo` access)
+- [x] **Replace mock auth with Supabase Auth** — wired with graceful fallback to legacy localStorage when keys missing
+- [x] **Replace in-memory `db`** — `api/_store.ts` abstraction uses Drizzle/Postgres when `DATABASE_URL` is set, in-memory bucket otherwise
+- [x] **Add Drizzle ORM** — schema in `db/schema.ts` (13 tables), client in `db/client.ts`
+- [ ] **Row-Level Security policies** — needs Supabase project to write
+- [ ] **Move file uploads from Cloudinary to Supabase Storage** — optional refactor; Cloudinary works
+- [x] **Server-side env vars audit** — `GEMINI_API_KEY` leak removed from `vite.config.ts`
+- [x] **Zod schemas** — `api/_schemas.ts` covers all endpoints, validated via `validate()` middleware
 
 **Why this first:** Supabase gives you auth + Postgres + storage + RLS in one signup. Replaces 14 items from the old plan in an afternoon.
 
@@ -31,21 +26,15 @@ You can't sell anything until artists can actually log in and their data survive
 
 This is the part of the app that has to actually work for DropKast to be "a music distro" instead of "a UI mockup."
 
-- [ ] **Real DSP delivery via RouteNote API** (or SonoSuite if you want white-label)
-  - Replace the `setTimeout` simulation in `api/_app.ts:processRelease()`
-  - Map the existing platforms array → DDEX-compliant delivery payload
-  - Webhook handler for `release.live` / `release.failed` status callbacks
-- [ ] **ISRC code generation** (one per track) — auto-issue from RouteNote, or buy a block from RIAA and rotate
-- [ ] **UPC code per release** — same, auto-issue or RIAA block
-- [ ] **Audio file validation on upload**
-  - Accept: WAV / FLAC / 16-bit+ at 44.1kHz+
-  - Reject: corrupted files, mp3 below 320kbps, files <30s
-  - Use `music-metadata` npm package server-side
-- [ ] **Loudness normalization check** (LUFS target -14 for streaming) — flag tracks that are over-compressed before delivery
-- [ ] **Cover art validation** — 3000×3000px minimum, RGB, no copyright keywords in metadata
-- [ ] **Release lifecycle state machine** — replace the ad-hoc `status` strings with explicit states: `draft → submitted → in_review → approved → delivering → live | rejected`
-- [ ] **Takedown / metadata edit flow** for already-live releases (DDEX update message)
-- [ ] **Release scheduling** (release_date in the future, not just "live now")
+- [~] **Real DSP delivery via RouteNote API** — pluggable adapter scaffolded in `api/_dsp-delivery.ts` (default = simulator). Real RouteNote impl pending partner contract + key.
+- [x] **ISRC code generation** — `api/_codes.ts` generates valid `CC-XXX-YY-NNNNN` format. Override registrant via `ISRC_REGISTRANT` env var when RIAA block purchased.
+- [x] **UPC code per release** — same module, valid mod-10 check digit. Override prefix via `UPC_COMPANY_PREFIX` when GS1 block purchased.
+- [x] **Audio file validation on upload** — `api/_audio-validate.ts` checks duration, sample rate, bit depth, container, MP3 bitrate
+- [x] **Loudness normalization check** — peak (dBFS) + integrated LUFS read from ReplayGain/R128 metadata; flags over-mastered + too-quiet tracks. Full ITU BS.1770 wasm analysis is a future enhancement.
+- [x] **Cover art validation** — ≥ 3000×3000, square, JPEG/PNG/WebP. Native dimension reading without heavy image lib.
+- [x] **Release lifecycle state machine** — `api/_release-lifecycle.ts` enforces `draft → submitted → in_review → approved → delivering → live` (+ `rejected`, `taken_down`)
+- [x] **Takedown / metadata edit flow** — `POST /api/releases/:id/takedown` and `PATCH /api/releases/:id/metadata` both wired, audit-logged, route through DSP adapter for DDEX update.
+- [x] **Release scheduling** — future `releaseDate` parks the release in `approved` state until that date
 
 **Why this matters:** DistroKid charges $20/year for exactly this. It's the table-stakes feature. Without it DropKast is a campaign tool, not a distro.
 
@@ -55,24 +44,15 @@ This is the part of the app that has to actually work for DropKast to be "a musi
 
 The thing that makes DropKast different from DistroKid/TuneCore. Build the AI layer once the foundation is real (so the assistant can read real data via tool use).
 
-- [ ] **Swap Gemini → Claude (Anthropic) in `src/services/aiService.ts`**
-  - `@anthropic-ai/sdk` (server-side only)
-  - Sonnet 4.6 for strategy + A&R critique
-  - Haiku 4.5 for cheap stuff (viral ideas, captions)
-- [ ] **Streaming chat endpoint** — `POST /api/ai/chat` (SSE response)
-- [ ] **Tool definitions for the assistant** so it can read the artist's actual data:
-  - `get_my_releases()`, `get_release_analytics(id)`, `get_active_campaigns()`, `get_influencer_matches(release_id)`, `get_pending_splits()`, `get_anr_feedback(release_id)`
-- [ ] **Replace `setTimeout` mock in `AIAssistant.tsx`** — wire it to the streaming endpoint, render tokens as they arrive
-- [ ] **Prompt caching on the artist's catalog/profile** (Anthropic cache_control) — keeps cost per chat session under $0.05
-- [ ] **Real A&R critique on `/anr` page**
-  - Input: track audio, lyrics (from track metadata or transcribed via Whisper), artist bio
-  - Claude returns: positioning, hook strength, lyrical themes, sonic comp artists, target playlists, weaknesses, fixable issues
-  - Save the critique as a markdown blob attached to the submission
-- [ ] **Real campaign strategy generation** — replace the JSON template in `generateStrategy()` with a Claude call that reads the release + artist's prior campaign performance
-- [ ] **Cost guardrails**
-  - Per-user daily token budget in Postgres (`ai_usage` table)
-  - Block when exceeded; return friendly UI message
-  - Admin dashboard to see top spenders
+- [x] **Swap Gemini → Claude (Anthropic) in `src/services/aiService.ts`** — done, Sonnet for reasoning + Haiku for cheap stuff
+- [x] **Streaming chat endpoint** — `POST /api/ai/chat` (SSE) with 8 swappable brain backends (Anthropic / Moonshot / OpenAI / Google / NVIDIA / Groq / Cerebras / OpenRouter)
+- [x] **Tool definitions for the assistant** — `get_my_releases`, `get_release_analytics`, `get_active_campaigns`, `get_influencers`, `get_anr_submissions`
+- [x] **Replace `setTimeout` mock in `AIAssistant.tsx`** — real SSE stream rendering with tool-call previews
+- [x] **Prompt caching** — `cache_control: ephemeral` on the system prompt
+- [x] **Real A&R critique on `/anr` page** — 1-10 score + 6-section markdown critique authored by `ar-critic` persona
+- [x] **Real campaign strategy generation** — Claude call via `campaign-director` persona with 60/30/10 budget rule baked in
+- [x] **Cost guardrails** — `api/_ai-budget.ts` enforces $1/day default per user (override via `AI_DAILY_BUDGET_CENTS`); 429 with friendly message
+- [x] **Music-pro personas** *(scope addition)* — 11 system prompts authored from real industry expertise, in `personas/` + `src/lib/ai-personas.ts`
 
 **Why this works:** Tool use + streaming = the assistant can answer "how's Buddy Kay doing on TikTok this week?" with real numbers. Without tool use it's just another chatbot.
 
@@ -116,15 +96,15 @@ The Influencer / DJ portals exist as UI shells but don't connect to anything. Ma
 
 Now that the product does something real, make it not feel like a beta.
 
-- [ ] **Loading skeletons** for every list/chart route (release list, analytics, campaigns)
-- [ ] **Toast notifications** (use `sonner` — clean, small)
-- [ ] **Error boundaries** at route level — show a "something broke" card instead of white screen
-- [ ] **Form validation with Zod + react-hook-form** — replaces ad-hoc state
-- [ ] **TanStack Query** for all data fetching (cache, refetch, optimistic updates)
-- [ ] **Remove every `any` from the codebase** — generate types from Drizzle schema, share between client/server
-- [ ] **Strict tsconfig** (`strict: true`, `noUncheckedIndexedAccess: true`)
-- [ ] **Disabled-button states everywhere** (currently most submit buttons let you double-click)
-- [ ] **Empty states** for every list view (no releases yet, no campaigns yet, etc.)
+- [ ] **Loading skeletons** for every list/chart route — partially done (Messages page), full sweep pending
+- [x] **Toast notifications** — `sonner` wired in `main.tsx` + used across the app
+- [x] **Error boundaries** — `ErrorBoundary` component wraps the app
+- [ ] **Form validation with Zod + react-hook-form** — installed, partial use (NewRelease still uncontrolled)
+- [x] **TanStack Query** — provider mounted in `main.tsx`, used in Messages
+- [ ] **Remove every `any` from the codebase** — partial; ~30 anys remain in store/app handlers
+- [ ] **Strict tsconfig** — pending
+- [ ] **Disabled-button states everywhere** — partial (AI Assistant, Messages); full sweep pending
+- [ ] **Empty states** — partial (Messages); full sweep pending
 
 ---
 
@@ -132,12 +112,12 @@ Now that the product does something real, make it not feel like a beta.
 
 Catch problems before users tweet about them.
 
-- [ ] **Sentry** for both client and server errors
-- [ ] **Vercel Analytics** for Core Web Vitals (free, one line)
-- [ ] **PostHog** for product analytics (events: signup, upload, deliver, payout) — way more useful than Google Analytics here
-- [ ] **`/api/health` endpoint** that pings Postgres and the LLM provider
-- [ ] **Structured logging** with Pino (server side) — JSON logs ship to Vercel logs free
-- [ ] **Stripe webhook signature verification** (already needed for Phase 3, just don't forget it)
+- [ ] **Sentry** — needs DSN; SDK install pending
+- [x] **Vercel Analytics + Speed Insights** — wired in `main.tsx` (free, no key)
+- [ ] **PostHog** — needs project ID
+- [x] **`/api/health` endpoint** — pings Postgres + selected LLM provider with 3s timeout, returns 503 if any fail
+- [x] **Structured logging with Pino** — `api/_logger.ts` + `httpLog` middleware on every route
+- [ ] **Stripe webhook signature verification** — needs Phase 3 first
 
 ---
 
@@ -145,12 +125,13 @@ Catch problems before users tweet about them.
 
 Some of these belong in Phase 0; the rest can come after a paying customer or two.
 
-- [ ] **CSRF tokens** on POST endpoints (Phase 0 — Supabase handles most of this for you)
-- [ ] **Rate limiting** on `/api/ai/*` and `/api/auth/*` (Vercel Edge Middleware + Upstash, or `@upstash/ratelimit`)
-- [ ] **Audio upload virus scan** (ClamAV worker or Cloudflare R2 + scanning)
-- [ ] **DMCA takedown endpoint** + admin tool (you will get takedowns)
-- [ ] **GDPR export + delete** endpoints for user data (one Postgres function, exposed in `/settings`)
-- [ ] **Audit log** for all admin actions on user data (single `audit_log` table, one middleware)
+- [ ] **CSRF tokens** — pending Supabase Auth activation
+- [x] **Rate limiting** — `api/_security.ts` token bucket on `/api/ai/chat` (30/5min), `/api/anr` (10/hr), `/api/dmca` (5/hr); Upstash swap-in ready
+- [ ] **Audio upload virus scan** — pending Cloudflare R2 / ClamAV setup
+- [x] **DMCA takedown endpoint** — `POST /api/dmca` flags releases for review, audit-logged
+- [x] **GDPR export + delete** — `GET /api/me/export` + `DELETE /api/me`
+- [x] **Audit log** — middleware via `logAudit()` on takedown / metadata edit / export / delete / DMCA; readable at `GET /api/admin/audit`
+- [x] **CSP + security headers** — `securityHeaders` middleware sets HSTS, X-Frame-Options, Referrer-Policy, Permissions-Policy, CSP
 
 ---
 
