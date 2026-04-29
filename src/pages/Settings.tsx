@@ -29,6 +29,15 @@ import { useTheme, VisualStyle } from '../context/ThemeContext';
 import { useAI } from '../context/AIContext';
 import { useTutorial } from '../context/TutorialContext';
 import { useAuth } from '../context/AuthContext';
+import { useWorkspace } from '../context/WorkspaceContext';
+import {
+  MODULES,
+  PRESETS,
+  CATEGORY_LABEL as MODULE_CAT_LABEL,
+  CATEGORY_DESCRIPTION as MODULE_CAT_DESC,
+  type ModuleCategory,
+  type WorkspacePreset,
+} from '../lib/workspace';
 import Switch from '../components/ui/Switch';
 
 const styles: { id: VisualStyle; label: string; icon: any; desc: string }[] = [
@@ -56,6 +65,7 @@ const PRESET_VIBES = [
 
 const TABS = [
   { id: 'IDENTITY', label: 'Identity', icon: User },
+  { id: 'WORKSPACE', label: 'Workspace', icon: Box },
   { id: 'APPEARANCE', label: 'Appearance', icon: Palette },
   { id: 'AI', label: 'AI Engine', icon: Sparkles },
   { id: 'TUTORIAL', label: 'Tutorial', icon: Zap },
@@ -74,6 +84,7 @@ export default function Settings() {
   const { autoSendDJs, autoGenerateContent, autoOptimizeAds, toggleAutoSendDJs, toggleAutoGenerateContent, toggleAutoOptimizeAds } = useAI();
   const { enabled: tutorialEnabled, setEnabled: setTutorialEnabled, start: startTutorial } = useTutorial();
   const { logout } = useAuth();
+  const { enabled: enabledModules, toggle: toggleModule, setPreset: setWorkspacePreset } = useWorkspace();
 
   const [activeTab, setActiveTab] = useState<TabId>('IDENTITY');
   const [customColor, setCustomColor] = useState('#FF4D00');
@@ -171,6 +182,98 @@ export default function Settings() {
                 })}
               </div>
             </Card>
+          )}
+
+          {activeTab === 'WORKSPACE' && (
+            <>
+              <Card
+                title="Build your studio"
+                desc="Turn modules on or off. Hide what you don't use — your sidebar stays clean. Your choice is saved instantly."
+              >
+                <div className="space-y-3 mb-6">
+                  <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic">Quick presets</p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {(Object.keys(PRESETS) as WorkspacePreset[]).map((p) => {
+                      const preset = PRESETS[p];
+                      return (
+                        <button
+                          key={p}
+                          onClick={() => setWorkspacePreset(p)}
+                          className="manifest-card p-5 bg-dark border border-white/10 hover:border-primary text-left transition-all group"
+                        >
+                          <div className="text-base font-black italic text-white mb-2 group-hover:text-primary transition-colors">
+                            {preset.label}
+                          </div>
+                          <div className="text-[11px] text-white/40 leading-relaxed italic mb-3">
+                            {preset.description}
+                          </div>
+                          <div className="text-[9px] font-black text-primary uppercase tracking-widest italic">
+                            {preset.modules.length} modules
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="border-t border-white/10 pt-6 space-y-8">
+                  {(['core', 'ai-tools', 'creators', 'business'] as ModuleCategory[]).map((cat) => {
+                    const inCat = MODULES.filter((m) => m.category === cat);
+                    if (!inCat.length) return null;
+                    return (
+                      <div key={cat} className="space-y-3">
+                        <div>
+                          <h4 className="text-sm font-black italic text-white tracking-tight">
+                            {MODULE_CAT_LABEL[cat]}
+                          </h4>
+                          <p className="text-[11px] text-white/40 italic mt-1">{MODULE_CAT_DESC[cat]}</p>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                          {inCat.map((m) => {
+                            const isOn = enabledModules.has(m.id);
+                            const isLocked = !!m.required;
+                            return (
+                              <button
+                                key={m.id}
+                                onClick={() => !isLocked && toggleModule(m.id)}
+                                disabled={isLocked}
+                                className={cn(
+                                  'flex items-start gap-3 p-3 border transition-all text-left',
+                                  isOn
+                                    ? 'border-primary bg-primary/5'
+                                    : 'border-white/5 hover:border-white/20',
+                                  isLocked && 'opacity-60 cursor-not-allowed',
+                                )}
+                              >
+                                <div
+                                  className={cn(
+                                    'w-5 h-5 border-2 flex items-center justify-center shrink-0 mt-0.5',
+                                    isOn ? 'border-primary bg-primary' : 'border-white/20',
+                                  )}
+                                >
+                                  {isOn && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="text-sm font-black text-white italic flex items-center gap-2">
+                                    {m.label}
+                                    {isLocked && (
+                                      <span className="text-[8px] font-black text-white/30 uppercase tracking-widest italic">Required</span>
+                                    )}
+                                  </div>
+                                  <div className="text-[11px] text-white/40 italic mt-1 leading-relaxed">
+                                    {m.description}
+                                  </div>
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </Card>
+            </>
           )}
 
           {activeTab === 'APPEARANCE' && (

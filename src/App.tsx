@@ -8,6 +8,7 @@ import { CampaignProvider } from './context/CampaignContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { AIProvider } from './context/AIContext';
 import { TutorialProvider } from './context/TutorialContext';
+import { WorkspaceProvider } from './context/WorkspaceContext';
 import { useTheme } from './context/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Tutorial from './components/Tutorial';
@@ -64,6 +65,7 @@ const Messages = lazy(() => import('./pages/Messages'));
 const Privacy = lazy(() => import('./pages/Privacy'));
 const Terms = lazy(() => import('./pages/Terms'));
 const NotFound = lazy(() => import('./pages/NotFound'));
+const Roster = lazy(() => import('./pages/Roster'));
 
 import WelcomeScreen from './components/layout/WelcomeScreen';
 
@@ -83,6 +85,7 @@ export default function App() {
       <AuthProvider>
         <AIProvider>
           <NotificationProvider>
+            <WorkspaceProvider>
             <ReleaseProvider>
               <CampaignProvider>
                 <BrowserRouter>
@@ -168,6 +171,7 @@ export default function App() {
                   <Route path="/ai-providers" element={<AIProviders />} />
                   <Route path="/academy" element={<Academy />} />
                   <Route path="/messages" element={<Messages />} />
+                  <Route path="/roster" element={<Roster />} />
                 </Route>
               </Route>
 
@@ -181,6 +185,7 @@ export default function App() {
       </BrowserRouter>
           </CampaignProvider>
         </ReleaseProvider>
+            </WorkspaceProvider>
       </NotificationProvider>
      </AIProvider>
     </AuthProvider>

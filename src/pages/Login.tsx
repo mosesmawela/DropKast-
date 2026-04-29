@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Mail, Lock, User, Github, Terminal, Music, Camera, Disc, ArrowRight, ChevronLeft, CheckCircle2 } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, Github, Terminal, Music, Camera, Disc, Building2, ArrowRight, ChevronLeft, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
@@ -16,25 +16,33 @@ const PORTALS: {
 }[] = [
   {
     id: 'ARTIST',
-    name: 'Artist Core',
+    name: 'Artist',
     tagline: 'I make the music',
-    desc: 'Distribution, AI assets, campaign OS, A&R submission.',
+    desc: 'Distribute your music, run AI-assisted campaigns, get paid.',
     icon: Music,
     landing: '/dashboard',
   },
   {
+    id: 'LABEL',
+    name: 'Label',
+    tagline: 'I manage a roster',
+    desc: 'Distribute multiple artists from one account. Switch between rosters, see catalogue-wide earnings.',
+    icon: Building2,
+    landing: '/roster',
+  },
+  {
     id: 'INFLUENCER',
-    name: 'Creator Relay',
+    name: 'Influencer',
     tagline: 'I create content',
-    desc: 'Paid missions, performance tracking, instant payouts.',
+    desc: 'Get paid to post, track campaign performance, instant payouts.',
     icon: Camera,
     landing: '/influencer/missions',
   },
   {
     id: 'DJ',
-    name: 'Vibe Selecta',
+    name: 'DJ',
     tagline: 'I move the floor',
-    desc: 'Exclusive packs, stems, edits, feedback channel.',
+    desc: 'Get exclusive packs, stems, edits. Send feedback to artists.',
     icon: Disc,
     landing: '/dj/packs',
   },
@@ -97,7 +105,7 @@ export default function Login() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
               {PORTALS.map((p) => {
                 const active = role === p.id;
                 const Icon = p.icon;

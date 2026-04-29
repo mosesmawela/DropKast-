@@ -23,29 +23,32 @@ import {
   ArrowLeftRight,
   Sparkles,
   Mail,
+  Building2,
   X,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useTheme } from '../../context/ThemeContext';
+import { useWorkspace } from '../../context/WorkspaceContext';
+import type { ModuleId } from '../../lib/workspace';
 
-const artistNav = [
-  { id: '01', icon: LayoutDashboard, label: 'Home', path: '/dashboard' },
-  { id: '02', icon: Mail, label: 'Messages', path: '/messages' },
-  { id: '03', icon: Megaphone, label: 'Pre-Release', path: '/pre-release' },
-  { id: '04', icon: Target, label: 'Campaigns', path: '/campaigns' },
-  { id: '05', icon: Users, label: 'Influencers', path: '/influencers' },
-  { id: '06', icon: Package, label: 'Promo Packs', path: '/promo' },
-  { id: '07', icon: Video, label: 'UGC Studio', path: '/ugc' },
-  { id: '08', icon: Radio, label: 'DJ Packs', path: '/djs' },
-  { id: '09', icon: Zap, label: 'Reactions', path: '/reactions' },
-  { id: '10', icon: Share2, label: 'Social Ads', path: '/social' },
-  { id: '11', icon: FileText, label: 'Split Sheets', path: '/splits' },
-  { id: '12', icon: MessageSquare, label: 'A&R Feedback', path: '/anr' },
-  { id: '13', icon: BarChart, label: 'Analytics', path: '/analytics' },
-  { id: '14', icon: Wallet, label: 'Treasury', path: '/earnings' },
-  { id: '15', icon: Camera, label: 'Assets', path: '/assets' },
-  { id: '16', icon: Sparkles, label: 'AI Models', path: '/ai-providers' },
-  { id: '17', icon: Cpu, label: 'Settings', path: '/settings' },
+const artistNav: Array<{ id: string; icon: any; label: string; path: string; moduleId: ModuleId }> = [
+  { id: '01', icon: LayoutDashboard, label: 'Home',         path: '/dashboard',     moduleId: 'home' },
+  { id: '02', icon: Mail,            label: 'Messages',     path: '/messages',      moduleId: 'messages' },
+  { id: '03', icon: Megaphone,       label: 'Pre-Release',  path: '/pre-release',   moduleId: 'pre-release' },
+  { id: '04', icon: Target,          label: 'Campaigns',    path: '/campaigns',     moduleId: 'campaigns' },
+  { id: '05', icon: Users,           label: 'Influencers',  path: '/influencers',   moduleId: 'influencers' },
+  { id: '06', icon: Package,         label: 'Promo Packs',  path: '/promo',         moduleId: 'promo-packs' },
+  { id: '07', icon: Video,           label: 'UGC Studio',   path: '/ugc',           moduleId: 'ugc-studio' },
+  { id: '08', icon: Radio,           label: 'DJ Packs',     path: '/djs',           moduleId: 'dj-packs' },
+  { id: '09', icon: Zap,             label: 'Reactions',    path: '/reactions',     moduleId: 'reactions' },
+  { id: '10', icon: Share2,          label: 'Social Ads',   path: '/social',        moduleId: 'social-ads' },
+  { id: '11', icon: FileText,        label: 'Split Sheets', path: '/splits',        moduleId: 'splits' },
+  { id: '12', icon: MessageSquare,   label: 'A&R Feedback', path: '/anr',           moduleId: 'anr' },
+  { id: '13', icon: BarChart,        label: 'Analytics',    path: '/analytics',     moduleId: 'analytics' },
+  { id: '14', icon: Wallet,          label: 'Earnings',     path: '/earnings',      moduleId: 'earnings' },
+  { id: '15', icon: Camera,          label: 'Assets',       path: '/assets',        moduleId: 'assets' },
+  { id: '16', icon: Sparkles,        label: 'AI Models',    path: '/ai-providers',  moduleId: 'ai-providers' },
+  { id: '17', icon: Cpu,             label: 'Settings',     path: '/settings',      moduleId: 'settings' },
 ];
 
 const influencerNav = [
@@ -100,8 +103,30 @@ const TOUR_TARGETS: Record<string, string | undefined> = {
 export default function Sidebar({ open = false, onClose }: SidebarProps) {
   const location = useLocation();
   const { role } = useTheme();
+  const { isEnabled } = useWorkspace();
 
-  const navItems = role === 'ARTIST' ? artistNav : role === 'INFLUENCER' ? influencerNav : djNav;
+  const labelNav: typeof artistNav = [
+    { id: '00', icon: Building2, label: 'Roster', path: '/roster', moduleId: 'home' },
+    ...artistNav,
+  ];
+
+  const baseNav =
+    role === 'LABEL'
+      ? labelNav
+      : role === 'ARTIST'
+      ? artistNav
+      : role === 'INFLUENCER'
+      ? influencerNav
+      : djNav;
+
+  // For artists & labels, hide modules disabled in their workspace.
+  // The Roster item (only on labels) bypasses the module filter — it's always shown.
+  const navItems =
+    role === 'ARTIST' || role === 'LABEL'
+      ? (baseNav as typeof artistNav).filter(
+          (item) => item.path === '/roster' || isEnabled(item.moduleId),
+        )
+      : baseNav;
 
   const resetPortal = () => {
     localStorage.removeItem('dropkast_welcome_seen');
