@@ -238,12 +238,16 @@ See [`IMPLEMENTATION_PLAN.md`](./IMPLEMENTATION_PLAN.md) for the full 8-week pla
 
 ## Credits
 
-- Made by [Moses Mawela](https://github.com/mosesmawela)
-- Inspired by independent artists who refuse to be at the mercy of legacy tools
-- Built with [Claude Code](https://claude.com/claude-code) for assistance
+- Maintained by [Moses Mawela](https://github.com/mosesmawela)
+- Built for independent artists who refuse to be at the mercy of legacy tools
+- Engineered with [Claude Code](https://claude.com/claude-code) assistance
 
 ---
 
 ## License
 
-MIT — see [LICENSE](./LICENSE) (add one if you want to formalize).
+**Proprietary — All Rights Reserved.**
+
+This codebase is the private property of the company. It is **not open source**. Source code, designs, copy, and architecture are confidential. No part of this repository may be copied, modified, distributed, or used in any form without explicit written permission from the owner.
+
+If you are an authorized contributor, see internal onboarding for access procedures.
