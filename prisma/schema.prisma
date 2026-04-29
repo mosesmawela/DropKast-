@@ -1,0 +1,163 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String    @map("password_hash")
+  artistName    String    @map("artist_name")
+  avatar        String?
+  role          UserRole  @default(ARTIST)
+  refreshTokens RefreshToken[]
+  releases      Release[]
+  campaigns     Campaign[]
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+enum UserRole {
+  ADMIN
+  ARTIST
+  MANAGER
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("refresh_tokens")
+}
+
+model Release {
+  id            String        @id @default(cuid())
+  title         String
+  artist        String
+  artistId      String        @map("artist_id")
+  user          User          @relation(fields: [artistId], references: [id])
+  artwork       String
+  audioUrl      String?       @map("audio_url")
+  status        ReleaseStatus @default(DRAFT)
+  format        ReleaseFormat @default(SINGLE)
+  releaseDate   DateTime?     @map("release_date")
+  upc           String?
+  isrc          String?
+  platforms     Platform[]
+  genre         String?
+  campaigns     Campaign[]
+  analytics     Analytics[]
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  @@map("releases")
+}
+
+enum ReleaseStatus {
+  DRAFT
+  SCHEDULED
+  PROCESSING
+  DISTRIBUTED
+  LIVE
+  REJECTED
+}
+
+enum ReleaseFormat {
+  SINGLE
+  EP
+  ALBUM
+}
+
+model Platform {
+  id        String          @id @default(cuid())
+  releaseId String          @map("release_id")
+  release   Release         @relation(fields: [releaseId], references: [id], onDelete: Cascade)
+  name      String
+  status    PlatformStatus  @default(PENDING)
+  updatedAt DateTime        @updatedAt @map("updated_at")
+
+  @@map("platforms")
+}
+
+enum PlatformStatus {
+  PENDING
+  PROCESSING
+  LIVE
+  FAILED
+}
+
+model Campaign {
+  id          String          @id @default(cuid())
+  releaseId   String          @map("release_id")
+  release     Release         @relation(fields: [releaseId], references: [id])
+  userId      String          @map("user_id")
+  user        User            @relation(fields: [userId], references: [id])
+  name        String
+  goal        String?
+  budget      Float?
+  status      CampaignStatus  @default(DRAFT)
+  plan        Json?           // Stores AI-generated strategy
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+
+  @@map("campaigns")
+}
+
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+model Analytics {
+  id        String   @id @default(cuid())
+  releaseId String   @map("release_id")
+  release   Release  @relation(fields: [releaseId], references: [id], onDelete: Cascade)
+  type      String   // play, click, post, influencer_post
+  platform  String?
+  value     Int      @default(1)
+  timestamp DateTime @default(now())
+  userId    String?  @map("user_id")
+
+  @@map("analytics")
+}
+
+model PreRelease {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  title       String
+  hookStart   String   @map("hook_start")
+  hookEnd     String   @map("hook_end")
+  creators    Json?    // Array of creator objects
+  status      String   @default("draft") // draft, invading, completed
+  releaseDate DateTime @map("release_date")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("pre_releases")
+}
+
+model Influencer {
+  id        String   @id @default(cuid())
+  name      String
+  platform  String
+  reach     String
+  genre     String
+  match     String
+  status    String   @default("READY")
+  avatar    String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("influencers")
+}
