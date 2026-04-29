@@ -30,7 +30,7 @@ import { validateAudio, validateCoverArt } from "./_audio-validate.js";
 import { assertTransition, isScheduledForLater, ReleaseTransitionError, type ReleaseStatus } from "./_release-lifecycle.js";
 import { pushEvent, listEventsFor, markRead as markInboxRead } from "./_inbox.js";
 import { listThreadsForViewer, listMessagesInThread, postMessage, markThreadRead, findThread, type Role as MsgRole } from "./_messages.js";
-import { rateLimit, securityHeaders, listAuditEvents, logAudit } from "./_security.js";
+import { rateLimit as customRateLimit, securityHeaders, listAuditEvents, logAudit } from "./_security.js";
 import { handleDataExport, handleDataDelete, handleDmcaNotice } from "./_compliance.js";
 import { logger, httpLog } from "./_logger.js";
 import { getDb } from "../db/client.js";
@@ -169,11 +169,11 @@ export function createApiApp() {
 
   // ---- Phase 7: rate limits on hot endpoints ----
   // 30 req / 5 min per IP for AI chat (heavy)
-  app.use('/api/ai/chat', rateLimit({ name: 'ai-chat', max: 30, windowMs: 5 * 60 * 1000 }));
+  app.use('/api/ai/chat', customRateLimit({ name: 'ai-chat', max: 30, windowMs: 5 * 60 * 1000 }));
   // 10 / hour per IP for A&R critique (very heavy)
-  app.use('/api/anr', rateLimit({ name: 'anr', max: 10, windowMs: 60 * 60 * 1000 }));
+  app.use('/api/anr', customRateLimit({ name: 'anr', max: 10, windowMs: 60 * 60 * 1000 }));
   // 5 / hour for DMCA filings to deter spam takedowns
-  app.use('/api/dmca', rateLimit({ name: 'dmca', max: 5, windowMs: 60 * 60 * 1000 }));
+  app.use('/api/dmca', customRateLimit({ name: 'dmca', max: 5, windowMs: 60 * 60 * 1000 }));
 
   // --- AI Chat (streaming SSE with tool use) ---
   app.post("/api/ai/chat", validate(aiChatSchema), handleAiChat);

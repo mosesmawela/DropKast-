@@ -18,6 +18,8 @@ export interface ValidationResult {
     container?: string;
     codec?: string;
     bitrateKbps?: number;
+    peakDb?: number;
+    integratedLufs?: number;
   };
 }
 
