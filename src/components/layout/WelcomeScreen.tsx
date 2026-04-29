@@ -22,14 +22,13 @@ import {
   Disc,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { useTheme, Vibe, UserRole, Theme } from '../../context/ThemeContext';
+import { useTheme, Vibe, UserRole, Theme, VisualStyle } from '../../context/ThemeContext';
 
 type SlideKind =
   | 'hero'
   | 'pitch'
   | 'feature'
-  | 'color'
-  | 'theme'
+  | 'appearance'
   | 'portal';
 
 interface BaseSlide {
@@ -122,8 +121,7 @@ const SLIDES: BaseSlide[] = [
   { id: 'hero', kind: 'hero' },
   { id: 'pitch', kind: 'pitch' },
   ...FEATURES.map((f) => ({ id: f.id, kind: 'feature' as SlideKind })),
-  { id: 'color', kind: 'color' },
-  { id: 'theme', kind: 'theme' },
+  { id: 'appearance', kind: 'appearance' },
   { id: 'portal', kind: 'portal' },
 ];
 
@@ -135,7 +133,7 @@ const slideVariants = {
 
 export const WelcomeScreen: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
   const navigate = useNavigate();
-  const { vibe, setVibe, theme, toggleTheme, role, setRole } = useTheme();
+  const { vibe, setVibe, theme, toggleTheme, role, setRole, visualStyle, setVisualStyle } = useTheme();
 
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState(1);
@@ -253,12 +251,17 @@ export const WelcomeScreen: React.FC<{ onComplete: () => void }> = ({ onComplete
                 <FeatureSlide feature={featureForSlide} accent={colorObj.hex} />
               )}
 
-              {slide.kind === 'color' && (
-                <ColorSlide selected={vibe} onSelect={setVibe} colors={COLORS} accent={colorObj.hex} />
-              )}
-
-              {slide.kind === 'theme' && (
-                <ThemeSlide theme={theme} onToggle={toggleTheme} accent={colorObj.hex} />
+              {slide.kind === 'appearance' && (
+                <AppearanceSlide
+                  vibe={vibe}
+                  onVibe={setVibe}
+                  theme={theme}
+                  onTheme={toggleTheme}
+                  visualStyle={visualStyle}
+                  onVisualStyle={setVisualStyle}
+                  colors={COLORS}
+                  accent={colorObj.hex}
+                />
               )}
 
               {slide.kind === 'portal' && (
@@ -438,183 +441,141 @@ const FeatureSlide: React.FC<{ feature: typeof FEATURES[number]; accent: string 
   );
 };
 
-const ColorSlide: React.FC<{
-  selected: Vibe;
-  onSelect: (v: Vibe) => void;
+/**
+ * Combined "Appearance" slide. Mirrors Settings → Appearance: compact
+ * color swatches, dark/light toggle, and visual style picker — all on
+ * one slide so onboarding doesn't drag.
+ */
+const VISUAL_STYLES: { id: VisualStyle; label: string }[] = [
+  { id: 'default', label: 'Technical' },
+  { id: 'neumorphism', label: 'Neumorphism' },
+  { id: 'material', label: 'Material' },
+  { id: 'brutalism', label: 'Brutalism' },
+  { id: 'skeuomorphism', label: 'Skeuomorphic' },
+  { id: 'minimalist', label: 'Minimal' },
+  { id: 'glassmorphism', label: 'Glass' },
+];
+
+const AppearanceSlide: React.FC<{
+  vibe: Vibe;
+  onVibe: (v: Vibe) => void;
+  theme: Theme;
+  onTheme: () => void;
+  visualStyle: VisualStyle;
+  onVisualStyle: (s: VisualStyle) => void;
   colors: typeof COLORS;
   accent: string;
-}> = ({ selected, onSelect, colors, accent }) => (
-  <div className="space-y-10">
-    <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <Palette className="w-4 h-4" style={{ color: accent }} />
-        <span className="text-[10px] font-mono font-black tracking-[0.4em] uppercase italic" style={{ color: accent }}>
-          Pick Your Color
-        </span>
-      </div>
-      <h2 className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter font-mono leading-none">
-        Choose your<br />signature accent.
-      </h2>
-      <p className="text-base md:text-lg text-white/50 max-w-2xl">
-        This is the color that will pulse through every button, chart, and notification across DropKast. You can change it
-        any time from settings.
-      </p>
-    </div>
-
-    {/* Mobile: compact swatch grid (no big cards). Desktop: card grid. */}
-    <div className="grid grid-cols-5 gap-2 sm:hidden">
-      {colors.map((c) => {
-        const active = selected === c.id;
-        return (
-          <button
-            key={c.id}
-            onClick={() => onSelect(c.id)}
-            className={cn(
-              'aspect-square relative border-2 transition-all',
-              active ? 'scale-110' : 'border-white/10 hover:border-white/30',
-            )}
-            style={{
-              background: `linear-gradient(135deg, ${c.hex}, ${c.hex}88)`,
-              borderColor: active ? c.hex : undefined,
-              boxShadow: active ? `0 0 0 2px ${c.hex}66` : undefined,
-            }}
-            aria-label={c.name}
-            title={c.name}
-          >
-            {active && (
-              <CheckCircle2
-                className="absolute inset-0 m-auto w-4 h-4 mix-blend-difference"
-                style={{ color: '#000' }}
-              />
-            )}
-          </button>
-        );
-      })}
-    </div>
-    <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-5 gap-3">
-      {colors.map((c) => {
-        const active = selected === c.id;
-        return (
-          <button
-            key={c.id}
-            onClick={() => onSelect(c.id)}
-            className={cn(
-              'manifest-card relative p-4 text-left transition-all border bg-white/[0.02] hover:bg-white/[0.04]',
-              active ? 'border-white/40' : 'border-white/10',
-            )}
-            style={active ? { borderColor: c.hex, boxShadow: `0 0 0 1px ${c.hex}, 0 20px 60px ${c.hex}33` } : undefined}
-          >
-            <div
-              className="w-full aspect-square mb-3 rounded-sm"
-              style={{
-                background: `linear-gradient(135deg, ${c.hex} 0%, ${c.hex}88 100%)`,
-                boxShadow: `inset 0 0 30px rgba(0,0,0,0.3)`,
-              }}
-            />
-            <div className="text-xs font-mono font-black uppercase tracking-tight italic">{c.name}</div>
-            <div className="text-[9px] font-mono font-bold uppercase tracking-[0.2em] text-white/40 italic mt-0.5">
-              {c.tagline}
-            </div>
-            {active && (
-              <div className="absolute top-2 right-2">
-                <CheckCircle2 className="w-4 h-4" style={{ color: c.hex }} />
-              </div>
-            )}
-          </button>
-        );
-      })}
-    </div>
-    {/* Mobile: show selected color name beneath the swatches */}
-    <div className="sm:hidden text-center pt-1">
-      <div className="text-xs font-mono font-black uppercase italic tracking-widest">
-        {colors.find((c) => c.id === selected)?.name}
-      </div>
-      <div className="text-[9px] font-mono text-white/40 uppercase tracking-widest italic">
-        {colors.find((c) => c.id === selected)?.tagline}
-      </div>
-    </div>
-  </div>
-);
-
-const ThemeSlide: React.FC<{ theme: Theme; onToggle: () => void; accent: string }> = ({ theme, onToggle, accent }) => {
+}> = ({ vibe, onVibe, theme, onTheme, visualStyle, onVisualStyle, colors, accent }) => {
   const setTheme = (target: Theme) => {
-    if (theme !== target) onToggle();
+    if (theme !== target) onTheme();
   };
-
   return (
-    <div className="space-y-10">
-      <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          {theme === 'dark' ? <Moon className="w-4 h-4" style={{ color: accent }} /> : <Sun className="w-4 h-4" style={{ color: accent }} />}
+    <div className="space-y-6 max-w-3xl mx-auto">
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <Palette className="w-3.5 h-3.5" style={{ color: accent }} />
           <span className="text-[10px] font-mono font-black tracking-[0.4em] uppercase italic" style={{ color: accent }}>
-            Pick Your Theme
+            Personalize
           </span>
         </div>
-        <h2 className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter font-mono leading-none">
-          Light mode<br />or dark mode?
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-black italic uppercase tracking-tighter font-mono leading-none">
+          Make it yours.
         </h2>
-        <p className="text-base md:text-lg text-white/50 max-w-2xl">
-          Default is dark — the way the studio runs at 3am. Switch to light if you live in spreadsheets.
+        <p className="text-xs sm:text-sm text-white/50 max-w-xl">
+          Color, mode, style — change anytime from Settings.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl">
-        {([
-          {
-            id: 'dark' as Theme,
-            name: 'Dark Mode',
-            tagline: 'Studio default',
-            preview: 'bg-black',
-            accentBox: 'bg-white/10',
-            text: 'text-white',
-            sub: 'text-white/40',
-            icon: Moon,
-          },
-          {
-            id: 'light' as Theme,
-            name: 'Light Mode',
-            tagline: 'Daylight ops',
-            preview: 'bg-neutral-100',
-            accentBox: 'bg-black/10',
-            text: 'text-black',
-            sub: 'text-black/40',
-            icon: Sun,
-          },
-        ]).map((t) => {
-          const active = theme === t.id;
-          const Icon = t.icon;
-          return (
-            <button
-              key={t.id}
-              onClick={() => setTheme(t.id)}
-              className={cn(
-                'manifest-card relative p-6 text-left transition-all border bg-white/[0.02] hover:bg-white/[0.04]',
-                active ? 'border-white/40' : 'border-white/10',
-              )}
-              style={active ? { borderColor: accent, boxShadow: `0 0 0 1px ${accent}, 0 20px 60px ${accent}22` } : undefined}
-            >
-              <div className={cn('w-full h-32 mb-5 rounded-sm flex items-end p-4', t.preview)}>
-                <div className="w-full space-y-2">
-                  <div className={cn('h-2 w-1/3', t.accentBox)} />
-                  <div className={cn('h-2 w-2/3', t.accentBox)} />
-                  <div className="h-2 w-1/4" style={{ backgroundColor: accent }} />
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <Icon className="w-4 h-4" style={{ color: active ? accent : 'rgba(255,255,255,0.6)' }} />
-                    <span className="text-base font-mono font-black uppercase italic">{t.name}</span>
-                  </div>
-                  <div className="text-[9px] font-mono font-bold uppercase tracking-[0.2em] text-white/40 italic mt-1">
-                    {t.tagline}
-                  </div>
-                </div>
-                {active && <CheckCircle2 className="w-5 h-5" style={{ color: accent }} />}
-              </div>
-            </button>
-          );
-        })}
+      {/* Color */}
+      <div className="space-y-2">
+        <div className="text-[9px] font-mono font-black uppercase tracking-[0.3em] text-white/40 italic">
+          Color · {colors.find((c) => c.id === vibe)?.name}
+        </div>
+        <div className="grid grid-cols-5 gap-2">
+          {colors.map((c) => {
+            const active = vibe === c.id;
+            return (
+              <button
+                key={c.id}
+                onClick={() => onVibe(c.id)}
+                className={cn(
+                  'aspect-square relative border transition-all',
+                  active ? 'scale-105 border-2' : 'border border-white/10 hover:border-white/30',
+                )}
+                style={{
+                  background: `linear-gradient(135deg, ${c.hex}, ${c.hex}88)`,
+                  borderColor: active ? c.hex : undefined,
+                  boxShadow: active ? `0 0 0 2px ${c.hex}66` : undefined,
+                }}
+                aria-label={c.name}
+                title={c.name}
+              >
+                {active && (
+                  <CheckCircle2
+                    className="absolute inset-0 m-auto w-3.5 h-3.5"
+                    style={{ color: '#000', filter: 'drop-shadow(0 0 2px rgba(255,255,255,0.5))' }}
+                  />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Theme */}
+      <div className="space-y-2">
+        <div className="text-[9px] font-mono font-black uppercase tracking-[0.3em] text-white/40 italic">
+          Mode
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          {([
+            { id: 'dark' as Theme, name: 'Dark', icon: Moon },
+            { id: 'light' as Theme, name: 'Light', icon: Sun },
+          ]).map((t) => {
+            const active = theme === t.id;
+            const Icon = t.icon;
+            return (
+              <button
+                key={t.id}
+                onClick={() => setTheme(t.id)}
+                className={cn(
+                  'flex items-center justify-center gap-2 py-2.5 border transition-all text-[11px] font-mono font-black uppercase italic tracking-widest',
+                  active ? 'bg-white/5' : 'hover:bg-white/[0.03] text-white/60',
+                )}
+                style={active ? { borderColor: accent, color: accent } : { borderColor: 'rgba(255,255,255,0.1)' }}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                <span>{t.name}</span>
+                {active && <CheckCircle2 className="w-3 h-3" />}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Visual style */}
+      <div className="space-y-2">
+        <div className="text-[9px] font-mono font-black uppercase tracking-[0.3em] text-white/40 italic">
+          Visual style
+        </div>
+        <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+          {VISUAL_STYLES.map((s) => {
+            const active = visualStyle === s.id;
+            return (
+              <button
+                key={s.id}
+                onClick={() => onVisualStyle(s.id)}
+                className={cn(
+                  'py-2 px-2 border transition-all text-[10px] font-mono font-black uppercase italic tracking-tight text-center',
+                  active ? 'bg-white/5' : 'hover:bg-white/[0.03] text-white/60',
+                )}
+                style={active ? { borderColor: accent, color: accent } : { borderColor: 'rgba(255,255,255,0.1)' }}
+              >
+                {s.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
