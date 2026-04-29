@@ -1,8 +1,11 @@
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import crypto from 'crypto';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET || 'dev-fallback-secret-not-for-production';
+if (!process.env.JWT_SECRET && process.env.NODE_ENV === 'production') {
+  throw new Error('JWT_SECRET must be set in production');
+}
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '15m';
 const REFRESH_TOKEN_EXPIRES_IN = process.env.REFRESH_TOKEN_EXPIRES_IN || '7d';
 const BCRYPT_ROUNDS = parseInt(process.env.BCRYPT_ROUNDS || '12');
@@ -28,14 +31,20 @@ export class AuthService {
   }
 
   static generateTokens(payload: TokenPayload): TokenPair {
-    const accessToken = jwt.sign(payload, JWT_SECRET, {
-      expiresIn: JWT_EXPIRES_IN,
-    });
+    const accessTokenOptions: SignOptions = {
+      expiresIn: JWT_EXPIRES_IN as SignOptions['expiresIn'],
+    };
+
+    const accessToken = jwt.sign(payload, JWT_SECRET, accessTokenOptions);
+
+    const refreshTokenOptions: SignOptions = {
+      expiresIn: REFRESH_TOKEN_EXPIRES_IN as SignOptions['expiresIn'],
+    };
 
     const refreshToken = jwt.sign(
       { userId: payload.userId, type: 'refresh' },
       JWT_SECRET,
-      { expiresIn: REFRESH_TOKEN_EXPIRES_IN }
+      refreshTokenOptions
     );
 
     return { accessToken, refreshToken };
