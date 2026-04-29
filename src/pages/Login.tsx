@@ -93,7 +93,7 @@ export default function Login() {
                 Choose Your Portal
               </h1>
               <p className="text-white/40 text-[10px] font-black tracking-[0.4em] italic uppercase font-mono">
-                Select your role to continue → identity verification
+                Pick how you'll use DropKast — you can switch anytime
               </p>
             </div>
 
@@ -168,10 +168,10 @@ export default function Login() {
             </div>
 
             <div className="mt-10 text-center">
-              <p className="text-white/30 text-[9px] font-mono font-black uppercase tracking-[0.3em] italic">
+              <p className="text-white/30 text-[11px] font-mono font-black tracking-[0.1em] italic">
                 Don't have an account yet?{' '}
                 <Link to="/signup" className="text-primary hover:underline">
-                  Provision New Identity
+                  Sign up free
                 </Link>
               </p>
             </div>
@@ -201,7 +201,7 @@ export default function Login() {
                   </div>
                   <div>
                     <span className="text-2xl font-black tracking-tighter text-white italic font-mono">
-                      {selectedPortal.name.toUpperCase().replace(' ', '_')}
+                      {selectedPortal.name}
                     </span>
                     <div className="text-[9px] font-mono font-black text-white/40 uppercase tracking-[0.3em] italic">
                       {selectedPortal.tagline}

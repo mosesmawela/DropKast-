@@ -154,6 +154,81 @@ export const preReleases = pgTable('pre_releases', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
+// Royalty ledger — every line item from DSP statements (per stream / sale / etc)
+export const royaltyLines = pgTable('royalty_lines', {
+  id: text('id').primaryKey(),
+  releaseId: text('release_id'),
+  isrc: text('isrc'),
+  upc: text('upc'),
+  platform: text('platform'),                  // spotify | apple | etc
+  territory: text('territory'),                // ISO country code
+  period: text('period'),                      // YYYY-MM
+  quantity: integer('quantity').notNull().default(0),  // streams or units
+  amountCents: integer('amount_cents').notNull().default(0),
+  currency: text('currency').notNull().default('USD'),
+  source: text('source'),                      // CSV filename / partner name
+  ingestedAt: timestamp('ingested_at').notNull().defaultNow(),
+});
+
+// Payouts — actual or simulated transfers to a payee
+export const payouts = pgTable('payouts', {
+  id: text('id').primaryKey(),
+  payeeEmail: text('payee_email').notNull(),
+  releaseId: text('release_id'),
+  splitId: text('split_id'),
+  amountCents: integer('amount_cents').notNull(),
+  currency: text('currency').notNull().default('USD'),
+  status: text('status').notNull().default('pending'), // pending | processing | paid | failed
+  provider: text('provider').notNull().default('simulator'),  // simulator | stripe
+  providerTransferId: text('provider_transfer_id'),
+  metadata: jsonb('metadata'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  paidAt: timestamp('paid_at'),
+});
+
+// Connect (Stripe / similar) account info per payee
+export const creatorAccounts = pgTable('creator_accounts', {
+  payeeEmail: text('payee_email').primaryKey(),
+  payeeName: text('payee_name'),
+  role: text('role'),                                  // ARTIST | INFLUENCER | DJ
+  stripeAccountId: text('stripe_account_id'),
+  onboardingStatus: text('onboarding_status').notNull().default('pending'),  // pending | active | restricted
+  payoutsEnabled: boolean('payouts_enabled').notNull().default(false),
+  country: text('country'),
+  metadata: jsonb('metadata'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+// DJ feedback per release — feeds chart-readiness aggregate
+export const djFeedback = pgTable('dj_feedback', {
+  id: text('id').primaryKey(),
+  djId: text('dj_id').notNull(),
+  djName: text('dj_name'),
+  releaseId: text('release_id').notNull(),
+  rating: integer('rating').notNull(),                 // 1-5
+  comment: text('comment'),
+  willPlayInSet: boolean('will_play_in_set'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
+// Verified influencer posts — TikTok/Meta API verifies these before payout
+export const verifiedPosts = pgTable('verified_posts', {
+  id: text('id').primaryKey(),
+  influencerId: text('influencer_id').notNull(),
+  campaignId: text('campaign_id'),
+  releaseId: text('release_id'),
+  platform: text('platform'),                          // tiktok | instagram | reels | shorts
+  postUrl: text('post_url').notNull(),
+  postedAt: timestamp('posted_at'),
+  verifiedAt: timestamp('verified_at'),
+  verifierProvider: text('verifier_provider').notNull().default('manual'), // manual | tiktok | meta
+  status: text('status').notNull().default('pending'), // pending | verified | rejected
+  metrics: jsonb('metrics').$type<{ views?: number; likes?: number; shares?: number; saves?: number }>(),
+  payoutCents: integer('payout_cents'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
 // AI usage budget per user (cost guardrail)
 export const aiUsage = pgTable('ai_usage', {
   userId: uuid('user_id').primaryKey(),

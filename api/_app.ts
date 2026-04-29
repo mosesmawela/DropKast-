@@ -35,6 +35,11 @@ import { handleDataExport, handleDataDelete, handleDmcaNotice } from "./_complia
 import { logger, httpLog } from "./_logger.js";
 import { getDb } from "../db/client.js";
 import { getDeliveryAdapter } from "./_dsp-delivery.js";
+import { getPayoutAdapter } from "./_payouts.js";
+import { parseRoyaltyCsv, appendToLedger, getLedger, aggregateEarnings, applySplits } from "./_royalties.js";
+import { matchInfluencers } from "./_match.js";
+import { getPostVerifier, detectPlatform } from "./_post-verifier.js";
+import { signPackUrl, verifyPackUrl } from "./_signed-url.js";
 
 let uploadMiddleware: any = null;
 
@@ -288,6 +293,14 @@ export function createApiApp() {
   // Delivery is handled by the pluggable DSP adapter (see api/_dsp-delivery.ts).
   // Default is the simulator; flips to RouteNote when ROUTENOTE_API_KEY is set.
   const dspAdapter = getDeliveryAdapter();
+  // Payouts are pluggable (see api/_payouts.ts). Stripe when configured, simulator otherwise.
+  const payoutAdapter = getPayoutAdapter();
+
+  // In-memory stores for the new Phase 3/4 entities until Drizzle DB is live.
+  const memCreatorAccounts: Record<string, any> = {};
+  const memPayouts: Record<string, any> = {};
+  const memDjFeedback: any[] = [];
+  const memVerifiedPosts: any[] = [];
 
   app.post("/api/releases", upload.fields([
     { name: "audio", maxCount: 1 },
@@ -743,6 +756,272 @@ export function createApiApp() {
   app.get("/api/automation/:releaseId", async (req, res) => {
     const auto = await store.getAutomation(req.params.releaseId);
     res.json(auto || { autoUGC: false, autoInfluencers: false, autoAds: false });
+  });
+
+  /* ================================================================
+   * PHASE 3 — MONEY FLOW
+   * ================================================================ */
+
+  // Onboard a payee (artist / influencer / DJ) for payouts.
+  app.post('/api/connect/onboard', async (req, res) => {
+    const { payeeEmail, payeeName, role, country, returnUrl } = req.body ?? {};
+    if (!payeeEmail || !role) {
+      return res.status(400).json({ error: 'payeeEmail and role required' });
+    }
+    try {
+      const result = await payoutAdapter.onboardCreator({ payeeEmail, payeeName, role, country, returnUrl });
+      memCreatorAccounts[payeeEmail] = {
+        payeeEmail,
+        payeeName,
+        role,
+        country,
+        stripeAccountId: result.accountId,
+        onboardingStatus: result.status,
+        payoutsEnabled: result.status === 'active',
+        provider: payoutAdapter.id,
+        updatedAt: new Date(),
+      };
+      logAudit(req, { actorId: payeeEmail, action: 'connect.onboard', metadata: { role, provider: payoutAdapter.id } });
+      res.json({ ok: true, ...result, provider: payoutAdapter.id });
+    } catch (err) {
+      logger.error({ err, payeeEmail }, 'connect onboard failed');
+      res.status(500).json({ error: 'onboard_failed' });
+    }
+  });
+
+  app.get('/api/connect/status/:payeeEmail', (req, res) => {
+    const acct = memCreatorAccounts[req.params.payeeEmail];
+    if (!acct) return res.status(404).json({ error: 'not_onboarded' });
+    res.json(acct);
+  });
+
+  // CSV royalty ingestion. Accept the raw CSV text in the body.
+  app.post('/api/royalties/ingest', express.text({ type: 'text/*', limit: '10mb' }), (req, res) => {
+    const csvText = typeof req.body === 'string' ? req.body : (req.body?.csv ?? '');
+    if (!csvText || typeof csvText !== 'string' || csvText.length < 20) {
+      return res.status(400).json({ error: 'csv_required', note: 'POST CSV text directly with Content-Type: text/csv, or { "csv": "..." } as JSON' });
+    }
+    const source = String(req.query.source ?? 'manual');
+    const lines = parseRoyaltyCsv(csvText, source);
+    appendToLedger(lines);
+    const summary = aggregateEarnings(lines);
+    logAudit(req, { actorId: 'admin', action: 'royalty.ingest', metadata: { source, lines: lines.length, totalCents: summary.totalCents } });
+    res.json({ ok: true, ingestedLines: lines.length, summary });
+  });
+
+  // Aggregated earnings — by release, payee, or anyone (admin)
+  app.get('/api/earnings', (req, res) => {
+    const releaseId = req.query.releaseId as string | undefined;
+    const payeeEmail = req.query.payeeEmail as string | undefined;
+    const lines = getLedger(releaseId ? { releaseId } : undefined);
+
+    if (payeeEmail) {
+      // Calculate this payee's share across all matching releases via splits
+      // (We pull splits from in-memory store via the existing influencer/split tables)
+      // Simpler approach: aggregate the entire ledger and apply splits if releaseId known.
+      const summary = aggregateEarnings(lines);
+      // We don't have per-payee filter on splits easily; return their total share if we have it
+      return res.json({ payeeEmail, summary, message: 'Per-payee breakdown applies splits from /api/splits' });
+    }
+    const summary = aggregateEarnings(lines);
+    res.json({ summary, lineCount: lines.length });
+  });
+
+  // Pay out a specific split row.
+  app.post('/api/splits/:id/payout', async (req, res) => {
+    // Find the split via the listing (in-memory store doesn't expose getSplit;
+    // for now ingest body has all needed fields, real impl would look it up).
+    const { payeeEmail, amountCents, releaseId, payeeName } = req.body ?? {};
+    if (!payeeEmail || !amountCents) {
+      return res.status(400).json({ error: 'payeeEmail and amountCents required' });
+    }
+    const acct = memCreatorAccounts[payeeEmail];
+    if (!acct?.payoutsEnabled) {
+      return res.status(412).json({ error: 'payee_not_onboarded', note: `Run /api/connect/onboard first for ${payeeEmail}` });
+    }
+    try {
+      const result = await payoutAdapter.pay({
+        payeeEmail,
+        payeeAccountId: acct.stripeAccountId,
+        amountCents: Number(amountCents),
+        description: `DropKast payout · split ${req.params.id}${releaseId ? ` · release ${releaseId}` : ''}`,
+        metadata: { splitId: req.params.id, releaseId },
+      });
+      const payout = {
+        id: result.transferId ?? `PAY-${Date.now()}`,
+        payeeEmail,
+        payeeName,
+        releaseId,
+        splitId: req.params.id,
+        amountCents: Number(amountCents),
+        currency: 'USD',
+        status: result.ok ? 'processing' : 'failed',
+        provider: payoutAdapter.id,
+        providerTransferId: result.transferId,
+        createdAt: new Date(),
+      };
+      memPayouts[payout.id] = payout;
+      logAudit(req, { actorId: payeeEmail, action: 'payout.created', resource: payout.id, metadata: { amountCents, splitId: req.params.id } });
+      res.json({ ok: result.ok, payout, error: result.error });
+    } catch (err) {
+      logger.error({ err, payeeEmail }, 'payout failed');
+      res.status(500).json({ error: 'payout_failed' });
+    }
+  });
+
+  // Tax document download stub. Stripe Connect generates 1099s automatically;
+  // we expose the link here when configured.
+  app.get('/api/tax-docs/:payeeEmail', (req, res) => {
+    const acct = memCreatorAccounts[req.params.payeeEmail];
+    if (!acct) return res.status(404).json({ error: 'not_onboarded' });
+    res.json({
+      payeeEmail: req.params.payeeEmail,
+      provider: payoutAdapter.id,
+      documents: payoutAdapter.id === 'stripe'
+        ? [{ year: new Date().getFullYear(), type: '1099-K', url: `https://dashboard.stripe.com/connect/accounts/${acct.stripeAccountId}/tax-documents` }]
+        : [],
+      note: payoutAdapter.id === 'stripe'
+        ? 'Stripe issues 1099-K and 1042-S automatically once thresholds are met.'
+        : 'Tax docs available once Stripe Connect is configured.',
+    });
+  });
+
+  /* ================================================================
+   * PHASE 4 — CREATOR ECONOMY
+   * ================================================================ */
+
+  // Real influencer matching (replaces slice(0,2) hack).
+  app.post('/api/influencers/match', async (req, res) => {
+    const { releaseId, limit, minScore } = req.body ?? {};
+    const release = releaseId ? await store.getRelease(releaseId) : null;
+    const releaseLite = release ?? {
+      id: 'adhoc',
+      title: req.body?.title,
+      genre: req.body?.genre,
+    };
+    const roster = await store.listInfluencers();
+    const ranked = matchInfluencers(releaseLite as any, roster as any, { limit, minScore });
+    res.json({
+      release: { id: releaseLite.id, title: (releaseLite as any).title, genre: (releaseLite as any).genre },
+      matches: ranked,
+    });
+  });
+
+  // Submit a post URL from an influencer for verification.
+  app.post('/api/influencers/:id/verify-post', async (req, res) => {
+    const { postUrl, campaignId, releaseId, expectedIsrc } = req.body ?? {};
+    if (!postUrl) return res.status(400).json({ error: 'postUrl required' });
+
+    const platform = detectPlatform(postUrl);
+    const verifier = getPostVerifier(platform);
+    const result = await verifier.verify({ postUrl, expectedReleaseId: releaseId, expectedIsrc });
+
+    const record = {
+      id: `VPOST-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      influencerId: req.params.id,
+      campaignId,
+      releaseId,
+      platform,
+      postUrl,
+      verifiedAt: result.status === 'verified' ? new Date() : undefined,
+      verifierProvider: verifier.id,
+      status: result.status,
+      metrics: result.metrics,
+      createdAt: new Date(),
+    };
+    memVerifiedPosts.push(record);
+    logAudit(req, {
+      actorId: req.params.id,
+      action: 'post.verify',
+      resource: record.id,
+      metadata: { platform, status: result.status, verifierProvider: verifier.id },
+    });
+
+    res.json({ ok: result.ok, post: record, verification: result });
+  });
+
+  app.get('/api/influencers/:id/posts', (req, res) => {
+    res.json(memVerifiedPosts.filter((p) => p.influencerId === req.params.id));
+  });
+
+  // Generate a signed URL for a DJ to download a pack.
+  app.post('/api/dj/packs/:packId/deliver', async (req, res) => {
+    const { djId } = req.body ?? {};
+    if (!djId) return res.status(400).json({ error: 'djId required' });
+
+    const baseUrl = `${req.protocol}://${req.get('host')}/api/dj/packs/${req.params.packId}/download`;
+    const signedUrl = signPackUrl({ baseUrl, packId: req.params.packId, djId, ttlSeconds: 60 * 60 * 24 * 7 });
+    logAudit(req, { actorId: djId, action: 'pack.deliver', resource: req.params.packId });
+    res.json({ ok: true, url: signedUrl, expiresInSeconds: 60 * 60 * 24 * 7 });
+  });
+
+  // Validate signed URL + return pack contents (stub — real impl streams the file).
+  app.get('/api/dj/packs/:packId/download', (req, res) => {
+    const v = verifyPackUrl({
+      pack: req.query.pack as string,
+      dj: req.query.dj as string,
+      exp: req.query.exp as string,
+      sig: req.query.sig as string,
+    });
+    if (!v.ok) {
+      return res.status(403).json({ error: 'invalid_signature', reason: v.reason });
+    }
+    if (v.packId !== req.params.packId) {
+      return res.status(403).json({ error: 'pack_mismatch' });
+    }
+    logAudit(req, { actorId: v.djId ?? 'unknown', action: 'pack.download', resource: v.packId });
+    // Real: stream the file from R2/S3. Stub: return manifest of contents.
+    res.json({
+      ok: true,
+      packId: v.packId,
+      djId: v.djId,
+      manifest: [
+        { type: 'master', filename: 'master.wav', size: '~52MB' },
+        { type: 'instrumental', filename: 'instrumental.wav', size: '~52MB' },
+        { type: 'acapella', filename: 'acapella.wav', size: '~22MB' },
+        { type: 'extended-mix', filename: 'extended.wav', size: '~58MB' },
+      ],
+      note: 'Stub manifest. Wire to R2 for streamed file delivery.',
+    });
+  });
+
+  // Submit DJ feedback on a release.
+  app.post('/api/dj/feedback', (req, res) => {
+    const { djId, djName, releaseId, rating, comment, willPlayInSet } = req.body ?? {};
+    if (!djId || !releaseId || !rating) {
+      return res.status(400).json({ error: 'djId, releaseId, and rating required' });
+    }
+    const r = parseInt(String(rating), 10);
+    if (Number.isNaN(r) || r < 1 || r > 5) {
+      return res.status(400).json({ error: 'rating must be 1-5' });
+    }
+    const record = {
+      id: `DJF-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      djId, djName, releaseId,
+      rating: r, comment, willPlayInSet: !!willPlayInSet,
+      createdAt: new Date(),
+    };
+    memDjFeedback.push(record);
+    logAudit(req, { actorId: djId, action: 'dj.feedback', resource: releaseId, metadata: { rating: r } });
+    res.json({ ok: true, feedback: record });
+  });
+
+  // Aggregate DJ feedback into a chart-readiness signal.
+  app.get('/api/releases/:id/dj-feedback', (req, res) => {
+    const items = memDjFeedback.filter((f) => f.releaseId === req.params.id);
+    if (items.length === 0) {
+      return res.json({ releaseId: req.params.id, count: 0, avgRating: null, willPlayPct: 0, items: [] });
+    }
+    const sumR = items.reduce((s, x) => s + x.rating, 0);
+    const willPlayCount = items.filter((x) => x.willPlayInSet).length;
+    res.json({
+      releaseId: req.params.id,
+      count: items.length,
+      avgRating: Number((sumR / items.length).toFixed(2)),
+      willPlayPct: Math.round((willPlayCount / items.length) * 100),
+      chartReadinessScore: Math.round(((sumR / items.length) / 5) * 50 + (willPlayCount / items.length) * 50),
+      items,
+    });
   });
 
   // Generic error handler
