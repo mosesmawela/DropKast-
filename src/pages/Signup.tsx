@@ -152,7 +152,7 @@ export default function Signup() {
                   <div className="w-full h-full bg-primary opacity-0 peer-checked:opacity-100 transition-opacity"></div>
                </div>
                <label htmlFor="terms" className="text-[10px] font-black text-white/40 tracking-[0.1em] leading-relaxed italic">
-                 I agree to the <a href="#" className="text-white hover:text-primary transition-colors italic border-b border-white/20">Terms of Service</a> and <a href="#" className="text-white hover:text-primary transition-colors italic border-b border-white/20">Privacy Policy</a>
+                 I agree to the <Link to="/terms" target="_blank" className="text-white hover:text-primary transition-colors italic border-b border-white/20">Terms of Service</Link> and <Link to="/privacy" target="_blank" className="text-white hover:text-primary transition-colors italic border-b border-white/20">Privacy Policy</Link>
                </label>
             </div>
 

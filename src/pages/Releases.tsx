@@ -197,8 +197,11 @@ export default function Releases() {
                     </td>
                     <td className="px-8 py-8 text-right">
                       <div className="flex items-center justify-end gap-6 h-full opacity-10 group-hover:opacity-100 transition-opacity font-mono">
-                        <button 
-                          onClick={() => navigate('/strategy')}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/campaigns/new?releaseId=${release.id}`);
+                          }}
                           className="text-[10px] font-bold text-primary hover:text-white transition-all uppercase tracking-widest flex items-center gap-2"
                         >
                            <Sparkles className="w-3.5 h-3.5" />

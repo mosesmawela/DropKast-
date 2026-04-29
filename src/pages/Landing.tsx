@@ -244,8 +244,9 @@ export default function Landing() {
            </div>
            <div className="barcode-sim h-4 w-20 opacity-5" />
            <div className="flex gap-8 uppercase">
-              <a href="#" className="hover:text-white transition-colors">Privacy</a>
-              <a href="#" className="hover:text-white transition-colors">Terms</a>
+              <Link to="/privacy" className="hover:text-white transition-colors">Privacy</Link>
+              <Link to="/terms" className="hover:text-white transition-colors">Terms</Link>
+              <a href="mailto:moses@lvrn.com" className="hover:text-white transition-colors">Contact</a>
            </div>
         </div>
       </footer>

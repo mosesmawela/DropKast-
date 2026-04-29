@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Suspense, lazy, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AuthProvider } from './context/AuthContext';
@@ -61,6 +61,9 @@ const Profile = lazy(() => import('./pages/Profile'));
 const AIProviders = lazy(() => import('./pages/AIProviders'));
 const Academy = lazy(() => import('./pages/Academy'));
 const Messages = lazy(() => import('./pages/Messages'));
+const Privacy = lazy(() => import('./pages/Privacy'));
+const Terms = lazy(() => import('./pages/Terms'));
+const NotFound = lazy(() => import('./pages/NotFound'));
 
 import WelcomeScreen from './components/layout/WelcomeScreen';
 
@@ -98,7 +101,7 @@ export default function App() {
                         <Suspense fallback={
                           <div className="h-screen w-screen flex flex-col items-center justify-center bg-black text-white gap-8 font-sans">
               <div className="flex flex-col items-center gap-4">
-                <div className="text-[10px] font-black text-primary italic tracking-[0.5em] uppercase">INIT_NODE_HANDSHAKE</div>
+                <div className="text-[10px] font-black text-primary italic tracking-[0.5em] uppercase">Loading DropKast</div>
                 <div className="w-64 h-[2px] bg-white/5 relative overflow-hidden">
                   <motion.div 
                     initial={{ left: '-100%' }}
@@ -116,6 +119,8 @@ export default function App() {
               <Route path="/" element={<Landing />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/terms" element={<Terms />} />
 
               {/* Protected Routes */}
               <Route element={<ProtectedRoute />}>
@@ -167,7 +172,7 @@ export default function App() {
               </Route>
 
               {/* Catch all */}
-              <Route path="*" element={<Navigate to="/" replace />} />
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
          </motion.div>
