@@ -10,7 +10,6 @@ Distribute · Generate · Promote · Get Paid
 [![Vite](https://img.shields.io/badge/vite-6.x-646CFF?style=for-the-badge&logo=vite)](https://vitejs.dev)
 [![React](https://img.shields.io/badge/react-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
 [![Tailwind](https://img.shields.io/badge/tailwind-4.x-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
-[![License: MIT](https://img.shields.io/badge/License-MIT-lightgrey?style=for-the-badge)](#license)
 
 </div>
 
