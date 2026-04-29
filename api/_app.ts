@@ -64,6 +64,10 @@ export function createApiApp() {
       time: new Date().toISOString(),
       services: {
         anthropic: Boolean(process.env.ANTHROPIC_API_KEY),
+        nvidia: Boolean(process.env.NVIDIA_API_KEY),
+        groq: Boolean(process.env.GROQ_API_KEY),
+        cerebras: Boolean(process.env.CEREBRAS_API_KEY),
+        openrouter: Boolean(process.env.OPENROUTER_API_KEY),
         cloudinary: Boolean(process.env.CLOUDINARY_CLOUD_NAME),
         database: Boolean(process.env.DATABASE_URL),
         supabase: Boolean(process.env.VITE_SUPABASE_URL),
