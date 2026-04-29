@@ -1,0 +1,1800 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DropKast · Investor Brief · April 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700;800&family=Newsreader:ital,wght@1,400;1,500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0A0A0A;
+    --bg-alt: #111111;
+    --line: rgba(255,255,255,0.08);
+    --line-bright: rgba(255,255,255,0.18);
+    --ink: #FFFFFF;
+    --ink-mid: rgba(255,255,255,0.55);
+    --ink-low: rgba(255,255,255,0.30);
+    --ink-faint: rgba(255,255,255,0.12);
+    --primary: #FF4D00;
+    --primary-soft: rgba(255,77,0,0.10);
+    --primary-line: rgba(255,77,0,0.35);
+    --accent-blue: #00f2ff;
+    --accent-lime: #acec00;
+    --good: #34D399;
+
+    --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+    --sans: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --serif: "Newsreader", "Source Serif Pro", Georgia, serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg); color: var(--ink); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+
+  /* The deck stage — letterboxed 1920x1080 with auto-scale on smaller viewports */
+  .stage {
+    position: fixed; inset: 0;
+    display: grid; place-items: center;
+    background: var(--bg);
+  }
+  .slide-frame {
+    width: 1920px; height: 1080px;
+    transform-origin: center center;
+    position: relative;
+    background: var(--bg);
+    overflow: hidden;
+  }
+
+  /* Each slide is absolute, only .active is visible */
+  section.slide {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    display: none;
+    padding: 88px 96px;
+    flex-direction: column;
+    background: var(--bg);
+  }
+  section.slide.active { display: flex; }
+
+  /* Subtle technical grid background only on hero/cover */
+  .tech-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 80px 80px;
+    pointer-events: none;
+  }
+
+  /* Persistent header strip on every slide except cover */
+  .slide-chrome {
+    position: absolute; top: 32px; left: 96px; right: 96px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    font-style: italic;
+    color: var(--ink-low);
+    z-index: 5;
+  }
+  .slide-chrome .brand-mark { display: flex; align-items: center; gap: 12px; color: var(--ink-mid); font-weight: 800; }
+  .slide-chrome .brand-mark .square { width: 14px; height: 14px; background: var(--primary); }
+  .slide-chrome .number { font-weight: 800; color: var(--primary); }
+
+  /* Footer chrome */
+  .slide-footer {
+    position: absolute; bottom: 28px; left: 96px; right: 96px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    font-style: italic;
+    color: var(--ink-faint);
+    z-index: 5;
+  }
+
+  /* Eyebrow tag */
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 12px;
+    font-family: var(--mono); font-weight: 800; font-style: italic;
+    text-transform: uppercase; letter-spacing: 0.4em;
+    color: var(--primary); font-size: 13px;
+  }
+  .eyebrow .dash { width: 32px; height: 1px; background: var(--primary); }
+
+  /* Headlines */
+  h1.display { font-family: var(--mono); font-weight: 800; font-style: italic; text-transform: uppercase; letter-spacing: -0.02em; line-height: 0.85; }
+  h2.section-title { font-family: var(--mono); font-weight: 800; font-style: italic; text-transform: uppercase; letter-spacing: -0.015em; line-height: 0.92; font-size: 84px; }
+  h3.sub-title { font-family: var(--mono); font-weight: 700; font-style: italic; text-transform: uppercase; letter-spacing: 0.01em; line-height: 1; }
+
+  .lead {
+    font-family: var(--sans); font-weight: 400;
+    color: var(--ink-mid);
+    font-size: 22px; line-height: 1.45;
+    max-width: 880px;
+  }
+  .lead strong { color: var(--ink); font-weight: 600; }
+
+  .micro {
+    font-family: var(--mono); font-style: italic;
+    font-size: 11px; letter-spacing: 0.3em;
+    text-transform: uppercase; color: var(--ink-low);
+  }
+
+  /* === SLIDE 1 — COVER === */
+  .cover-mark {
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 56px;
+  }
+  .cover-mark .swatch { width: 28px; height: 28px; background: var(--primary); }
+  .cover-mark .label { font-family: var(--mono); font-style: italic; font-weight: 800; letter-spacing: 0.35em; text-transform: uppercase; font-size: 14px; }
+
+  .cover-headline {
+    font-size: 280px;
+    font-family: var(--mono); font-weight: 800; font-style: italic; text-transform: uppercase;
+    line-height: 0.78;
+    letter-spacing: -0.04em;
+  }
+  .cover-headline .kast { color: var(--primary); }
+
+  .cover-rule { width: 280px; height: 2px; background: var(--primary); margin: 56px 0 32px; }
+  .cover-tag {
+    font-family: var(--sans);
+    font-size: 30px; line-height: 1.3;
+    color: var(--ink-mid); font-weight: 400;
+    max-width: 1100px;
+  }
+  .cover-tag em { color: var(--ink); font-weight: 600; font-style: normal; }
+
+  .cover-meta {
+    position: absolute; bottom: 96px; left: 96px; right: 96px;
+    display: flex; align-items: end; justify-content: space-between;
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.3em; text-transform: uppercase; font-style: italic; color: var(--ink-low);
+  }
+  .cover-meta .right { text-align: right; }
+  .cover-meta .right .url { color: var(--primary); font-weight: 700; font-size: 16px; }
+
+  /* === SLIDE 2 — PROBLEM === */
+  .problem-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 96px;
+    align-items: center;
+    margin-top: 80px;
+    flex: 1;
+  }
+  .tool-cloud {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  .tool-tile {
+    border: 1px solid var(--line);
+    padding: 22px 18px;
+    text-align: center;
+    background: rgba(255,255,255,0.02);
+    transform: rotate(-1deg);
+  }
+  .tool-tile:nth-child(2) { transform: rotate(1deg); }
+  .tool-tile:nth-child(3) { transform: rotate(-2deg); }
+  .tool-tile:nth-child(4) { transform: rotate(2deg); }
+  .tool-tile:nth-child(5) { transform: rotate(-1deg); }
+  .tool-tile:nth-child(6) { transform: rotate(1deg); }
+  .tool-tile:nth-child(7) { transform: rotate(-2deg); }
+  .tool-tile .name { font-family: var(--mono); font-weight: 700; font-size: 17px; color: var(--ink-mid); text-transform: uppercase; letter-spacing: 0.05em; }
+  .tool-tile .role { font-size: 11px; color: var(--ink-low); margin-top: 6px; font-family: var(--mono); letter-spacing: 0.15em; text-transform: uppercase; }
+  .problem-text { display: flex; flex-direction: column; gap: 32px; }
+  .problem-stat { display: flex; gap: 28px; align-items: baseline; }
+  .problem-stat .num { font-family: var(--mono); font-weight: 800; font-style: italic; font-size: 86px; color: var(--primary); line-height: 0.85; }
+  .problem-stat .desc { color: var(--ink-mid); font-size: 18px; max-width: 480px; line-height: 1.45; }
+
+  /* === SLIDE 3 — SOLUTION === */
+  .solution-graph {
+    display: grid;
+    grid-template-rows: auto auto auto;
+    gap: 52px;
+    margin-top: 90px;
+    place-items: center;
+  }
+  .stack-block {
+    width: 1080px;
+    border: 1px solid var(--line-bright);
+    background: rgba(255,255,255,0.025);
+    padding: 22px 32px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: var(--mono); text-transform: uppercase;
+  }
+  .stack-block.center { border-color: var(--primary); background: var(--primary-soft); width: 1080px; }
+  .stack-block.center .label { color: var(--primary); font-weight: 800; }
+  .stack-block .label { font-size: 18px; letter-spacing: 0.25em; font-weight: 700; font-style: italic; color: var(--ink); }
+  .stack-block .sublabel { font-size: 11px; letter-spacing: 0.3em; color: var(--ink-low); font-style: italic; }
+  .stack-arrow { width: 1px; height: 36px; background: var(--line-bright); position: relative; }
+  .stack-arrow::after {
+    content: ''; position: absolute; bottom: -1px; left: -5px;
+    border: 5px solid transparent; border-top-color: var(--line-bright);
+  }
+
+  /* === SLIDE 4 — PORTALS === */
+  .portal-cols {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px;
+    margin-top: 80px; flex: 1;
+  }
+  .portal-card {
+    border: 1px solid var(--line);
+    padding: 48px 40px;
+    background: rgba(255,255,255,0.02);
+    display: flex; flex-direction: column; gap: 28px;
+    position: relative;
+  }
+  .portal-card .corner {
+    position: absolute; top: -1px; left: -1px;
+    width: 32px; height: 32px;
+    border-top: 2px solid; border-left: 2px solid;
+  }
+  .portal-card[data-role="artist"] .corner { border-color: var(--primary); }
+  .portal-card[data-role="influencer"] .corner { border-color: var(--accent-blue); }
+  .portal-card[data-role="dj"] .corner { border-color: var(--accent-lime); }
+  .portal-card .role-eyebrow { font-family: var(--mono); font-style: italic; font-weight: 800; font-size: 12px; letter-spacing: 0.4em; text-transform: uppercase; }
+  .portal-card[data-role="artist"] .role-eyebrow { color: var(--primary); }
+  .portal-card[data-role="influencer"] .role-eyebrow { color: var(--accent-blue); }
+  .portal-card[data-role="dj"] .role-eyebrow { color: var(--accent-lime); }
+  .portal-card .role-name { font-family: var(--mono); font-style: italic; font-weight: 800; font-size: 56px; text-transform: uppercase; line-height: 0.92; color: var(--ink); }
+  .portal-card .role-tagline { font-size: 20px; color: var(--ink-mid); font-style: italic; line-height: 1.4; }
+  .portal-card ul { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }
+  .portal-card li { font-family: var(--mono); text-transform: uppercase; font-size: 12px; letter-spacing: 0.15em; color: var(--ink-mid); padding-left: 18px; position: relative; line-height: 1.4; }
+  .portal-card li::before {
+    content: '◆'; position: absolute; left: 0; top: 1px;
+    font-size: 8px;
+  }
+  .portal-card[data-role="artist"] li::before { color: var(--primary); }
+  .portal-card[data-role="influencer"] li::before { color: var(--accent-blue); }
+  .portal-card[data-role="dj"] li::before { color: var(--accent-lime); }
+
+  /* === SLIDE 5 — FEATURES GRID === */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: 1fr 1fr;
+    gap: 24px;
+    margin-top: 64px; flex: 1;
+  }
+  .feature-tile {
+    border: 1px solid var(--line);
+    padding: 36px 32px;
+    background: rgba(255,255,255,0.025);
+    display: flex; flex-direction: column; gap: 18px;
+    position: relative;
+  }
+  .feature-tile .num {
+    position: absolute; top: 18px; right: 22px;
+    font-family: var(--mono); font-style: italic; font-weight: 800;
+    font-size: 13px; letter-spacing: 0.3em; color: var(--ink-faint);
+  }
+  .feature-tile .ico {
+    width: 44px; height: 44px;
+    border: 2px solid var(--primary);
+    display: grid; place-items: center;
+    color: var(--primary);
+    font-family: var(--mono); font-weight: 800; font-style: italic; font-size: 18px;
+  }
+  .feature-tile h4 { font-family: var(--mono); font-style: italic; font-weight: 800; font-size: 30px; text-transform: uppercase; letter-spacing: -0.01em; line-height: 1; color: var(--ink); }
+  .feature-tile p { font-size: 16px; color: var(--ink-mid); line-height: 1.5; }
+
+  /* === SLIDE 6 — AI BRAINS === */
+  .brain-strip {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px;
+    margin-top: 56px;
+  }
+  .brain-tile {
+    border: 1px solid var(--line);
+    background: rgba(255,255,255,0.025);
+    padding: 32px 24px;
+    display: flex; flex-direction: column; gap: 12px;
+    position: relative;
+    min-height: 200px;
+    justify-content: space-between;
+  }
+  .brain-tile.free { border-color: rgba(52,211,153,0.3); }
+  .brain-tile.free .vendor { color: var(--good); }
+  .brain-tile .vendor { font-family: var(--mono); font-size: 11px; font-weight: 800; letter-spacing: 0.35em; text-transform: uppercase; font-style: italic; color: var(--primary); }
+  .brain-tile .name { font-family: var(--mono); font-style: italic; font-weight: 800; font-size: 22px; text-transform: uppercase; line-height: 1; color: var(--ink); }
+  .brain-tile .price { font-family: var(--mono); font-size: 12px; color: var(--ink-mid); letter-spacing: 0.05em; line-height: 1.4; }
+  .brain-tile .badge {
+    position: absolute; top: -10px; right: 14px;
+    background: var(--bg); padding: 0 8px;
+    font-family: var(--mono); font-style: italic; font-weight: 800; font-size: 9px;
+    letter-spacing: 0.4em; text-transform: uppercase;
+  }
+  .brain-tile.free .badge { color: var(--good); border: 1px solid rgba(52,211,153,0.3); }
+  .brain-tile.paid .badge { color: var(--primary); border: 1px solid var(--primary-line); }
+
+  .brain-quote {
+    margin-top: 56px;
+    padding: 32px 48px;
+    border-left: 3px solid var(--primary);
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 28px;
+    color: var(--ink-mid);
+    max-width: 1400px;
+    line-height: 1.5;
+  }
+  .brain-quote strong { color: var(--ink); font-weight: 500; }
+
+  /* === SLIDE 7 — PERSONAS === */
+  .persona-wall {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 14px;
+    margin-top: 48px; flex: 1;
+  }
+  .persona-card {
+    border: 1px solid var(--line);
+    background: rgba(255,255,255,0.025);
+    padding: 22px 22px;
+    display: flex; flex-direction: column; gap: 8px;
+    position: relative;
+  }
+  .persona-card.featured {
+    grid-column: span 2; grid-row: span 2;
+    background: linear-gradient(135deg, rgba(255,77,0,0.10), transparent 60%);
+    border-color: var(--primary-line);
+    padding: 40px 36px;
+    justify-content: space-between;
+  }
+  .persona-card .role-tag {
+    font-family: var(--mono); font-weight: 800; font-style: italic;
+    font-size: 9px; letter-spacing: 0.4em; text-transform: uppercase;
+    color: var(--primary);
+  }
+  .persona-card.featured .role-tag { font-size: 12px; }
+  .persona-card .role-name {
+    font-family: var(--mono); font-weight: 800; font-style: italic;
+    font-size: 18px; text-transform: uppercase; letter-spacing: -0.005em;
+    color: var(--ink); line-height: 1;
+  }
+  .persona-card.featured .role-name { font-size: 56px; line-height: 0.92; }
+  .persona-card .role-blurb {
+    font-size: 11px; color: var(--ink-mid); line-height: 1.4;
+  }
+  .persona-card.featured .role-blurb {
+    font-family: var(--serif); font-style: italic;
+    font-size: 22px; line-height: 1.45; max-width: 560px;
+  }
+  .persona-card .version {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.2em; color: var(--ink-low); text-transform: uppercase; margin-top: auto;
+  }
+
+  /* === SLIDE 8 — LIVE PRODUCT === */
+  .product-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 64px;
+    margin-top: 64px; flex: 1; align-items: center;
+  }
+  .product-mockup {
+    background: #050505; border: 1px solid var(--line-bright);
+    padding: 0; overflow: hidden;
+    aspect-ratio: 16/10;
+    box-shadow: 0 60px 120px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,77,0,0.08);
+    display: flex; flex-direction: column;
+  }
+  .mockup-bar {
+    height: 36px; border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; gap: 8px; padding: 0 16px;
+    background: rgba(255,255,255,0.02);
+  }
+  .mockup-bar .dot { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,0.15); }
+  .mockup-bar .url { margin-left: 18px; font-family: var(--mono); font-size: 11px; color: var(--ink-low); }
+  .mockup-body { flex: 1; display: grid; grid-template-columns: 180px 1fr; }
+  .mockup-side { border-right: 1px solid var(--line); padding: 16px 12px; display: flex; flex-direction: column; gap: 8px; background: rgba(255,255,255,0.01); }
+  .mockup-side .item {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ink-low); padding: 6px 8px;
+  }
+  .mockup-side .item.active { color: var(--primary); border-left: 2px solid var(--primary); padding-left: 10px; background: var(--primary-soft); }
+  .mockup-side .new-rel {
+    background: var(--ink); color: var(--bg); padding: 8px 10px; font-family: var(--mono); font-size: 10px; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; font-style: italic; margin-bottom: 4px;
+  }
+  .mockup-main { padding: 22px 24px; display: flex; flex-direction: column; gap: 16px; }
+  .mockup-title { font-family: var(--mono); font-style: italic; font-weight: 800; font-size: 22px; text-transform: uppercase; color: var(--ink); }
+  .mockup-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
+  .stat-card { border: 1px solid var(--line); padding: 14px 14px; }
+  .stat-card .label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--ink-low); }
+  .stat-card .value { font-family: var(--mono); font-style: italic; font-weight: 800; font-size: 22px; color: var(--ink); margin-top: 4px; }
+  .stat-card .delta { font-family: var(--mono); font-size: 10px; color: var(--good); margin-top: 2px; }
+  .mockup-row {
+    flex: 1;
+    display: flex; align-items: end; gap: 6px;
+    padding-top: 8px;
+    border-top: 1px solid var(--line);
+  }
+  .bar { width: 14px; background: var(--primary); opacity: 0.85; }
+
+  .product-side { display: flex; flex-direction: column; gap: 36px; }
+  .product-side h3 { font-size: 56px; line-height: 0.95; }
+  .product-side .live-pill {
+    display: inline-flex; align-items: center; gap: 12px;
+    border: 1px solid rgba(52,211,153,0.4);
+    background: rgba(52,211,153,0.05);
+    padding: 10px 18px;
+    font-family: var(--mono); font-style: italic; font-weight: 800;
+    font-size: 13px; letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--good);
+    align-self: flex-start;
+  }
+  .product-side .live-pill .blip { width: 8px; height: 8px; border-radius: 50%; background: var(--good); animation: blip 1.5s infinite; }
+  @keyframes blip { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+  .check-list { display: flex; flex-direction: column; gap: 14px; }
+  .check-list li { list-style: none; font-size: 18px; color: var(--ink-mid); padding-left: 28px; position: relative; line-height: 1.4; }
+  .check-list li::before { content: '✓'; position: absolute; left: 0; top: 0; color: var(--good); font-family: var(--mono); font-weight: 800; font-size: 16px; }
+  .check-list li strong { color: var(--ink); font-weight: 600; }
+
+  /* === SLIDE 9 — ARCHITECTURE === */
+  .arch-diagram {
+    margin-top: 64px;
+    flex: 1; display: flex; flex-direction: column; gap: 14px;
+    place-items: center;
+    align-items: center; justify-content: center;
+  }
+  .arch-tier {
+    width: 1500px;
+    border: 1px solid var(--line-bright);
+    background: rgba(255,255,255,0.02);
+    padding: 24px 36px;
+    display: grid; grid-template-columns: 240px 1fr;
+    align-items: center;
+    gap: 36px;
+    position: relative;
+  }
+  .arch-tier.client { border-color: var(--accent-blue); background: rgba(0,242,255,0.04); }
+  .arch-tier.server { border-color: var(--primary-line); background: var(--primary-soft); }
+  .arch-tier.data { border-color: rgba(52,211,153,0.3); background: rgba(52,211,153,0.04); }
+  .arch-tier .layer-label {
+    font-family: var(--mono); font-style: italic; font-weight: 800;
+    font-size: 18px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--ink);
+  }
+  .arch-tier.client .layer-label { color: var(--accent-blue); }
+  .arch-tier.server .layer-label { color: var(--primary); }
+  .arch-tier.data .layer-label { color: var(--good); }
+  .arch-tier .layer-content { display: flex; flex-wrap: wrap; gap: 10px; }
+  .chip {
+    border: 1px solid var(--line);
+    padding: 8px 14px;
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.05em;
+    color: var(--ink-mid);
+    background: rgba(255,255,255,0.025);
+  }
+  .arch-arrow {
+    width: 2px; height: 26px;
+    background: var(--line-bright);
+    margin: 0 auto;
+  }
+
+  /* === SLIDE 10 — BUSINESS MODEL === */
+  .pricing-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+    margin-top: 72px; flex: 1;
+  }
+  .pricing-card {
+    border: 1px solid var(--line-bright);
+    background: rgba(255,255,255,0.025);
+    padding: 48px 40px;
+    display: flex; flex-direction: column; gap: 24px;
+    position: relative;
+  }
+  .pricing-card.feature { border-color: var(--primary); background: linear-gradient(180deg, var(--primary-soft), transparent 70%); }
+  .pricing-card .label-row { display: flex; align-items: center; justify-content: space-between; }
+  .pricing-card .tier-name { font-family: var(--mono); font-weight: 800; font-style: italic; font-size: 28px; text-transform: uppercase; color: var(--ink); }
+  .pricing-card .tier-tag { font-family: var(--mono); font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--ink-low); font-style: italic; }
+  .pricing-card.feature .tier-tag { color: var(--primary); }
+  .pricing-card .tier-price {
+    font-family: var(--mono); font-style: italic; font-weight: 800;
+    font-size: 86px; color: var(--ink); line-height: 0.85;
+  }
+  .pricing-card .tier-price small { font-size: 24px; color: var(--ink-mid); font-weight: 500; }
+  .pricing-card .tier-desc { font-size: 17px; color: var(--ink-mid); line-height: 1.5; }
+  .pricing-card ul { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-top: auto; }
+  .pricing-card li { font-family: var(--mono); font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-mid); padding-left: 22px; position: relative; line-height: 1.4; }
+  .pricing-card li::before { content: '→'; position: absolute; left: 0; top: 0; color: var(--primary); }
+
+  /* === SLIDE 11 — UNIT ECONOMICS === */
+  .economics-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 64px;
+    margin-top: 64px; flex: 1; align-items: center;
+  }
+  .economics-stat {
+    display: flex; flex-direction: column; gap: 18px;
+  }
+  .economics-stat .big {
+    font-family: var(--mono); font-style: italic; font-weight: 800;
+    font-size: 200px; line-height: 0.78; color: var(--primary);
+    letter-spacing: -0.04em;
+  }
+  .economics-stat .label {
+    font-family: var(--mono); font-style: italic; font-weight: 800;
+    font-size: 18px; letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--ink-mid);
+  }
+  .break-even-explanation { font-size: 19px; color: var(--ink-mid); line-height: 1.55; max-width: 560px; }
+  .break-even-explanation strong { color: var(--ink); }
+  .formula-box {
+    border: 1px dashed var(--primary-line);
+    padding: 24px 32px;
+    margin-top: 8px;
+    font-family: var(--mono); font-style: italic;
+    color: var(--ink-mid); font-size: 18px; line-height: 1.6;
+  }
+  .formula-box .equals { color: var(--primary); font-weight: 800; }
+
+  /* Cost-vs-revenue chart */
+  .chart-wrap { width: 100%; max-width: 760px; }
+  .chart-svg { width: 100%; height: auto; }
+
+  /* === SLIDE 12 — ROADMAP === */
+  .roadmap-wrap { margin-top: 56px; flex: 1; display: flex; flex-direction: column; gap: 16px; justify-content: center; }
+  .phase-row {
+    display: grid; grid-template-columns: 80px 200px 1fr 220px; gap: 24px;
+    align-items: center;
+    padding: 20px 24px;
+    border: 1px solid var(--line);
+    background: rgba(255,255,255,0.02);
+    transition: border-color 0.2s;
+  }
+  .phase-row.done { border-left: 4px solid var(--good); }
+  .phase-row.in-progress { border-left: 4px solid var(--primary); }
+  .phase-row.planned { border-left: 4px solid var(--ink-faint); }
+  .phase-row .phase-num {
+    font-family: var(--mono); font-style: italic; font-weight: 800;
+    font-size: 28px; color: var(--ink); letter-spacing: -0.02em;
+  }
+  .phase-row .phase-title { font-family: var(--mono); font-weight: 800; font-style: italic; font-size: 18px; text-transform: uppercase; color: var(--ink); letter-spacing: 0.05em; }
+  .phase-row .phase-desc { font-size: 15px; color: var(--ink-mid); line-height: 1.4; }
+  .phase-row .phase-status {
+    font-family: var(--mono); font-style: italic; font-weight: 800;
+    font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase;
+    text-align: right;
+  }
+  .phase-row.done .phase-status { color: var(--good); }
+  .phase-row.in-progress .phase-status { color: var(--primary); }
+  .phase-row.planned .phase-status { color: var(--ink-low); }
+
+  /* === SLIDE 13 — COST AT SCALE === */
+  .scale-table {
+    margin-top: 56px; flex: 1;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px;
+    align-items: stretch;
+  }
+  .scale-card {
+    border: 1px solid var(--line-bright);
+    padding: 40px 32px;
+    background: rgba(255,255,255,0.025);
+    display: flex; flex-direction: column; gap: 18px;
+    position: relative;
+  }
+  .scale-card .stage {
+    font-family: var(--mono); font-style: italic; font-weight: 800;
+    font-size: 11px; letter-spacing: 0.4em; text-transform: uppercase;
+    color: var(--primary);
+  }
+  .scale-card .artists {
+    font-family: var(--mono); font-style: italic; font-weight: 800;
+    font-size: 56px; line-height: 0.9; color: var(--ink);
+  }
+  .scale-card .artists small { font-size: 16px; color: var(--ink-mid); font-weight: 500; }
+  .scale-card .monthly {
+    font-family: var(--mono); font-style: italic; font-weight: 800;
+    font-size: 28px; color: var(--primary);
+    border-top: 1px solid var(--line); padding-top: 18px;
+  }
+  .scale-card .per-artist {
+    font-family: var(--mono); font-size: 13px; letter-spacing: 0.05em;
+    color: var(--ink-mid);
+  }
+  .scale-card .per-artist strong { color: var(--ink); }
+  .scale-card ul { list-style: none; display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+  .scale-card li { font-family: var(--mono); font-size: 11px; letter-spacing: 0.05em; color: var(--ink-mid); }
+  .scale-callout {
+    margin-top: 24px;
+    font-family: var(--serif); font-style: italic;
+    color: var(--ink); font-size: 26px;
+    border-left: 3px solid var(--primary);
+    padding-left: 28px; max-width: 1400px; line-height: 1.4;
+  }
+  .scale-callout strong { color: var(--primary); font-weight: 500; }
+
+  /* === SLIDE 14 — FUNDING ASK === */
+  .ask-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 80px;
+    margin-top: 80px; flex: 1; align-items: center;
+  }
+  .ask-headline {
+    font-family: var(--mono); font-style: italic; font-weight: 800;
+    font-size: 116px; line-height: 0.85; color: var(--ink);
+    letter-spacing: -0.03em;
+  }
+  .ask-headline .num { color: var(--primary); }
+  .ask-options { display: flex; flex-direction: column; gap: 24px; }
+  .ask-option {
+    border: 1px solid var(--line-bright);
+    padding: 32px 32px;
+    display: flex; flex-direction: column; gap: 10px;
+    background: rgba(255,255,255,0.025);
+  }
+  .ask-option.preferred { border-color: var(--primary); background: var(--primary-soft); }
+  .ask-option .price-row {
+    display: flex; align-items: baseline; gap: 16px;
+  }
+  .ask-option .price {
+    font-family: var(--mono); font-style: italic; font-weight: 800;
+    font-size: 56px; color: var(--ink); line-height: 0.92;
+  }
+  .ask-option.preferred .price { color: var(--primary); }
+  .ask-option .label {
+    font-family: var(--mono); font-style: italic; font-weight: 800;
+    font-size: 12px; letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--ink-low);
+  }
+  .ask-option.preferred .label { color: var(--primary); }
+  .ask-option .breakdown {
+    font-size: 17px; color: var(--ink-mid); line-height: 1.55;
+  }
+  .ask-option .badge {
+    position: absolute; top: -10px; right: 16px;
+    background: var(--bg);
+    font-family: var(--mono); font-style: italic; font-weight: 800;
+    font-size: 9px; letter-spacing: 0.4em; text-transform: uppercase;
+    color: var(--primary);
+    padding: 0 10px;
+  }
+  .ask-option { position: relative; }
+
+  /* === SLIDE 15 — CLOSE === */
+  .close-content {
+    flex: 1; display: flex; flex-direction: column; justify-content: center;
+    gap: 56px;
+  }
+  .close-headline {
+    font-family: var(--mono); font-style: italic; font-weight: 800;
+    font-size: 156px; line-height: 0.85; color: var(--ink);
+    letter-spacing: -0.04em; max-width: 1700px;
+  }
+  .close-headline em { color: var(--primary); font-style: italic; }
+  .close-rule { width: 240px; height: 2px; background: var(--primary); }
+  .close-meta {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 56px;
+    max-width: 1400px;
+  }
+  .close-meta .label { font-family: var(--mono); font-style: italic; font-weight: 800; font-size: 12px; letter-spacing: 0.4em; text-transform: uppercase; color: var(--primary); margin-bottom: 8px; }
+  .close-meta .value { font-family: var(--mono); font-size: 22px; color: var(--ink); font-weight: 700; letter-spacing: 0.02em; }
+
+  /* ============== Deck navigation chrome (off-stage) ============== */
+  .deck-controls {
+    position: fixed; bottom: 16px; right: 24px;
+    z-index: 999;
+    display: flex; align-items: center; gap: 16px;
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; font-style: italic;
+    color: var(--ink-mid);
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(20px);
+    border: 1px solid var(--line-bright);
+    padding: 8px 14px;
+    user-select: none;
+  }
+  .deck-controls button {
+    background: transparent; border: none; color: var(--ink-mid);
+    font-family: inherit; font-size: inherit; cursor: pointer; padding: 4px 8px;
+    text-transform: uppercase; letter-spacing: 0.2em;
+  }
+  .deck-controls button:hover { color: var(--ink); }
+  .deck-controls .counter { color: var(--primary); font-weight: 800; }
+
+  .deck-help {
+    position: fixed; bottom: 16px; left: 24px;
+    z-index: 999;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; font-style: italic;
+    color: var(--ink-faint);
+    pointer-events: none;
+  }
+  .deck-help kbd { color: var(--ink-mid); border: 1px solid var(--line); padding: 1px 6px; font-family: inherit; font-size: 9px; }
+
+  /* Print-friendly */
+  @media print {
+    @page { size: 1920px 1080px; margin: 0; }
+    body { background: white; }
+    .deck-controls, .deck-help { display: none; }
+    .stage { position: relative; height: auto; }
+    .slide-frame { width: 1920px; height: 1080px; transform: none !important; }
+    section.slide { display: flex !important; page-break-after: always; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="slide-frame" id="frame">
+
+    <!-- ============ 01 · COVER ============ -->
+    <section class="slide active" data-slide="01">
+      <div class="tech-grid"></div>
+
+      <div style="display: flex; flex-direction: column; gap: 0; flex: 1; justify-content: center;">
+        <div class="cover-mark">
+          <div class="swatch"></div>
+          <div class="label">DropKast · System Initiated</div>
+        </div>
+
+        <div class="cover-headline">
+          <div>DROP</div>
+          <div class="kast">KAST</div>
+        </div>
+
+        <div class="cover-rule"></div>
+
+        <div class="cover-tag">
+          The AI-powered command deck for independent music. <em>Distribute. Generate. Promote. Get paid.</em><br />
+          One platform. Three portals. Eight swappable AI brains.
+        </div>
+      </div>
+
+      <div class="cover-meta">
+        <div>
+          <div>Investor Brief · April 2026</div>
+          <div style="margin-top: 4px; color: var(--ink-faint);">Confidential · For internal review</div>
+        </div>
+        <div class="right">
+          <div>Live Demo</div>
+          <div class="url">dropkast.vercel.app</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 02 · THE PROBLEM ============ -->
+    <section class="slide" data-slide="02">
+      <div class="slide-chrome">
+        <div class="brand-mark"><div class="square"></div>DROPKAST</div>
+        <div>The Problem · <span class="number">02 / 15</span></div>
+      </div>
+
+      <div style="margin-top: 16px;">
+        <div class="eyebrow"><div class="dash"></div>The Problem</div>
+        <h2 class="section-title" style="margin-top: 24px; max-width: 1500px;">
+          Indie artists pay for <span style="color: var(--primary);">seven</span> tools<br />to do what <span style="color: var(--primary);">one</span> should.
+        </h2>
+      </div>
+
+      <div class="problem-grid">
+        <div class="tool-cloud">
+          <div class="tool-tile"><div class="name">DistroKid</div><div class="role">Distribution</div></div>
+          <div class="tool-tile"><div class="name">Linkfire</div><div class="role">Smart Links</div></div>
+          <div class="tool-tile"><div class="name">ToneDen</div><div class="role">Ads</div></div>
+          <div class="tool-tile"><div class="name">SubmitHub</div><div class="role">Pitching</div></div>
+          <div class="tool-tile"><div class="name">Stem Splits</div><div class="role">Royalty Splits</div></div>
+          <div class="tool-tile"><div class="name">Feature.fm</div><div class="role">Pre-saves</div></div>
+          <div class="tool-tile" style="grid-column: span 3;"><div class="name">Email lists, agents, Excel sheets</div><div class="role">The duct tape that holds it all together</div></div>
+        </div>
+
+        <div class="problem-text">
+          <div class="problem-stat">
+            <div class="num">$420</div>
+            <div class="desc">Average annual spend per artist on overlapping subscriptions just to release a single record. Fragmented. Inefficient. No shared source of truth.</div>
+          </div>
+          <div class="problem-stat">
+            <div class="num">5x</div>
+            <div class="desc">More likely to skip a release entirely because the workflow across tools breaks. Most independents lose half their releases to friction, not lack of music.</div>
+          </div>
+          <div class="problem-stat">
+            <div class="num">0</div>
+            <div class="desc">AI tools today actually know an artist's catalog. Generic chatbots have no memory of releases, no comp framework, no playbook. Just hallucinations.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <div>02 / 15</div>
+        <div>DropKast · Investor Brief</div>
+      </div>
+    </section>
+
+    <!-- ============ 03 · THE SOLUTION ============ -->
+    <section class="slide" data-slide="03">
+      <div class="slide-chrome">
+        <div class="brand-mark"><div class="square"></div>DROPKAST</div>
+        <div>The Solution · <span class="number">03 / 15</span></div>
+      </div>
+
+      <div style="margin-top: 16px;">
+        <div class="eyebrow"><div class="dash"></div>The Solution</div>
+        <h2 class="section-title" style="margin-top: 24px;">
+          One platform.<br />End-to-end.
+        </h2>
+        <p class="lead" style="margin-top: 20px;">
+          DropKast is the <strong>vertical stack</strong> for an independent music career — distribution, AI assets, creator network, A&R submission, royalty splits, payouts. Same login. Same dashboard. Same source of truth.
+        </p>
+      </div>
+
+      <div class="solution-graph">
+        <div class="stack-block">
+          <div class="label">Distribution Layer</div>
+          <div class="sublabel">DDEX delivery → Spotify / Apple / Tidal / YouTube Music</div>
+        </div>
+        <div class="stack-arrow"></div>
+        <div class="stack-block">
+          <div class="label">AI Brain Layer</div>
+          <div class="sublabel">8 Swappable Models · Music-Pro Personas</div>
+        </div>
+        <div class="stack-arrow"></div>
+        <div class="stack-block center">
+          <div class="label">DROPKAST CORE</div>
+          <div class="sublabel">Auth · Catalog · Analytics · Identity</div>
+        </div>
+        <div class="stack-arrow"></div>
+        <div class="stack-block">
+          <div class="label">Creator Economy Layer</div>
+          <div class="sublabel">Influencer Briefs · DJ Packs · A&R Pipeline · Royalty Splits</div>
+        </div>
+        <div class="stack-arrow"></div>
+        <div class="stack-block">
+          <div class="label">Money Layer</div>
+          <div class="sublabel">Stripe Connect · Per-Track Splits · Royalty Ingestion</div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <div>03 / 15</div>
+        <div>DropKast · Investor Brief</div>
+      </div>
+    </section>
+
+    <!-- ============ 04 · PORTALS ============ -->
+    <section class="slide" data-slide="04">
+      <div class="slide-chrome">
+        <div class="brand-mark"><div class="square"></div>DROPKAST</div>
+        <div>Three Portals · <span class="number">04 / 15</span></div>
+      </div>
+
+      <div style="margin-top: 16px;">
+        <div class="eyebrow"><div class="dash"></div>Three Portals</div>
+        <h2 class="section-title" style="margin-top: 24px;">
+          Three sides of the music<br />economy. One account.
+        </h2>
+        <p class="lead" style="margin-top: 16px;">
+          Your account can hold all three. Switch portals from the sidebar. Cross-portal messages and notifications are tagged so you always know who you're talking to.
+        </p>
+      </div>
+
+      <div class="portal-cols">
+        <div class="portal-card" data-role="artist">
+          <div class="corner"></div>
+          <div class="role-eyebrow">PORTAL · 01</div>
+          <div class="role-name">Artist<br />Core</div>
+          <div class="role-tagline">"I make the music."</div>
+          <ul>
+            <li>Distribute to all DSPs</li>
+            <li>AI cover &amp; video generation</li>
+            <li>Direct A&amp;R submission</li>
+            <li>Royalty splits + payouts</li>
+            <li>Campaign rollout planning</li>
+          </ul>
+        </div>
+
+        <div class="portal-card" data-role="influencer">
+          <div class="corner"></div>
+          <div class="role-eyebrow">PORTAL · 02</div>
+          <div class="role-name">Creator<br />Relay</div>
+          <div class="role-tagline">"I create content."</div>
+          <ul>
+            <li>Paid campaign missions</li>
+            <li>Performance analytics</li>
+            <li>Instant verified payouts</li>
+            <li>Brand-match scoring</li>
+            <li>Direct artist DM threads</li>
+          </ul>
+        </div>
+
+        <div class="portal-card" data-role="dj">
+          <div class="corner"></div>
+          <div class="role-eyebrow">PORTAL · 03</div>
+          <div class="role-name">Vibe<br />Selecta</div>
+          <div class="role-tagline">"I move the floor."</div>
+          <ul>
+            <li>Exclusive DJ packs</li>
+            <li>Stems &amp; edits access</li>
+            <li>Feedback channel to artists</li>
+            <li>Chart signal data</li>
+            <li>First-look on releases</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <div>04 / 15</div>
+        <div>DropKast · Investor Brief</div>
+      </div>
+    </section>
+
+    <!-- ============ 05 · FEATURES GRID ============ -->
+    <section class="slide" data-slide="05">
+      <div class="slide-chrome">
+        <div class="brand-mark"><div class="square"></div>DROPKAST</div>
+        <div>Features · <span class="number">05 / 15</span></div>
+      </div>
+
+      <div style="margin-top: 16px;">
+        <div class="eyebrow"><div class="dash"></div>What's In The Box</div>
+        <h2 class="section-title" style="margin-top: 24px;">Six capabilities,<br />one workflow.</h2>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-tile">
+          <div class="num">01</div>
+          <div class="ico">→</div>
+          <h4>Smart Distribution</h4>
+          <p>One upload, every DSP. ISRC + UPC auto-minted. Audio + cover validation gates before delivery. Release lifecycle state machine handles scheduling.</p>
+        </div>
+
+        <div class="feature-tile">
+          <div class="num">02</div>
+          <div class="ico">∞</div>
+          <h4>AI Brain (Swappable)</h4>
+          <p>Claude, GPT-5, Gemini, Kimi, NVIDIA, Groq, Cerebras, OpenRouter. Free brains for daily. Premium for heavy lifting. Pick per task, persists per artist.</p>
+        </div>
+
+        <div class="feature-tile">
+          <div class="num">03</div>
+          <div class="ico">◇</div>
+          <h4>Music-Pro Personas</h4>
+          <p>11 system prompts authored from real industry expertise. A&R Executive, Campaign Director, Sync Scout, Lyric Coach. Same brain, different expert.</p>
+        </div>
+
+        <div class="feature-tile">
+          <div class="num">04</div>
+          <div class="ico">✦</div>
+          <h4>Creator Network</h4>
+          <p>Verified influencer roster. Send paid briefs in one click. TikTok / Reels post verification (planned via Meta + TikTok Graph APIs).</p>
+        </div>
+
+        <div class="feature-tile">
+          <div class="num">05</div>
+          <div class="ico">$</div>
+          <h4>Royalty Splits</h4>
+          <p>Split sheets become real payouts. Stripe Connect transfers automatically when royalties land. Tax docs handled.</p>
+        </div>
+
+        <div class="feature-tile">
+          <div class="num">06</div>
+          <div class="ico">◊</div>
+          <h4>DropKast Academy</h4>
+          <p>Built-in mini-course. 6 modules, 17 lessons, ~60 minutes total. Real release playbook, A&R skills, campaign math, monetization strategy.</p>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <div>05 / 15</div>
+        <div>DropKast · Investor Brief</div>
+      </div>
+    </section>
+
+    <!-- ============ 06 · AI BRAINS (DIFFERENTIATOR 1) ============ -->
+    <section class="slide" data-slide="06">
+      <div class="slide-chrome">
+        <div class="brand-mark"><div class="square"></div>DROPKAST</div>
+        <div>Differentiator · AI Brains · <span class="number">06 / 15</span></div>
+      </div>
+
+      <div style="margin-top: 16px;">
+        <div class="eyebrow"><div class="dash"></div>Differentiator · 01</div>
+        <h2 class="section-title" style="margin-top: 24px;">
+          Eight swappable AI brains.<br />One platform.
+        </h2>
+        <p class="lead" style="margin-top: 16px;">
+          We don't lock you into one vendor. Free chat covers daily use at zero cost. Premium brains light up for the heavy lifting.
+        </p>
+      </div>
+
+      <div class="brain-strip">
+        <div class="brain-tile free">
+          <div class="badge">Free</div>
+          <div>
+            <div class="vendor">NVIDIA</div>
+            <div class="name">NIM · Llama 3.3</div>
+          </div>
+          <div class="price">$0 — 40 RPM<br />Indefinite tier</div>
+        </div>
+        <div class="brain-tile free">
+          <div class="badge">Free</div>
+          <div>
+            <div class="vendor">Groq</div>
+            <div class="name">Llama 3.3 70B</div>
+          </div>
+          <div class="price">$0 — 1M tokens/day<br />Fastest inference</div>
+        </div>
+        <div class="brain-tile free">
+          <div class="badge">Free</div>
+          <div>
+            <div class="vendor">Cerebras</div>
+            <div class="name">Llama 3.3</div>
+          </div>
+          <div class="price">$0 — 1M tokens/day<br />Wafer-scale</div>
+        </div>
+        <div class="brain-tile free">
+          <div class="badge">Free</div>
+          <div>
+            <div class="vendor">OpenRouter</div>
+            <div class="name">Llama 4 / Qwen / DeepSeek</div>
+          </div>
+          <div class="price">$0 — 50 req/day<br />Model variety</div>
+        </div>
+
+        <div class="brain-tile paid">
+          <div class="badge">Premium</div>
+          <div>
+            <div class="vendor">Anthropic</div>
+            <div class="name">Claude Sonnet 4.6</div>
+          </div>
+          <div class="price">$3 / Mtok input<br />Tool use + caching</div>
+        </div>
+        <div class="brain-tile paid">
+          <div class="badge">Premium</div>
+          <div>
+            <div class="vendor">OpenAI</div>
+            <div class="name">GPT-5</div>
+          </div>
+          <div class="price">$0.625 / Mtok input<br />$5 / Mtok output</div>
+        </div>
+        <div class="brain-tile paid">
+          <div class="badge">Premium</div>
+          <div>
+            <div class="vendor">Google</div>
+            <div class="name">Gemini 2.5 Pro</div>
+          </div>
+          <div class="price">$1.25 / Mtok input<br />2M context</div>
+        </div>
+        <div class="brain-tile paid">
+          <div class="badge">Premium</div>
+          <div>
+            <div class="vendor">Moonshot</div>
+            <div class="name">Kimi K2.6</div>
+          </div>
+          <div class="price">$0.74 / Mtok input<br />256K context</div>
+        </div>
+      </div>
+
+      <div class="brain-quote">
+        <strong>The brain swaps. The expertise stays.</strong> Our personas are the playbook — they run the same on Claude, on GPT-5, on a free Llama. Users pick the brain that fits their budget; the output stays high-grade because the prompt is.
+      </div>
+
+      <div class="slide-footer">
+        <div>06 / 15</div>
+        <div>DropKast · Investor Brief</div>
+      </div>
+    </section>
+
+    <!-- ============ 07 · PERSONAS (DIFFERENTIATOR 2) ============ -->
+    <section class="slide" data-slide="07">
+      <div class="slide-chrome">
+        <div class="brand-mark"><div class="square"></div>DROPKAST</div>
+        <div>Differentiator · Music-Pro Personas · <span class="number">07 / 15</span></div>
+      </div>
+
+      <div style="margin-top: 16px;">
+        <div class="eyebrow"><div class="dash"></div>Differentiator · 02</div>
+        <h2 class="section-title" style="margin-top: 24px; font-size: 76px;">
+          AI trained by people who've<br />actually moved real numbers.
+        </h2>
+      </div>
+
+      <div class="persona-wall">
+        <div class="persona-card featured">
+          <div>
+            <div class="role-tag">Featured Persona</div>
+            <div class="role-name" style="margin-top: 12px;">A&amp;R<br />Executive</div>
+          </div>
+          <div class="role-blurb">
+            "Score 1–10. Lane clarity, hook density, replay floor. One thing to fix first. Same critique a senior A&amp;R gives in a label meeting — without the meeting."
+          </div>
+          <div class="version">v3 · LVRN-trained playbook</div>
+        </div>
+
+        <div class="persona-card">
+          <div class="role-tag">Strategy</div>
+          <div class="role-name">Campaign Director</div>
+          <div class="role-blurb">30-day rollout with the 60/30/10 budget rule. Hook-timing aware. Editorial pitch windows.</div>
+        </div>
+
+        <div class="persona-card">
+          <div class="role-tag">Content</div>
+          <div class="role-name">Viral Strategist</div>
+          <div class="role-blurb">Short-form concepts that hit 2026 algorithms. Specific to the song, not stock templates.</div>
+        </div>
+
+        <div class="persona-card">
+          <div class="role-tag">Assistant</div>
+          <div class="role-name">Strategist</div>
+          <div class="role-blurb">Live tool access to your catalog. Ask "how is X doing?" — pulls real numbers, not hallucinations.</div>
+        </div>
+
+        <div class="persona-card">
+          <div class="role-tag">Copy</div>
+          <div class="role-name">Caption Writer</div>
+          <div class="role-blurb">Artist-native voice. Never "discover my new song." Matches song energy.</div>
+        </div>
+
+        <div class="persona-card">
+          <div class="role-tag">Operations</div>
+          <div class="role-name">Release Manager</div>
+          <div class="role-blurb">Catches metadata errors that kill DSP pitches. ISRC, UPC, sub-genres, lyrics.</div>
+        </div>
+
+        <div class="persona-card">
+          <div class="role-tag">Money</div>
+          <div class="role-name">Splits Coordinator</div>
+          <div class="role-blurb">Industry-standard splits. Saves you from future lawsuits. Get it in writing now.</div>
+        </div>
+
+        <div class="persona-card">
+          <div class="role-tag">Placement</div>
+          <div class="role-name">Sync Scout</div>
+          <div class="role-blurb">EPKs that get callbacks from supervisors. $1K–$50K placements live or die at the EPK.</div>
+        </div>
+
+        <div class="persona-card">
+          <div class="role-tag">Outreach</div>
+          <div class="role-name">Press Pitcher</div>
+          <div class="role-blurb">3-sentence pitches that get opened. Specific. Match-able. No clickbait.</div>
+        </div>
+
+        <div class="persona-card">
+          <div class="role-tag">Songwriting</div>
+          <div class="role-name">Lyric Coach</div>
+          <div class="role-blurb">Topline feedback that improves lines, not "be more vulnerable" platitudes.</div>
+        </div>
+
+        <div class="persona-card">
+          <div class="role-tag">DJ</div>
+          <div class="role-name">Pack Curator</div>
+          <div class="role-blurb">Stems, edits, instrumentals, BPM-tagged, key-tagged. What DJs actually need.</div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <div>07 / 15</div>
+        <div>DropKast · Investor Brief</div>
+      </div>
+    </section>
+
+    <!-- ============ 08 · LIVE PRODUCT ============ -->
+    <section class="slide" data-slide="08">
+      <div class="slide-chrome">
+        <div class="brand-mark"><div class="square"></div>DROPKAST</div>
+        <div>Live · <span class="number">08 / 15</span></div>
+      </div>
+
+      <div style="margin-top: 16px;">
+        <div class="eyebrow"><div class="dash"></div>Status</div>
+        <h2 class="section-title" style="margin-top: 24px;">Live in production.<br />Already shipping.</h2>
+      </div>
+
+      <div class="product-grid">
+        <div class="product-mockup">
+          <div class="mockup-bar">
+            <div class="dot" style="background:#FF5F57;"></div>
+            <div class="dot" style="background:#FEBC2E;"></div>
+            <div class="dot" style="background:#28C840;"></div>
+            <div class="url">dropkast.vercel.app/dashboard</div>
+          </div>
+          <div class="mockup-body">
+            <div class="mockup-side">
+              <div class="new-rel">+ NEW RELEASE</div>
+              <div class="item active">01 · Home</div>
+              <div class="item">02 · Messages</div>
+              <div class="item">03 · Pre-Release</div>
+              <div class="item">04 · Campaigns</div>
+              <div class="item">05 · Influencers</div>
+              <div class="item">06 · Promo Packs</div>
+              <div class="item">07 · UGC Studio</div>
+              <div class="item">08 · DJ Packs</div>
+              <div class="item">11 · A&amp;R Feedback</div>
+              <div class="item">12 · Analytics</div>
+              <div class="item">15 · Assets</div>
+              <div class="item">16 · AI Models</div>
+            </div>
+            <div class="mockup-main">
+              <div class="mockup-title">Buddy Kay · Dashboard</div>
+              <div class="mockup-stats">
+                <div class="stat-card">
+                  <div class="label">Plays</div>
+                  <div class="value">12,840</div>
+                  <div class="delta">+ 8.2% Velo</div>
+                </div>
+                <div class="stat-card">
+                  <div class="label">Saves</div>
+                  <div class="value">792</div>
+                  <div class="delta">+ 11.4%</div>
+                </div>
+                <div class="stat-card">
+                  <div class="label">Posts</div>
+                  <div class="value">23</div>
+                  <div class="delta">+ 6 today</div>
+                </div>
+                <div class="stat-card">
+                  <div class="label">Reach</div>
+                  <div class="value">2.5M</div>
+                  <div class="delta">+ 22K / day</div>
+                </div>
+              </div>
+              <div class="mockup-row">
+                <div class="bar" style="height: 30%; opacity:0.4"></div>
+                <div class="bar" style="height: 45%; opacity:0.5"></div>
+                <div class="bar" style="height: 38%; opacity:0.45"></div>
+                <div class="bar" style="height: 60%; opacity:0.6"></div>
+                <div class="bar" style="height: 52%; opacity:0.55"></div>
+                <div class="bar" style="height: 78%; opacity:0.75"></div>
+                <div class="bar" style="height: 65%; opacity:0.65"></div>
+                <div class="bar" style="height: 88%; opacity:0.85"></div>
+                <div class="bar" style="height: 72%; opacity:0.7"></div>
+                <div class="bar" style="height: 100%; opacity:1"></div>
+                <div class="bar" style="height: 92%; opacity:0.9"></div>
+                <div class="bar" style="height: 96%; opacity:0.95"></div>
+                <div class="bar" style="height: 84%; opacity:0.8"></div>
+                <div class="bar" style="height: 76%; opacity:0.75"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="product-side">
+          <div class="live-pill"><div class="blip"></div>All systems · 200 OK</div>
+          <h3 class="sub-title">All 26 routes shipping<br />on Vercel today.</h3>
+
+          <ul class="check-list">
+            <li><strong>Welcome flow</strong> — 8-slide onboarding (color, theme, visual style, portal pick)</li>
+            <li><strong>AI Assistant</strong> — Streaming chat, 8 brains, tool use, persona-driven</li>
+            <li><strong>A&amp;R Feedback</strong> — Live Claude critique with 1-10 score</li>
+            <li><strong>Cross-portal Messages</strong> — Role-tagged threads (Artist ↔ Creator ↔ DJ)</li>
+            <li><strong>DropKast Academy</strong> — 17-lesson built-in course</li>
+            <li><strong>Settings</strong> — 9 tabs, custom hex color picker, tutorial toggle</li>
+            <li><strong>21 AI models cataloged</strong> with per-task recommended defaults</li>
+          </ul>
+
+          <div style="font-family: var(--mono); color: var(--ink-low); font-size: 13px; letter-spacing: 0.2em; text-transform: uppercase; font-style: italic;">
+            Push to <span style="color:var(--primary);">main</span> auto-deploys via Git integration
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <div>08 / 15</div>
+        <div>DropKast · Investor Brief</div>
+      </div>
+    </section>
+
+    <!-- ============ 09 · ARCHITECTURE ============ -->
+    <section class="slide" data-slide="09">
+      <div class="slide-chrome">
+        <div class="brand-mark"><div class="square"></div>DROPKAST</div>
+        <div>Architecture · <span class="number">09 / 15</span></div>
+      </div>
+
+      <div style="margin-top: 16px;">
+        <div class="eyebrow"><div class="dash"></div>Tech Architecture</div>
+        <h2 class="section-title" style="margin-top: 24px;">Three layers.<br />No magic.</h2>
+        <p class="lead" style="margin-top: 12px;">Modern, boring tech where it matters. Modern, novel tech where it differentiates.</p>
+      </div>
+
+      <div class="arch-diagram">
+        <div class="arch-tier client">
+          <div class="layer-label">CLIENT<br /><span style="color: var(--ink-low); font-size: 10px;">Browser SPA</span></div>
+          <div class="layer-content">
+            <div class="chip">React 19</div>
+            <div class="chip">Vite 6</div>
+            <div class="chip">TypeScript strict</div>
+            <div class="chip">Tailwind CSS 4</div>
+            <div class="chip">Motion / Framer</div>
+            <div class="chip">TanStack Query</div>
+            <div class="chip">sonner toasts</div>
+            <div class="chip">React Router 7</div>
+          </div>
+        </div>
+
+        <div class="arch-arrow"></div>
+
+        <div class="arch-tier server">
+          <div class="layer-label">EDGE<br /><span style="color: var(--ink-low); font-size: 10px;">Vercel Serverless</span></div>
+          <div class="layer-content">
+            <div class="chip">Express on /api</div>
+            <div class="chip">Zod validation</div>
+            <div class="chip">SSE streaming chat</div>
+            <div class="chip">Anthropic SDK</div>
+            <div class="chip">music-metadata audio QC</div>
+            <div class="chip">ISRC + UPC mint</div>
+            <div class="chip">Release lifecycle FSM</div>
+            <div class="chip">AI usage budget</div>
+            <div class="chip">Cross-portal messaging</div>
+          </div>
+        </div>
+
+        <div class="arch-arrow"></div>
+
+        <div class="arch-tier data">
+          <div class="layer-label">DATA<br /><span style="color: var(--ink-low); font-size: 10px;">Postgres / Supabase</span></div>
+          <div class="layer-content">
+            <div class="chip">Drizzle ORM</div>
+            <div class="chip">Supabase Auth</div>
+            <div class="chip">Supabase Storage</div>
+            <div class="chip">In-memory fallback</div>
+            <div class="chip">13 tables · pgvector ready</div>
+            <div class="chip">RLS policies</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <div>09 / 15</div>
+        <div>DropKast · Investor Brief</div>
+      </div>
+    </section>
+
+    <!-- ============ 10 · BUSINESS MODEL ============ -->
+    <section class="slide" data-slide="10">
+      <div class="slide-chrome">
+        <div class="brand-mark"><div class="square"></div>DROPKAST</div>
+        <div>Business Model · <span class="number">10 / 15</span></div>
+      </div>
+
+      <div style="margin-top: 16px;">
+        <div class="eyebrow"><div class="dash"></div>Revenue Model</div>
+        <h2 class="section-title" style="margin-top: 24px;">Three streams.<br />Hybrid pricing.</h2>
+      </div>
+
+      <div class="pricing-grid">
+        <div class="pricing-card">
+          <div class="label-row">
+            <div class="tier-name">Free</div>
+            <div class="tier-tag">Acquisition</div>
+          </div>
+          <div class="tier-price">10<small>%</small></div>
+          <div class="tier-desc">Royalty share of distributed earnings. Zero up-front cost. Same model RouteNote uses to crack the indie market.</div>
+          <ul>
+            <li>All DSPs included</li>
+            <li>Free AI brains (NVIDIA / Groq)</li>
+            <li>System personas</li>
+          </ul>
+        </div>
+
+        <div class="pricing-card feature">
+          <div class="label-row">
+            <div class="tier-name">Premium</div>
+            <div class="tier-tag">Recurring</div>
+          </div>
+          <div class="tier-price">$15<small>/mo</small></div>
+          <div class="tier-desc">Drops the royalty share to 0%. Unlocks premium AI brains, image + video generation, priority queues.</div>
+          <ul>
+            <li>0% royalty share</li>
+            <li>Claude / GPT-5 / Kimi access</li>
+            <li>Flux Pro images, Veo / Kling video</li>
+            <li>Priority A&amp;R review</li>
+          </ul>
+        </div>
+
+        <div class="pricing-card">
+          <div class="label-row">
+            <div class="tier-name">Per-Release</div>
+            <div class="tier-tag">A La Carte</div>
+          </div>
+          <div class="tier-price">$9.99<small>/yr</small></div>
+          <div class="tier-desc">DistroKid-style fee for artists who don't want a subscription. Mirrors industry expectation.</div>
+          <ul>
+            <li>Annual renewal</li>
+            <li>0% royalty share</li>
+            <li>Free brains only</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <div>10 / 15</div>
+        <div>DropKast · Investor Brief</div>
+      </div>
+    </section>
+
+    <!-- ============ 11 · UNIT ECONOMICS ============ -->
+    <section class="slide" data-slide="11">
+      <div class="slide-chrome">
+        <div class="brand-mark"><div class="square"></div>DROPKAST</div>
+        <div>Unit Economics · <span class="number">11 / 15</span></div>
+      </div>
+
+      <div style="margin-top: 16px;">
+        <div class="eyebrow"><div class="dash"></div>Unit Economics</div>
+        <h2 class="section-title" style="margin-top: 24px;">Break-even at <span style="color:var(--primary);">80</span> artists.</h2>
+      </div>
+
+      <div class="economics-grid">
+        <div class="economics-stat">
+          <div class="big">80</div>
+          <div class="label">Paying Artists × $15/mo = $1,200 MRR</div>
+          <div class="break-even-explanation" style="margin-top: 24px;">
+            <strong>That's where Phase 2 monthly burn meets recurring revenue.</strong> Below 80 we run at a controlled loss. Above 80 every paying artist is gross margin into eng + product.
+          </div>
+          <div class="formula-box">
+            500 artists × 50% conv. × $15 <span class="equals">=</span> $3,750 MRR<br />
+            Phase 2 monthly cost <span class="equals">≈</span> $1,200<br />
+            <span style="color: var(--primary);">Net contribution: $2,550/mo</span>
+          </div>
+        </div>
+
+        <div class="chart-wrap">
+          <svg class="chart-svg" viewBox="0 0 760 540" preserveAspectRatio="xMidYMid meet">
+            <!-- background grid -->
+            <g stroke="rgba(255,255,255,0.06)" stroke-width="1">
+              <line x1="60" y1="60" x2="60" y2="480"/>
+              <line x1="60" y1="480" x2="720" y2="480"/>
+              <line x1="60" y1="180" x2="720" y2="180" stroke-dasharray="4 4"/>
+              <line x1="60" y1="280" x2="720" y2="280" stroke-dasharray="4 4"/>
+              <line x1="60" y1="380" x2="720" y2="380" stroke-dasharray="4 4"/>
+            </g>
+
+            <!-- axes labels -->
+            <g font-family="JetBrains Mono" font-size="10" fill="rgba(255,255,255,0.4)" font-style="italic" letter-spacing="0.2em">
+              <text x="60" y="500" text-anchor="start">0</text>
+              <text x="225" y="500" text-anchor="middle">200</text>
+              <text x="390" y="500" text-anchor="middle">500</text>
+              <text x="555" y="500" text-anchor="middle">1K</text>
+              <text x="720" y="500" text-anchor="end">5K</text>
+
+              <text x="50" y="64" text-anchor="end">$10K</text>
+              <text x="50" y="184" text-anchor="end">$5K</text>
+              <text x="50" y="284" text-anchor="end">$3K</text>
+              <text x="50" y="384" text-anchor="end">$1K</text>
+              <text x="50" y="484" text-anchor="end">$0</text>
+
+              <text x="395" y="528" text-anchor="middle" font-weight="700">PAYING ARTISTS</text>
+            </g>
+
+            <!-- cost curve (less steep) -->
+            <path d="M 60 460 L 225 410 L 390 360 L 555 290 L 720 200" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2" stroke-dasharray="6 4"/>
+            <text x="240" y="380" font-family="JetBrains Mono" font-size="11" fill="rgba(255,255,255,0.6)" font-style="italic" font-weight="700">COST</text>
+
+            <!-- revenue curve (steeper, primary) -->
+            <path d="M 60 480 L 225 360 L 390 240 L 555 140 L 720 70" fill="none" stroke="#FF4D00" stroke-width="3"/>
+            <text x="380" y="220" font-family="JetBrains Mono" font-size="13" fill="#FF4D00" font-style="italic" font-weight="800">REVENUE</text>
+
+            <!-- break-even point -->
+            <circle cx="148" cy="436" r="6" fill="#FF4D00" stroke="#0A0A0A" stroke-width="2"/>
+            <text x="160" y="442" font-family="JetBrains Mono" font-size="10" fill="#FF4D00" font-style="italic" font-weight="800" letter-spacing="0.15em">BREAK-EVEN · 80</text>
+
+            <!-- title -->
+            <text x="60" y="40" font-family="JetBrains Mono" font-size="11" fill="rgba(255,255,255,0.4)" font-style="italic" font-weight="700" letter-spacing="0.3em">REVENUE VS COST CURVE</text>
+          </svg>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <div>11 / 15</div>
+        <div>DropKast · Investor Brief</div>
+      </div>
+    </section>
+
+    <!-- ============ 12 · ROADMAP ============ -->
+    <section class="slide" data-slide="12">
+      <div class="slide-chrome">
+        <div class="brand-mark"><div class="square"></div>DROPKAST</div>
+        <div>Roadmap · <span class="number">12 / 15</span></div>
+      </div>
+
+      <div style="margin-top: 16px;">
+        <div class="eyebrow"><div class="dash"></div>The 8-Week Plan</div>
+        <h2 class="section-title" style="margin-top: 16px; font-size: 76px;">From demo to v1.<br />Eight weeks.</h2>
+      </div>
+
+      <div class="roadmap-wrap">
+        <div class="phase-row done">
+          <div class="phase-num">00</div>
+          <div class="phase-title">Foundation</div>
+          <div class="phase-desc">Drizzle schema, Zod validation, Supabase Auth wiring with graceful in-memory fallback.</div>
+          <div class="phase-status">✓ Done</div>
+        </div>
+
+        <div class="phase-row in-progress">
+          <div class="phase-num">01</div>
+          <div class="phase-title">Core Distro</div>
+          <div class="phase-desc">ISRC + UPC ✓. Audio + cover validation ✓. Lifecycle FSM ✓. RouteNote partner API integration pending.</div>
+          <div class="phase-status">~ Partial</div>
+        </div>
+
+        <div class="phase-row done">
+          <div class="phase-num">02</div>
+          <div class="phase-title">AI Differentiator</div>
+          <div class="phase-desc">8 swappable brains, 11 music-pro personas, streaming chat with tool use, A&amp;R critique, cost guardrails.</div>
+          <div class="phase-status">✓ Done</div>
+        </div>
+
+        <div class="phase-row planned">
+          <div class="phase-num">03</div>
+          <div class="phase-title">Money Flow</div>
+          <div class="phase-desc">Stripe Connect onboarding, royalty splits payouts, royalty ingestion pipeline, tax doc generation.</div>
+          <div class="phase-status">○ Planned</div>
+        </div>
+
+        <div class="phase-row planned">
+          <div class="phase-num">04</div>
+          <div class="phase-title">Creator Economy</div>
+          <div class="phase-desc">Real influencer matching (embeddings), TikTok / Meta post verification, DJ pack signed-URL delivery.</div>
+          <div class="phase-status">○ Planned</div>
+        </div>
+
+        <div class="phase-row done">
+          <div class="phase-num">05</div>
+          <div class="phase-title">Polish Layer</div>
+          <div class="phase-desc">sonner toasts, error boundaries, TanStack Query, strict TypeScript, custom color picker.</div>
+          <div class="phase-status">✓ Done</div>
+        </div>
+
+        <div class="phase-row planned">
+          <div class="phase-num">06</div>
+          <div class="phase-title">Observability</div>
+          <div class="phase-desc">Sentry, PostHog, structured logs, /api/health monitoring, Stripe webhook verification.</div>
+          <div class="phase-status">○ Planned</div>
+        </div>
+
+        <div class="phase-row planned">
+          <div class="phase-num">07</div>
+          <div class="phase-title">Soft Launch</div>
+          <div class="phase-desc">Rate limiting, GDPR endpoints, DMCA flow, audit logs, SOC2 prep.</div>
+          <div class="phase-status">○ Planned</div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <div>12 / 15</div>
+        <div>DropKast · Investor Brief</div>
+      </div>
+    </section>
+
+    <!-- ============ 13 · COST AT SCALE ============ -->
+    <section class="slide" data-slide="13">
+      <div class="slide-chrome">
+        <div class="brand-mark"><div class="square"></div>DROPKAST</div>
+        <div>Cost At Scale · <span class="number">13 / 15</span></div>
+      </div>
+
+      <div style="margin-top: 16px;">
+        <div class="eyebrow"><div class="dash"></div>Operating Cost</div>
+        <h2 class="section-title" style="margin-top: 24px;">Per-artist cost <span style="color:var(--primary);">drops</span> with scale.</h2>
+      </div>
+
+      <div class="scale-table">
+        <div class="scale-card">
+          <div class="stage">Soft Launch</div>
+          <div class="artists">50 <small>artists</small></div>
+          <div class="monthly">~$80<small style="font-size:14px; color: var(--ink-mid);">/mo</small></div>
+          <div class="per-artist">Per artist · <strong>$1.60</strong></div>
+          <ul>
+            <li>Free Vercel + Supabase tiers</li>
+            <li>$20–50 Anthropic spend</li>
+          </ul>
+        </div>
+
+        <div class="scale-card">
+          <div class="stage">Real Product</div>
+          <div class="artists">500 <small>artists</small></div>
+          <div class="monthly">~$1,200<small style="font-size:14px; color: var(--ink-mid);">/mo</small></div>
+          <div class="per-artist">Per artist · <strong>$2.40</strong></div>
+          <ul>
+            <li>Vercel + Supabase Pro</li>
+            <li>RouteNote partner</li>
+            <li>Stripe Connect live</li>
+          </ul>
+        </div>
+
+        <div class="scale-card">
+          <div class="stage">Growth</div>
+          <div class="artists">5,000 <small>artists</small></div>
+          <div class="monthly">~$8.5K<small style="font-size:14px; color: var(--ink-mid);">/mo</small></div>
+          <div class="per-artist">Per artist · <strong>$1.70</strong></div>
+          <ul>
+            <li>Supabase Team</li>
+            <li>Sentry + PostHog</li>
+            <li>First eng hire trigger</li>
+          </ul>
+        </div>
+
+        <div class="scale-card" style="border-color: var(--primary); background: var(--primary-soft);">
+          <div class="stage">Scaled</div>
+          <div class="artists">50K <small>artists</small></div>
+          <div class="monthly">~$60K<small style="font-size:14px; color: var(--ink-mid);">/mo</small></div>
+          <div class="per-artist">Per artist · <strong>$1.20</strong></div>
+          <ul>
+            <li>Vercel Enterprise</li>
+            <li>SOC2 Type II</li>
+            <li>5–8 person eng team</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="scale-callout">
+        <strong>Per-artist cost drops 25% from launch to scale.</strong> Most fixed costs (database, distribution agreements, support tooling) don't grow linearly with users. The scale economy is real and predictable.
+      </div>
+
+      <div class="slide-footer">
+        <div>13 / 15</div>
+        <div>DropKast · Investor Brief</div>
+      </div>
+    </section>
+
+    <!-- ============ 14 · FUNDING ASK ============ -->
+    <section class="slide" data-slide="14">
+      <div class="slide-chrome">
+        <div class="brand-mark"><div class="square"></div>DROPKAST</div>
+        <div>Funding Ask · <span class="number">14 / 15</span></div>
+      </div>
+
+      <div style="margin-top: 16px;">
+        <div class="eyebrow"><div class="dash"></div>The Ask</div>
+      </div>
+
+      <div class="ask-grid">
+        <div>
+          <div class="ask-headline">12 months.<br /><span class="num">$76K</span> floor.<br /><span class="num">$194K</span> ceiling.</div>
+          <p class="lead" style="margin-top: 32px; max-width: 720px;">
+            Two scenarios. Both ship Phase 1–2 to a real paying product. The difference is how fast we get to paying customer #1 and how aggressively we grow once we're there.
+          </p>
+        </div>
+
+        <div class="ask-options">
+          <div class="ask-option">
+            <div class="badge">Option A</div>
+            <div class="price-row">
+              <div class="price">$76K</div>
+              <div class="label">Conservative</div>
+            </div>
+            <div class="breakdown">
+              You + AI-assisted maintenance + 1 part-time contractor. ~$5K/mo all-in. 12 months runway with $2K one-time setup. Ships Phase 0–2 + soft launch.
+            </div>
+          </div>
+
+          <div class="ask-option preferred">
+            <div class="badge">Recommended</div>
+            <div class="price-row">
+              <div class="price">$194K</div>
+              <div class="label">Acceleration</div>
+            </div>
+            <div class="breakdown">
+              You + 1 senior full-stack engineer ($150–200K base + equity) + AI tooling. ~$16K/mo all-in. Ships Phase 0–6 — including real DSP delivery, Stripe Connect, and post verification.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="position: absolute; bottom: 100px; left: 96px; right: 96px; display: flex; gap: 32px; font-family: var(--mono); text-transform: uppercase; font-style: italic; font-size: 12px; letter-spacing: 0.25em; color: var(--ink-low);">
+        <div><span style="color: var(--primary); font-weight: 800;">+</span> $2K one-time legal + ISRC + UPC + domain</div>
+        <div><span style="color: var(--primary); font-weight: 800;">+</span> $1K/mo Anthropic + infra at 500 artists</div>
+        <div><span style="color: var(--primary); font-weight: 800;">·</span> Break-even at 80 paying artists @ $15/mo</div>
+      </div>
+
+      <div class="slide-footer">
+        <div>14 / 15</div>
+        <div>DropKast · Investor Brief</div>
+      </div>
+    </section>
+
+    <!-- ============ 15 · CLOSE ============ -->
+    <section class="slide" data-slide="15">
+      <div class="tech-grid"></div>
+      <div class="slide-chrome">
+        <div class="brand-mark"><div class="square"></div>DROPKAST</div>
+        <div><span class="number">15 / 15</span> · End</div>
+      </div>
+
+      <div class="close-content">
+        <div class="eyebrow"><div class="dash"></div>The Close</div>
+        <div class="close-headline">
+          AI-native music<br />distribution,<br /><em>built right.</em>
+        </div>
+        <div class="close-rule"></div>
+
+        <div class="close-meta">
+          <div>
+            <div class="label">Live Demo</div>
+            <div class="value">dropkast.vercel.app</div>
+          </div>
+          <div>
+            <div class="label">Source</div>
+            <div class="value">github.com/mosesmawela/DropKast-</div>
+          </div>
+          <div>
+            <div class="label">Contact</div>
+            <div class="value">moses@lvrn.com</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <div>15 / 15</div>
+        <div>DropKast · Investor Brief · April 2026</div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<!-- Off-stage controls -->
+<div class="deck-controls">
+  <button id="btnPrev" aria-label="Previous">‹ Prev</button>
+  <span class="counter" id="counter">01 / 15</span>
+  <button id="btnNext" aria-label="Next">Next ›</button>
+</div>
+
+<div class="deck-help">
+  <kbd>←</kbd> / <kbd>→</kbd> / <kbd>space</kbd> · <kbd>F</kbd> Fullscreen · <kbd>P</kbd> Print/PDF · <kbd>Home</kbd> First · <kbd>End</kbd> Last
+</div>
+
+<script>
+(function() {
+  const slides = Array.from(document.querySelectorAll('section.slide'));
+  const total = slides.length;
+  const counter = document.getElementById('counter');
+  const frame = document.getElementById('frame');
+  const STORAGE_KEY = 'dropkast_pitch_deck_index';
+
+  let current = 0;
+  // URL hash override (#slide=03 jumps to slide 3) — used for screenshotting / linking.
+  const hashMatch = /#slide=(\d+)/.exec(window.location.hash);
+  if (hashMatch) {
+    const n = parseInt(hashMatch[1], 10) - 1;
+    if (!isNaN(n) && n >= 0 && n < total) current = n;
+  } else {
+    try {
+      const saved = parseInt(localStorage.getItem(STORAGE_KEY) || '0', 10);
+      if (!isNaN(saved) && saved >= 0 && saved < total) current = saved;
+    } catch (e) {}
+  }
+
+  function show(i) {
+    slides.forEach((s, idx) => s.classList.toggle('active', idx === i));
+    counter.textContent = String(i + 1).padStart(2, '0') + ' / ' + String(total).padStart(2, '0');
+    try { localStorage.setItem(STORAGE_KEY, String(i)); } catch (e) {}
+    current = i;
+  }
+
+  function next() { if (current < total - 1) show(current + 1); }
+  function prev() { if (current > 0) show(current - 1); }
+  function first() { show(0); }
+  function last() { show(total - 1); }
+
+  document.getElementById('btnNext').addEventListener('click', next);
+  document.getElementById('btnPrev').addEventListener('click', prev);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); next(); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); prev(); }
+    else if (e.key === 'Home') { e.preventDefault(); first(); }
+    else if (e.key === 'End') { e.preventDefault(); last(); }
+    else if (e.key === 'f' || e.key === 'F') {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+      else document.exitFullscreen();
+    }
+    else if (e.key === 'p' || e.key === 'P') {
+      e.preventDefault(); window.print();
+    }
+  });
+
+  // Auto-scale the 1920x1080 frame to fit the viewport while preserving aspect.
+  function fit() {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    const scale = Math.min(w / 1920, h / 1080);
+    frame.style.transform = `scale(${scale})`;
+  }
+  window.addEventListener('resize', fit);
+  fit();
+
+  show(current);
+})();
+</script>
+
+</body>
+</html>
