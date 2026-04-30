@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { ReactNode, Key } from 'react';
+import { ReactNode, Key, memo } from 'react';
 
 interface ScrollRevealProps {
   children: ReactNode;
@@ -11,7 +11,7 @@ interface ScrollRevealProps {
   key?: Key;
 }
 
-export default function ScrollReveal({
+const ScrollReveal = memo(function ScrollReveal({
   children,
   delay = 0,
   direction = 'up',
@@ -59,4 +59,6 @@ export default function ScrollReveal({
       </motion.div>
     </div>
   );
-}
+});
+
+export default ScrollReveal;
