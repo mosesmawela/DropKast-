@@ -1,6 +1,7 @@
 import { ChevronLeft, ChevronRight, CheckSquare, ListTodo, Plus, Trash2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { cn } from '../../lib/utils';
+import ProductionOptions from './ProductionOptions';
 
 interface StepChecklistProps {
   data: any;
@@ -13,7 +14,7 @@ export default function StepChecklist({ data, update, next, back }: StepChecklis
   const sections = [
     {
       id: 'project_meta',
-      title: 'PROJECT_METADATA_NODE',
+      title: 'Project metadata',
       fields: [
         { key: 'project_name', label: 'Project Name', type: 'text', placeholder: 'I JUST WANNA ROCK', sync: 'title' },
         { key: 'artist_name', label: 'Primary Artist(s)', type: 'text', placeholder: 'COLKAZE, UNCOOL MC', sync: 'artist' },
@@ -43,7 +44,7 @@ export default function StepChecklist({ data, update, next, back }: StepChecklis
     },
     {
       id: 'campaign',
-      title: 'CAMPAIGN_STRATEGY',
+      title: 'Campaign strategy',
       fields: [
         { key: 'campaign_goals', label: 'Campaign Goals', type: 'text', placeholder: 'VIRAL_GROWTH, STREAM_MAXIMIZATION...' },
         { key: 'priority_markets', label: 'Priority Markets', type: 'text', placeholder: 'USA, UK, SOUTH AFRICA...' },
@@ -51,7 +52,7 @@ export default function StepChecklist({ data, update, next, back }: StepChecklis
     },
     {
       id: 'timeline',
-      title: 'RELEASE_CHRONOLOGY',
+      title: 'Release timing',
       fields: [
         { key: 'release_date', label: 'Release Date', type: 'date', sync: 'releaseDate' },
         { key: 'sales_date', label: 'Sales Date', type: 'date' },
@@ -61,7 +62,7 @@ export default function StepChecklist({ data, update, next, back }: StepChecklis
     },
     {
       id: 'assets_links',
-      title: 'UNIVERSAL_RESOURCE_LOCATORS',
+      title: 'Assets & links',
       fields: [
         { key: 'final_master_link', label: 'Final Master Link (24bit/48k WAV)', type: 'text', placeholder: 'DRIVE/DROPBOX_LINK' },
         { key: 'artwork_link', label: 'Artwork Link (3000x3000px JPG)', type: 'text', placeholder: 'DRIVE/DROPBOX_LINK' },
@@ -94,7 +95,7 @@ export default function StepChecklist({ data, update, next, back }: StepChecklis
     },
     {
       id: 'dsp_mapping',
-      title: 'DSP_RELAY_NODES',
+      title: 'Artist links',
       fields: [
         { key: 'spotify_artist_link', label: 'Spotify Artist Link', type: 'text', placeholder: 'SPOTIFY_URL' },
         { key: 'apple_artist_link', label: 'Apple Music Artist Link', type: 'text', placeholder: 'APPLE_URL' },
@@ -109,10 +110,10 @@ export default function StepChecklist({ data, update, next, back }: StepChecklis
         <div className="space-y-4">
           <h2 className="text-4xl font-black text-white italic uppercase tracking-tighter font-mono flex items-center gap-4">
             <ListTodo className="w-10 h-10 text-primary" />
-            Release Checklist
+            Release details
           </h2>
-          <p className="text-white/30 text-xs font-bold uppercase tracking-[0.2em] font-mono italic">
-            Complete the full technical manifest for optimal deployment.
+          <p className="text-white/40 text-xs font-medium italic max-w-xl leading-relaxed">
+            Title, artist, ISRC, credits — everything DSPs need to display and pay you correctly.
           </p>
         </div>
         <div className="h-20 w-20 border border-white/5 bg-white/[0.02] flex items-center justify-center">
@@ -201,19 +202,24 @@ export default function StepChecklist({ data, update, next, back }: StepChecklis
         ))}
       </div>
 
+      {/* Production Options — Amuse/DistroKid-style premium add-ons */}
+      <div className="border-t border-white/10 pt-10">
+        <ProductionOptions data={data} update={update} />
+      </div>
+
       <div className="flex justify-between pt-12 items-center border-t border-white/5">
-        <button 
+        <button
           onClick={back}
-          className="flex items-center gap-3 text-white/20 hover:text-white transition-colors text-[10px] font-black uppercase tracking-[0.3em] font-mono italic"
+          className="flex items-center gap-3 text-white/40 hover:text-white transition-colors text-[10px] font-black uppercase tracking-[0.3em] font-mono italic"
         >
           <ChevronLeft className="w-4 h-4" />
-          Previous_Entry
+          Back
         </button>
-        <button 
+        <button
           onClick={next}
-          className="h-16 px-14 bg-white text-black hover:bg-primary hover:text-white font-mono font-black italic tracking-widest uppercase text-xs transition-all active:scale-95 flex items-center gap-4"
+          className="h-14 px-10 bg-white text-black hover:bg-primary hover:text-white font-black italic tracking-widest uppercase text-[11px] transition-all active:scale-95 flex items-center gap-3"
         >
-          Check Integrity
+          Continue to artwork
           <ChevronRight className="w-4 h-4" />
         </button>
       </div>

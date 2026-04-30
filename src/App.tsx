@@ -69,6 +69,7 @@ const NotFound = lazy(() => import('./pages/NotFound'));
 const Roster = lazy(() => import('./pages/Roster'));
 const SmartLink = lazy(() => import('./pages/SmartLink'));
 const SmartLinks = lazy(() => import('./pages/SmartLinks'));
+const Advances = lazy(() => import('./pages/Advances'));
 
 import WelcomeScreen from './components/layout/WelcomeScreen';
 
@@ -178,6 +179,7 @@ export default function App() {
                   <Route path="/messages" element={<ModuleGuard moduleId="messages"><Messages /></ModuleGuard>} />
                   <Route path="/roster" element={<Roster />} />
                   <Route path="/links" element={<ModuleGuard moduleId="smart-links"><SmartLinks /></ModuleGuard>} />
+                  <Route path="/advances" element={<ModuleGuard moduleId="advances"><Advances /></ModuleGuard>} />
                 </Route>
               </Route>
 

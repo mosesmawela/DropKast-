@@ -427,3 +427,12 @@
   0%   { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+/* Skeleton loader shimmer */
+@keyframes skeleton-shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.animate-skeleton-shimmer {
+  animation: skeleton-shimmer 1.6s ease-in-out infinite;
+}

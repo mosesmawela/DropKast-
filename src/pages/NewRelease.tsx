@@ -79,7 +79,13 @@ export default function NewRelease() {
     mastering_engineer: "",
     final_master_link: "",
     artwork_link: "",
-    press_photo_link: ""
+    press_photo_link: "",
+    // Production options (Amuse / DistroKid parity)
+    is_hi_res: false,           // 24-bit / 96+ kHz delivery
+    is_cover_song: false,       // triggers mech-license flow
+    cover_original_artist: "",
+    ai_mastering_opt_in: false, // run through AI mastering pre-delivery
+    youtube_content_id: false,  // monetize from user-uploaded clips
   });
 
   // Auto-resume from Draft on Mount
@@ -252,15 +258,15 @@ export default function NewRelease() {
       </div>
 
       {/* Traceability Footer */}
-      <div className="mt-16 flex flex-col md:flex-row items-center justify-between opacity-20 text-[9px] font-black uppercase tracking-[0.5em] font-mono italic gap-8 border-t border-white/5 pt-10">
-         <div className="flex items-center gap-4">
+      <div className="mt-16 flex flex-col md:flex-row items-center justify-between opacity-30 text-[10px] font-black uppercase tracking-[0.4em] font-mono italic gap-6 border-t border-white/5 pt-10">
+         <div className="flex items-center gap-3">
             <div className="w-1.5 h-1.5 bg-primary animate-pulse rounded-full" />
-            Locked Node Environment_3.0
+            Drafts auto-save every 10s
          </div>
-         <div className="flex items-center gap-12">
-            <span className="hover:text-primary transition-colors cursor-help">UPC_GEN_PENDING</span>
-            <span className="hover:text-primary transition-colors cursor-help">ISRC_AUTO_SYNC</span>
-            <span className="hover:text-primary transition-colors cursor-help">AES_256_ENCRYPTED</span>
+         <div className="flex items-center gap-8">
+            <span>UPC auto-mint</span>
+            <span>ISRC auto-sync</span>
+            <span>Audit-logged</span>
          </div>
       </div>
     </div>

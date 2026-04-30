@@ -1,8 +1,12 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, ReactNode } from 'react';
 import { Release } from '../types';
+import { useActiveArtist } from '../hooks/useActiveArtist';
 
 interface ReleaseContextType {
+  /** Releases scoped to the currently-active artist (for label users). */
   releases: Release[];
+  /** All releases regardless of scope — used by /roster catalogue rollups. */
+  allReleases: Release[];
   addRelease: (release: Omit<Release, 'id' | 'status'>) => Promise<void>;
   updateRelease: (id: string, data: Partial<Release>) => void;
   deleteRelease: (id: string) => void;
@@ -14,8 +18,9 @@ const ReleaseContext = createContext<ReleaseContextType | undefined>(undefined);
 const SEED_DATA: Release[] = [];
 
 export const ReleaseProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [releases, setReleases] = useState<Release[]>([]);
+  const [allReleases, setAllReleases] = useState<Release[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { activeArtistId, activeArtist } = useActiveArtist();
 
   // Initial Sync with Backend
   useEffect(() => {
@@ -23,16 +28,26 @@ export const ReleaseProvider: React.FC<{ children: ReactNode }> = ({ children })
       try {
         const res = await fetch('/api/releases');
         const data = await res.json();
-        setReleases(data);
+        setAllReleases(data);
       } catch (err) {
-        console.error('Master Node Sync Failed:', err);
-        setReleases([]);
+        console.error('Failed to load releases:', err);
+        setAllReleases([]);
       } finally {
         setIsLoading(false);
       }
     };
     fetchReleases();
   }, []);
+
+  // Scope releases to the active artist when a label is in artist-context
+  const releases = useMemo(() => {
+    if (!activeArtistId || !activeArtist) return allReleases;
+    return allReleases.filter(
+      (r: any) =>
+        r.artistId === activeArtistId ||
+        (r.artist && r.artist.toLowerCase().includes(activeArtist.name.toLowerCase())),
+    );
+  }, [allReleases, activeArtistId, activeArtist]);
 
   const addRelease = async (newReleaseData: any): Promise<any> => {
     setIsLoading(true);
@@ -61,10 +76,12 @@ export const ReleaseProvider: React.FC<{ children: ReactNode }> = ({ children })
         body: formData, // No need for Content-Type header with FormData, browser sets it with boundary
       });
       const newRelease = await res.json();
-      setReleases(prev => [newRelease, ...prev]);
+      // Tag the release with the active artist when a label creates it
+      if (activeArtistId) (newRelease as any).artistId = activeArtistId;
+      setAllReleases(prev => [newRelease, ...prev]);
       return newRelease;
     } catch (err) {
-      console.error('Transmission Blocked:', err);
+      console.error('Failed to create release:', err);
       throw err;
     } finally {
       setIsLoading(false);
@@ -72,17 +89,15 @@ export const ReleaseProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const updateRelease = (id: string, data: Partial<Release>) => {
-    const updated = releases.map(r => r.id === id ? { ...r, ...data } : r);
-    setReleases(updated);
+    setAllReleases(prev => prev.map(r => r.id === id ? { ...r, ...data } : r));
   };
 
   const deleteRelease = (id: string) => {
-    const updated = releases.filter(r => r.id !== id);
-    setReleases(updated);
+    setAllReleases(prev => prev.filter(r => r.id !== id));
   };
 
   return (
-    <ReleaseContext.Provider value={{ releases, addRelease, updateRelease, deleteRelease, isLoading }}>
+    <ReleaseContext.Provider value={{ releases, allReleases, addRelease, updateRelease, deleteRelease, isLoading }}>
       {children}
     </ReleaseContext.Provider>
   );

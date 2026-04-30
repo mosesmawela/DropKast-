@@ -48,6 +48,7 @@ const artistNav: Array<{ id: string; icon: any; label: string; path: string; mod
   { id: '12', icon: MessageSquare,   label: 'A&R Feedback', path: '/anr',           moduleId: 'anr' },
   { id: '13', icon: BarChart,        label: 'Analytics',    path: '/analytics',     moduleId: 'analytics' },
   { id: '14', icon: Wallet,          label: 'Earnings',     path: '/earnings',      moduleId: 'earnings' },
+  { id: '14b', icon: Sparkles,       label: 'Advances',     path: '/advances',      moduleId: 'advances' },
   { id: '15', icon: Camera,          label: 'Assets',       path: '/assets',        moduleId: 'assets' },
   { id: '15b', icon: Link2,          label: 'Smart Links',  path: '/links',         moduleId: 'smart-links' },
   { id: '16', icon: Sparkles,        label: 'AI Models',    path: '/ai-providers',  moduleId: 'ai-providers' },

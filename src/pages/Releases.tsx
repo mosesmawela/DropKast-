@@ -20,6 +20,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { useReleases } from '../context/ReleaseContext';
 import ScrollReveal from '../components/animations/ScrollReveal';
+import { Skeleton, RowSkeleton } from '../components/Skeleton';
 
 const statusIcons = {
   Released: CheckCircle2,
@@ -234,12 +235,12 @@ export default function Releases() {
             </div>
           )}
           {isLoading && (
-             <div className="py-24 text-center bg-dark">
-                <div className="w-12 h-0.5 bg-white/5 mx-auto mb-6 relative overflow-hidden">
-                   <div className="absolute inset-y-0 bg-primary w-1/3 animate-infinite-scroll"></div>
-                </div>
-                <p className="text-white/20 text-[10px] font-bold uppercase tracking-[0.4em] italic font-mono">Syncing catalog data...</p>
-             </div>
+            <div className="space-y-2 bg-dark p-2">
+              <RowSkeleton />
+              <RowSkeleton />
+              <RowSkeleton />
+              <RowSkeleton />
+            </div>
           )}
         </div>
       </div>
