@@ -14,9 +14,9 @@ import { cn } from '../../../lib/utils';
 
 export default function InfluencerEarnings() {
   const transactions = [
-    { id: 1, type: 'Payout', amount: '$1,200', date: '2026-04-15', status: 'Completed', mission: "Afrobeats_Signal_Burst" },
-    { id: 2, type: 'Pending', amount: '$450', date: '2026-04-20', status: 'Verifying', mission: "Sonic_Wave_UGC" },
-    { id: 3, type: 'Payout', amount: '$850', date: '2026-04-02', status: 'Completed', mission: "Midnight_Rush_Invasion" },
+    { id: 1, type: 'Payout', amount: '$1,200', date: '2026-04-15', status: 'Completed', mission: 'Afrobeats Spring Push' },
+    { id: 2, type: 'Pending', amount: '$450', date: '2026-04-20', status: 'Verifying', mission: 'New Wave UGC Brief' },
+    { id: 3, type: 'Payout', amount: '$850', date: '2026-04-02', status: 'Completed', mission: 'Midnight Rush Campaign' },
   ];
 
   return (
@@ -25,23 +25,23 @@ export default function InfluencerEarnings() {
         <div className="space-y-4">
           <div className="flex items-center gap-4">
             <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-            <span className="text-[10px] font-black text-primary uppercase tracking-[0.4em] font-mono italic">Financial_Grid</span>
+            <span className="text-[10px] font-black text-primary uppercase tracking-[0.4em] font-mono italic">Earnings</span>
           </div>
-          <h1 className="text-6xl md:text-8xl font-black italic text-white uppercase tracking-tighter leading-[0.8]">TREASURY_OS</h1>
-          <p className="text-[11px] font-bold text-white/30 uppercase tracking-[0.2em] font-mono italic">Monitor resource accumulation and global payout statuses.</p>
+          <h1 className="text-6xl md:text-8xl font-black italic text-white uppercase tracking-tighter leading-[0.8]">Your wallet</h1>
+          <p className="text-[11px] font-bold text-white/30 uppercase tracking-[0.2em] font-mono italic">Track your earnings and request payouts.</p>
         </div>
 
         <button className="h-16 bg-white text-black hover:bg-primary hover:text-white px-10 flex items-center gap-4 group transition-all font-mono font-black italic text-[11px] tracking-widest shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
-          <span>REQUEST_WITHDRAWAL</span>
+          <span>Withdraw</span>
           <ArrowUpRight className="w-5 h-5 group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform" />
         </button>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[
-          { label: 'TOTAL_ACCUMULATED', value: '$2,500', icon: Wallet, color: 'text-primary' },
-          { label: 'PENDING_SIGNAL_SYNC', value: '$450', icon: Clock, color: 'text-white/40' },
-          { label: 'AVG_MISSION_VAL', value: '$312.5', icon: TrendingUp, color: 'text-emerald-400' },
+          { label: 'Total earned', value: '$2,500', icon: Wallet, color: 'text-primary' },
+          { label: 'Pending verification', value: '$450', icon: Clock, color: 'text-white/40' },
+          { label: 'Avg per mission', value: '$312.5', icon: TrendingUp, color: 'text-emerald-400' },
         ].map((stat, i) => (
           <div key={i} className="manifest-card p-10 bg-black/40 border-white/5 space-y-6">
             <div className="flex items-center gap-4">

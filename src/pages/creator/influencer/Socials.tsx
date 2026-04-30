@@ -30,10 +30,10 @@ export default function InfluencerSocials() {
         <div className="space-y-4">
           <div className="flex items-center gap-4">
             <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-            <span className="text-[10px] font-black text-primary uppercase tracking-[0.4em] font-mono italic">Account_Sync</span>
+            <span className="text-[10px] font-black text-primary uppercase tracking-[0.4em] font-mono italic">Connected accounts</span>
           </div>
-          <h1 className="text-6xl md:text-8xl font-black italic text-white uppercase tracking-tighter leading-[0.8]">NODE_CONNECTIONS</h1>
-          <p className="text-[11px] font-bold text-white/30 uppercase tracking-[0.2em] font-mono italic">Authorize platform access to enable real-time sonic signal tracking.</p>
+          <h1 className="text-6xl md:text-8xl font-black italic text-white uppercase tracking-tighter leading-[0.8]">Your socials</h1>
+          <p className="text-[11px] font-bold text-white/30 uppercase tracking-[0.2em] font-mono italic">Connect your platforms so we can verify your posts and pay you faster.</p>
         </div>
       </header>
 
@@ -99,10 +99,10 @@ export default function InfluencerSocials() {
       <div className="manifest-card p-12 bg-primary/10 border-primary/20 space-y-6">
         <div className="flex items-center gap-4 text-primary">
           <Zap className="w-6 h-6 animate-pulse" />
-          <h2 className="text-2xl font-black italic uppercase tracking-tighter">Automatic_Verification_Protocol</h2>
+          <h2 className="text-2xl font-black italic uppercase tracking-tighter">Auto-verify your posts</h2>
         </div>
         <p className="text-[11px] font-bold text-white/60 uppercase tracking-widest italic font-sans leading-relaxed max-w-2xl">
-          By connecting your accounts, DROPKAST will automatically detect and verify your content posts. Once verified, missions are marked as COMPLETE and rewards are deposited into your TREASURY_OS.
+          Connect TikTok, Instagram, YouTube. We auto-detect your campaign posts, mark missions complete, and pay out instantly.
         </p>
       </div>
     </div>

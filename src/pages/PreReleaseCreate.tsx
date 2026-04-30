@@ -25,11 +25,11 @@ import { cn } from '../lib/utils';
 import { useNotify } from '../context/NotificationContext';
 
 const STEPS = [
-  { id: 'upload', label: 'SOURCE_UPLOAD', icon: Upload },
-  { id: 'hook', label: 'HOOK_ISOLATION', icon: Scissors },
-  { id: 'activation', label: 'AI_ACTIVATION', icon: Sparkles },
-  { id: 'invasion', label: 'INVASION_PLAN', icon: Users },
-  { id: 'timeline', label: 'DEPLOYMENT_GRID', icon: Calendar },
+  { id: 'upload', label: 'Upload audio', icon: Upload },
+  { id: 'hook', label: 'Pick the hook', icon: Scissors },
+  { id: 'activation', label: 'AI ideas', icon: Sparkles },
+  { id: 'invasion', label: 'Pick creators', icon: Users },
+  { id: 'timeline', label: 'Schedule', icon: Calendar },
 ];
 
 export default function PreReleaseCreate() {
@@ -55,14 +55,14 @@ export default function PreReleaseCreate() {
         setFile(selectedFile);
         if (!title) setTitle(selectedFile.name.replace(/\.[^/.]+$/, ""));
       } else {
-        notify('error', 'INVALID_SIGNAL', 'Primary source must be an audio node.');
+        notify('error', 'Invalid file', 'Please upload an audio file.');
       }
     }
   };
 
   const nextStep = () => {
     if (currentStep === 0 && !file) {
-      notify('error', 'SOURCE_MISSING', 'Activation requires a valid audio source node.');
+      notify('error', 'No audio yet', 'Upload an audio file to continue.');
       return;
     }
     
@@ -120,7 +120,7 @@ export default function PreReleaseCreate() {
         navigate('/pre-release');
       }
     } catch (err) {
-      notify('error', 'DEPLOYMENT_FAILED', 'Failed to anchor activation to global grid.');
+      notify('error', 'Couldn\'t schedule', 'Something went wrong saving the pre-release.');
     } finally {
       setIsProcessing(false);
     }
@@ -132,9 +132,9 @@ export default function PreReleaseCreate() {
         <div className="space-y-4">
           <div className="flex items-center gap-4">
             <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-            <span className="text-[10px] font-black text-primary uppercase tracking-[0.4em] font-mono italic">Activation_Engine</span>
+            <span className="text-[10px] font-black text-primary uppercase tracking-[0.4em] font-mono italic">Pre-release engine</span>
           </div>
-          <h1 className="text-6xl md:text-8xl font-black italic text-white uppercase tracking-tighter leading-[0.8]">INIT_Sequence</h1>
+          <h1 className="text-6xl md:text-8xl font-black italic text-white uppercase tracking-tighter leading-[0.8]">Pre-release plan</h1>
           <p className="text-[11px] font-bold text-white/30 uppercase tracking-[0.2em] font-mono italic">Configure viral payload for global signal injection.</p>
         </div>
 
@@ -201,7 +201,7 @@ export default function PreReleaseCreate() {
                       </div>
                       <div className="text-center space-y-2">
                         <div className="text-2xl font-black text-white italic lowercase font-mono tracking-tight">{file.name}</div>
-                        <div className="text-[10px] font-black text-primary uppercase tracking-[0.4em] font-mono">SIGNAL_LOCKED</div>
+                        <div className="text-[10px] font-black text-primary uppercase tracking-[0.4em] font-mono">Audio locked</div>
                       </div>
                     </>
                   ) : (
@@ -210,7 +210,7 @@ export default function PreReleaseCreate() {
                         <Upload className="w-8 h-8" />
                       </div>
                       <div className="text-center space-y-2">
-                        <div className="text-2xl font-black text-white italic lowercase font-mono tracking-tight">DRAG_AUDIO_NODE_OR_CLICK</div>
+                        <div className="text-2xl font-black text-white italic lowercase font-mono tracking-tight">Drag audio here or click</div>
                         <div className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] font-mono">SUPPORTED: MP3, WAV, FLAC (MAX 50MB)</div>
                       </div>
                     </>
@@ -223,7 +223,7 @@ export default function PreReleaseCreate() {
                     type="text" 
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder="RENAME_SIGNAL..."
+                    placeholder="Track title..."
                     className="w-full h-16 bg-white/[0.02] border border-white/5 px-8 text-[11px] font-mono font-black text-white placeholder:text-white/10 focus:border-primary/50 outline-none transition-all uppercase tracking-widest"
                   />
                 </div>
@@ -241,7 +241,7 @@ export default function PreReleaseCreate() {
                 <div className="space-y-6">
                   <h2 className="text-4xl font-black italic text-white uppercase tracking-tighter font-mono">Isolate_Viral_Hook</h2>
                   <p className="text-[11px] font-bold text-white/40 uppercase tracking-widest italic font-sans leading-relaxed">
-                    Identify the exact 15-30 second window intended for platform-wide proliferation.
+                    Pick the 15-30 second slice fans will hear on TikTok and Reels.
                   </p>
                 </div>
 
@@ -342,16 +342,16 @@ export default function PreReleaseCreate() {
                 className="space-y-12"
               >
                 <div className="space-y-6">
-                  <h2 className="text-4xl font-black italic text-white uppercase tracking-tighter font-mono">Platform_Activation</h2>
+                  <h2 className="text-4xl font-black italic text-white uppercase tracking-tighter font-mono">AI content ideas</h2>
                   <p className="text-[11px] font-bold text-white/40 uppercase tracking-widest italic font-sans leading-relaxed">
-                    AI-generated activation nodes for your signal fragment.
+                    AI-generated short-form video concepts built around your hook.
                   </p>
                 </div>
 
                 {isProcessing ? (
                   <div className="h-64 flex flex-col items-center justify-center gap-8 bg-white/[0.02] border border-dashed border-white/10 manifest-card">
                     <div className="w-12 h-12 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                    <div className="text-[10px] font-black text-primary uppercase tracking-[0.4em] font-mono animate-pulse italic">INIT_NEURAL_PROCESSING...</div>
+                    <div className="text-[10px] font-black text-primary uppercase tracking-[0.4em] font-mono animate-pulse italic">AI thinking...</div>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -375,7 +375,7 @@ export default function PreReleaseCreate() {
                         </div>
 
                         <div className="p-6 bg-black border border-white/5 space-y-2">
-                          <div className="text-[8px] font-black text-primary uppercase tracking-widest italic font-mono">Viral_Caption</div>
+                          <div className="text-[8px] font-black text-primary uppercase tracking-widest italic font-mono">Caption</div>
                           <p className="text-[10px] font-mono font-medium text-white/60 lowercase italic">
                             {idea.caption}
                           </p>
@@ -384,7 +384,7 @@ export default function PreReleaseCreate() {
                     ))}
                     <button className="manifest-card p-10 border-dashed border-white/10 hover:border-primary/50 bg-white/[0.01] flex flex-col items-center justify-center gap-4 group transition-all h-full">
                        <Plus className="w-6 h-6 text-white/10 group-hover:text-primary transition-colors" />
-                       <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] font-mono group-hover:text-white transition-colors italic">Generate_More_Nodes</span>
+                       <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] font-mono group-hover:text-white transition-colors italic">Generate more</span>
                     </button>
                   </div>
                 )}
@@ -399,9 +399,9 @@ export default function PreReleaseCreate() {
                 className="space-y-12"
               >
                 <div className="space-y-6">
-                  <h2 className="text-4xl font-black italic text-white uppercase tracking-tighter font-mono">Invasion_Protocol</h2>
+                  <h2 className="text-4xl font-black italic text-white uppercase tracking-tighter font-mono">Pick creators</h2>
                   <p className="text-[11px] font-bold text-white/40 uppercase tracking-widest italic font-sans leading-relaxed">
-                    Select elite discovery nodes for signal seeding.
+                    Pick which creators we should pitch to seed your hook.
                   </p>
                 </div>
 
@@ -468,9 +468,9 @@ export default function PreReleaseCreate() {
 
                 <div className="manifest-card p-12 bg-black/40 border-white/5 space-y-1">
                   {[
-                    { day: 'D-14', env: 'SIGNAL_INIT', action: 'Upload fragment to TikTok/IG sounds', status: 'pending' },
+                    { day: 'D-14', env: 'Tease', action: 'Upload fragment to TikTok/IG sounds', status: 'pending' },
                     { day: 'D-12', env: 'SEED_RELIANCE', action: 'Broadcast payload to elite creators', status: 'pending' },
-                    { day: 'D-07', env: 'INVASION_PHASE', action: 'Activation of meme/edit page relay', status: 'pending' },
+                    { day: 'D-07', env: 'Push', action: 'Brief meme + edit-page creators', status: 'pending' },
                     { day: 'D-03', env: 'VOLOCITY_BOOST', action: 'Launch UGC "Hook Detection" challenge', status: 'pending' },
                     { day: 'D-00', env: 'GLOBAL_DROP', action: 'Full release sync & official audio conversion', status: 'final' },
                   ].map((event, i) => (
@@ -505,7 +505,7 @@ export default function PreReleaseCreate() {
               )}
             >
               <ArrowLeft className="w-5 h-5" />
-              <span>PREV_NODE</span>
+              <span>Back</span>
             </button>
 
             <button 
@@ -513,7 +513,7 @@ export default function PreReleaseCreate() {
               disabled={isProcessing}
               className="h-16 bg-white text-black hover:bg-primary hover:text-white px-12 flex items-center gap-6 group transition-all font-mono font-black italic text-[12px] tracking-widest shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
             >
-              <span>{isProcessing ? 'PROCESSING...' : currentStep === STEPS.length - 1 ? 'LAUNCH_ACTIVATION' : 'NEXT_NODE'}</span>
+              <span>{isProcessing ? 'Working...' : currentStep === STEPS.length - 1 ? 'Schedule pre-release' : 'Next'}</span>
               {!isProcessing && <ArrowRight className="w-5 h-5 group-hover:translate-x-3 transition-transform" /> }
             </button>
           </div>
@@ -522,12 +522,12 @@ export default function PreReleaseCreate() {
         {/* Sidebar Status */}
         <div className="space-y-6">
           <div className="manifest-card p-10 bg-black/60 border-white/5 space-y-8 sticky top-12">
-            <h3 className="text-xl font-black italic text-white uppercase tracking-tight border-b border-white/5 pb-6">Activation_STATUS</h3>
+            <h3 className="text-xl font-black italic text-white uppercase tracking-tight border-b border-white/5 pb-6">Status</h3>
             
             <div className="space-y-6">
               <div className="space-y-2">
                 <span className="text-[9px] font-black text-white/20 uppercase tracking-widest font-mono">Payload_Target</span>
-                <div className="text-[11px] font-black text-white uppercase italic tracking-widest truncate">{title || 'UNSIGNED_NODE'}</div>
+                <div className="text-[11px] font-black text-white uppercase italic tracking-widest truncate">{title || 'Untitled track'}</div>
               </div>
 
               <div className="space-y-2">
@@ -536,7 +536,7 @@ export default function PreReleaseCreate() {
               </div>
 
               <div className="space-y-2">
-                <span className="text-[9px] font-black text-white/20 uppercase tracking-widest font-mono">Activation_Tier</span>
+                <span className="text-[9px] font-black text-white/20 uppercase tracking-widest font-mono">Tier</span>
                 <div className="text-[11px] font-black text-white italic tracking-widest uppercase">{aiIdeas.length} Neural Ideas</div>
               </div>
 
@@ -548,7 +548,7 @@ export default function PreReleaseCreate() {
 
             <div className="pt-8 border-t border-white/5">
                <div className="text-[8px] font-black text-white/10 uppercase tracking-[0.4em] font-mono italic leading-relaxed">
-                 SIGNAL_DEPLOYS_VIA_LVRN_CORE_GRID. ALL NODES ARE LOGGED. 
+                 Powered by DropKast. Every action is logged to your audit trail. 
                </div>
             </div>
           </div>

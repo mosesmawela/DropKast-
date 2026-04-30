@@ -25,11 +25,11 @@ import StepDistribution from "../features/releases/StepDistribution";
 import StepReview from "../features/releases/StepReview";
 
 const steps = [
-  { label: "Upload", icon: Disc, description: "Master Audio File" },
-  { label: "Checklist", icon: CheckSquare, description: "Data Manifest" },
-  { label: "Artwork", icon: ImageIcon, description: "Visual Identity" },
-  { label: "Distribution", icon: MapPin, description: "Relay Nodes" },
-  { label: "Review", icon: CheckCircle2, description: "Final Integrity" },
+  { label: "Upload", icon: Disc, description: "Audio file" },
+  { label: "Details", icon: CheckSquare, description: "Title, ISRC, credits" },
+  { label: "Artwork", icon: ImageIcon, description: "Cover image" },
+  { label: "Distribution", icon: MapPin, description: "Stores & date" },
+  { label: "Review", icon: CheckCircle2, description: "Confirm and submit" },
 ];
 
 export default function NewRelease() {
@@ -98,7 +98,7 @@ export default function NewRelease() {
         // Note: audio and artwork files can't be stringified, user needs to re-upload them
         setData(prev => ({ ...prev, ...parsed, audio: null, artwork: null }));
         setHasDraft(false);
-        notify('info', 'DRAFT_RECOVERED', 'Audio/Visual nodes must be re-attached.');
+        notify('info', 'Draft restored', 'Re-attach your audio and artwork files to continue.');
       } catch (err) {
         console.error('Failed to parse draft');
       }
@@ -134,10 +134,10 @@ export default function NewRelease() {
       });
 
       localStorage.removeItem('dropkast_release_draft');
-      notify('success', 'TRANSMISSION_INITIATED', 'Release node synchronized with distribution relay.');
+      notify('success', 'Release submitted', 'Your release is queued for delivery to your selected stores.');
       navigate(`/releases/${res.id}/processing`);
     } catch (err) {
-      notify('error', 'CONNECT_FAIL', 'Master relay node timeout.');
+      notify('error', 'Submit failed', 'We couldn\'t reach the server. Try again in a moment.');
     }
   };
 
@@ -165,7 +165,7 @@ export default function NewRelease() {
               </div>
            </div>
            <h1 className="text-7xl font-black text-white italic uppercase tracking-tighter leading-none mb-4">New <span className="text-primary">Release</span></h1>
-           <p className="text-white/30 text-[10px] font-bold uppercase tracking-[0.4em] font-mono italic">Distribution_Flight_Sequence_Initiated</p>
+           <p className="text-white/30 text-[10px] font-bold uppercase tracking-[0.4em] font-mono italic">Release wizard</p>
         </div>
 
         {hasDraft && (

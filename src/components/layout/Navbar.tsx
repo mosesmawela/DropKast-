@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from 'react';
 import ThemeToggle from '../ThemeToggle';
 import NotificationsDropdown from '../NotificationsDropdown';
 import GrowSongTrigger from '../GrowSongTrigger';
+import ActiveArtistBadge from './ActiveArtistBadge';
 import { AnimatePresence, motion } from 'motion/react';
 
 interface NavbarProps {
@@ -165,6 +166,7 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
           >
             <GraduationCap className="w-4 h-4" />
           </Link>
+          <ActiveArtistBadge />
           <GrowSongTrigger />
           <div className="hidden sm:block">
             <ThemeToggle />

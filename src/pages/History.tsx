@@ -34,22 +34,22 @@ export default function History() {
       <div className="mb-20 flex flex-col md:flex-row md:items-end justify-between gap-12">
         <div className="space-y-6">
           <div className="inline-block px-4 py-2 bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-[0.4em] italic">
-            Deployment_Audit_Log
+            Audit log
           </div>
           <h1 className="text-8xl font-black text-white italic uppercase tracking-tighter leading-none mb-4">
-            Distribution <span className="text-primary">History</span>
+            Distribution <span className="text-primary">history</span>
           </h1>
-          <p className="text-white/30 text-base font-bold italic tracking-widest uppercase">Comprehensive logs of all master data node transmissions.</p>
+          <p className="text-white/30 text-base font-bold italic tracking-widest uppercase">Every release event, in order. Submitted, approved, delivered, taken down.</p>
         </div>
 
         <div className="flex items-center gap-6">
            <div className="p-8 border border-white/5 bg-dark space-y-2 text-right">
               <div className="text-4xl font-black text-white italic">{releases.length}</div>
-              <div className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em]">Total Deployments</div>
+              <div className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em]">Total releases</div>
            </div>
            <div className="p-8 border border-white/5 bg-dark space-y-2 text-right">
               <div className="text-4xl font-black text-primary italic">0</div>
-              <div className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em]">Failed Transmissions</div>
+              <div className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em]">Failed deliveries</div>
            </div>
         </div>
       </div>

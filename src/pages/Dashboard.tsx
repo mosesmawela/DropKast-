@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { cn } from '../lib/utils';
+import ClaimArtistProfile from '../components/ClaimArtistProfile';
 import { 
   Tooltip, 
   ResponsiveContainer,
@@ -70,7 +71,7 @@ export default function Dashboard() {
     switch (role) {
       case 'INFLUENCER':
         return {
-          title: 'CREATOR_RELAY',
+          title: 'Influencer dashboard',
           greeting: `HELLO, ${user?.artistName?.split(' ')[0] || 'CREATOR'}`,
           metrics: [
             { label: 'Total Engagement', value: '450K', trend: '+8.2% Velo', color: 'text-primary', icon: Users },
@@ -103,7 +104,7 @@ export default function Dashboard() {
             { title: 'Sonic Charts', icon: BarChart3, path: '/dj/packs', desc: 'View global club and radio transmission rankings.' },
             { title: 'Relay Nodes', icon: Globe2, path: '/dj/packs', desc: 'Connect with other broadcast professionals.' },
           ],
-          chartLabel: 'Transmission Reach',
+          chartLabel: 'Audience reach',
           chartUnit: 'Listeners'
         };
       default:
@@ -132,6 +133,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-12 max-w-7xl mx-auto py-8">
+      <ClaimArtistProfile artistName={user?.label || 'your project'} />
       <ScrollReveal direction="down" variant="blur">
         <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-[var(--border-main)] pb-10 relative">
           <div className="flex items-start gap-8">
@@ -146,7 +148,7 @@ export default function Dashboard() {
               <div className="flex items-center gap-3 mb-3 font-mono">
                 <span className="text-[10px] font-bold text-[var(--text-main)]/30 tracking-[0.2em] font-mono uppercase italic">{config.title}</span>
                 <div className="w-8 h-[1px] bg-[var(--border-main)]"></div>
-                <span className="text-[10px] font-bold text-primary tracking-[0.2em] font-mono italic animate-pulse">SYSTEM_ONLINE</span>
+                <span className="text-[10px] font-bold text-primary tracking-[0.2em] font-mono italic animate-pulse">All systems live</span>
               </div>
               <h1 className="text-3xl md:text-5xl font-black tracking-tight text-[var(--text-main)] leading-none uppercase italic font-mono">
                 {config.greeting}

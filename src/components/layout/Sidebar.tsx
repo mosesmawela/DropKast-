@@ -24,6 +24,7 @@ import {
   Sparkles,
   Mail,
   Building2,
+  Link2,
   X,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
@@ -48,6 +49,7 @@ const artistNav: Array<{ id: string; icon: any; label: string; path: string; mod
   { id: '13', icon: BarChart,        label: 'Analytics',    path: '/analytics',     moduleId: 'analytics' },
   { id: '14', icon: Wallet,          label: 'Earnings',     path: '/earnings',      moduleId: 'earnings' },
   { id: '15', icon: Camera,          label: 'Assets',       path: '/assets',        moduleId: 'assets' },
+  { id: '15b', icon: Link2,          label: 'Smart Links',  path: '/links',         moduleId: 'smart-links' },
   { id: '16', icon: Sparkles,        label: 'AI Models',    path: '/ai-providers',  moduleId: 'ai-providers' },
   { id: '17', icon: Cpu,             label: 'Settings',     path: '/settings',      moduleId: 'settings' },
 ];

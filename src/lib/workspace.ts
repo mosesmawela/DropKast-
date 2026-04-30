@@ -30,6 +30,7 @@ export type ModuleId =
   | 'platforms'
   | 'compliance'
   | 'releases'
+  | 'smart-links'
   | 'settings';
 
 export type ModuleCategory = 'core' | 'ai-tools' | 'creators' | 'business';
@@ -57,6 +58,7 @@ export const MODULES: ModuleDef[] = [
   { id: 'analytics',    label: 'Analytics',    path: '/analytics',     category: 'core',     description: 'Streams, audience, top territories.', defaultOn: true },
   { id: 'earnings',     label: 'Earnings',     path: '/earnings',      category: 'core',     description: 'Royalties, splits, payouts.', defaultOn: true },
   { id: 'platforms',    label: 'Platforms',    path: '/platforms',     category: 'core',     description: 'Pick which stores carry your music.', defaultOn: true },
+  { id: 'smart-links',  label: 'Smart Links',  path: '/links',         category: 'core',     description: 'One link, every DSP. Pre-save before drop, listen-now after.', defaultOn: true },
   { id: 'assets',       label: 'Assets',       path: '/assets',        category: 'core',     description: 'Audio, artwork, video files.', defaultOn: true },
 
   // AI TOOLS — opt-in for artists who want them

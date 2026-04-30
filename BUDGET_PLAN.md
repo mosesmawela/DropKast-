@@ -22,6 +22,7 @@ The per-artist cost goes **down** with scale because most fixed costs (database,
 ## Phase 1 — Build & launch ($0 → first 50 artists)
 
 ### One-time costs
+
 | Item | Cost | Notes |
 |---|---|---|
 | RIAA ISRC registrant | $95 | One-time. Mints unlimited ISRCs forever. |
@@ -32,6 +33,7 @@ The per-artist cost goes **down** with scale because most fixed costs (database,
 | **Total one-time** | **~$2,000** | Bare minimum to launch legitimately. |
 
 ### Monthly recurring (soft launch tier)
+
 | Item | Cost | Notes |
 |---|---|---|
 | Vercel Pro | $20/seat/mo | 1 seat at launch. |
@@ -42,6 +44,7 @@ The per-artist cost goes **down** with scale because most fixed costs (database,
 | **Monthly total** | **~$40–80/mo** | Cheap. |
 
 ### Engineering effort
+
 | Phase | Time | Status |
 |---|---|---|
 | Phase 0 (auth + DB + Zod) | 5 days | ✅ Code ready, need Supabase project |
@@ -59,6 +62,7 @@ The per-artist cost goes **down** with scale because most fixed costs (database,
 You're charging money. SLAs matter. Splits actually pay out. DSP delivery is real.
 
 ### Monthly recurring
+
 | Item | Cost | Why |
 |---|---|---|
 | Vercel Pro | $20/mo | Bandwidth + functions still under 1TB / 1M invocations. |
@@ -76,6 +80,7 @@ You're charging money. SLAs matter. Splits actually pay out. DSP delivery is rea
 | **Monthly total** | **~$1,000–2,500** | Most variability is Stripe fees. |
 
 ### Revenue model assumptions
+
 Three ways DropKast can make money — in order of how repeatable they are:
 
 1. **Premium subscription** — $15/mo per artist. 500 artists × 50% conversion × $15 = $3,750/mo MRR. Covers the entire monthly stack.
@@ -104,6 +109,7 @@ Three ways DropKast can make money — in order of how repeatable they are:
 | **Monthly total** | **~$8.5K** | |
 
 ### When to hire
+
 - **First eng hire** at ~500 paying artists. Senior full-stack, $150K–200K base + equity.
 - **First support hire** at ~1,000 paying artists. Part-time → full-time at 5K. ~$60K base.
 - **Eng #2 (backend / infra)** at ~5K artists. Same range as #1.
@@ -129,6 +135,7 @@ This is where you stop being a startup and start being an infrastructure company
 | **Monthly platform total** | **~$45K–80K/mo** | Plus salaries. |
 
 ### What scaled product looks like
+
 - **Self-hosted Postgres** with read replicas in 2 regions. ~$2K/mo on AWS RDS.
 - **Dedicated DSP delivery infra** — own DDEX pipeline, no longer dependent on RouteNote/SonoSuite. ~$5K/mo infra + 6 months engineering.
 - **24/7 on-call rotation** for the eng team.
@@ -156,16 +163,21 @@ A typical artist's AI usage in a month:
 With prompt caching the input cost is dramatically lower (90% discount on cached reads). Without caching: ~$2.50/artist/month.
 
 ### Cost guardrail (already built)
+
 DropKast enforces a **$1/day per-user** AI budget by default (`AI_DAILY_BUDGET_CENTS=100`). Anyone exceeding gets a 429 with a friendly "budget reset at midnight UTC" message. This caps your worst-case exposure to **$30/artist/month** even if a user goes wild.
 
 ### Switching to free providers
+
 If your premium tier doesn't take off, route artists to free providers (NVIDIA/Groq/Cerebras) by default. This drops AI cost from $0.87/artist to **near-zero** at the cost of:
+
 - No tool use (assistant can't read your data; it's just a chatbot).
 - Lower-quality A&R critiques (Llama 3.3 < Claude Sonnet).
 - Free tier rate limits sometimes hit (40 RPM on NVIDIA, etc.).
 
 ### Image / video at scale
+
 Today these aren't wired. Once they are:
+
 - 10 covers × $0.003 (Flux Schnell) = $0.03/artist
 - 1 video × $0.029/sec × 30 sec = $0.87 for one Kling music video
 
@@ -178,6 +190,7 @@ If artists generate 10 videos/month each at this rate: $8.70/artist/month. **Thi
 Don't skip these. One leaked database is a regulatory nightmare.
 
 ### Phase 2 (50–500 artists)
+
 | Item | Cost | Frequency |
 |---|---|---|
 | HTTPS / TLS | $0 | Vercel handles. |
@@ -188,6 +201,7 @@ Don't skip these. One leaked database is a regulatory nightmare.
 | **Phase 2 total** | **~$0–250/mo** | |
 
 ### Phase 3+ (real B2B contracts)
+
 | Item | Cost | Frequency |
 |---|---|---|
 | SOC2 Type II audit | $20K–50K | Year 1. $15K/yr ongoing. |
@@ -235,6 +249,7 @@ Here's the answer to the specific question.
 If you mean **"can Claude Code (or similar) handle ongoing engineering tasks like adding features, fixing bugs, updating deps?"** — yes, with these caveats:
 
 **Things AI can do well today:**
+
 - Add new pages / forms / features (90%+ correctness)
 - Update libraries to new versions
 - Write tests
@@ -243,6 +258,7 @@ If you mean **"can Claude Code (or similar) handle ongoing engineering tasks lik
 - Refactor code with clear specifications
 
 **Things AI cannot do alone:**
+
 - Negotiate the RouteNote partnership
 - Sign a SOC2 contract
 - Decide product direction
@@ -276,19 +292,23 @@ AI cannot maintain a SaaS that takes payments, processes royalties, and serves D
 When your boss asks "should we go ahead?" — here's the math:
 
 **Break-even analysis** (Phase 2 — 500 artists):
+
 - Monthly cost: ~$1,200
 - Per-artist revenue at $15/mo: $15
 - **Break-even at 80 paying artists** ($15 × 80 = $1,200)
 
 **Conservative funding ask** (12 months runway through Phase 2):
+
 - Monthly burn (no salaries): $1,200
 - One-time setup: $2,000
 - 12 months × $1,200 + $2,000 + ~$30K eng contract budget = **~$50K**
 
 **With one part-time engineer** (you + AI + 1 contractor at $5K/mo):
+
 - 12 months × $6,200 + $2K = **~$76K**
 
 **With one full engineer** ($15K/mo all-in):
+
 - 12 months × $16K + $2K = **~$194K**
 
 ---
@@ -296,6 +316,7 @@ When your boss asks "should we go ahead?" — here's the math:
 ## Sources
 
 Pricing data current as of April 2026. Always reconfirm before signing:
+
 - [Vercel Pricing](https://vercel.com/pricing)
 - [Supabase Pricing](https://supabase.com/pricing)
 - [Stripe Connect Pricing](https://stripe.com/connect/pricing)

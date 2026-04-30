@@ -22,13 +22,13 @@ export default function DJFeedback() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (rating === 0) {
-      notify('error', 'INPUT_ERROR', 'Rating signal required for transmission.');
+      notify('error', 'Rating required', 'Pick a 1–5 rating before submitting.');
       return;
     }
-    
+
     setIsSending(true);
     setTimeout(() => {
-      notify('success', 'FEEDBACK_LOGGED', 'A&R loop complete. Data anchored to track ID.');
+      notify('success', 'Feedback sent', 'The artist will see your rating and notes.');
       setRating(0);
       setComment('');
       setIsSending(false);
@@ -41,10 +41,10 @@ export default function DJFeedback() {
         <div className="space-y-4">
           <div className="flex items-center gap-4">
             <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-            <span className="text-[10px] font-black text-primary uppercase tracking-[0.4em] font-mono italic">A&R_Relay</span>
+            <span className="text-[10px] font-black text-primary uppercase tracking-[0.4em] font-mono italic">DJ feedback</span>
           </div>
-          <h1 className="text-6xl md:text-8xl font-black italic text-white uppercase tracking-tighter leading-[0.8]">SONIC_FEEDBACK</h1>
-          <p className="text-[11px] font-bold text-white/30 uppercase tracking-[0.2em] font-mono italic">Submit high-priority intel to artists and labels regarding track performance.</p>
+          <h1 className="text-6xl md:text-8xl font-black italic text-white uppercase tracking-tighter leading-[0.8]">Track feedback</h1>
+          <p className="text-[11px] font-bold text-white/30 uppercase tracking-[0.2em] font-mono italic">Tell artists how the track is performing on the floor. Will you play it in your set?</p>
         </div>
       </header>
 

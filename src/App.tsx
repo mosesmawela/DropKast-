@@ -12,6 +12,7 @@ import { WorkspaceProvider } from './context/WorkspaceContext';
 import { useTheme } from './context/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Tutorial from './components/Tutorial';
+import ModuleGuard from './components/ModuleGuard';
 
 // Lazy load pages
 const Landing = lazy(() => import('./pages/Landing'));
@@ -66,6 +67,8 @@ const Privacy = lazy(() => import('./pages/Privacy'));
 const Terms = lazy(() => import('./pages/Terms'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const Roster = lazy(() => import('./pages/Roster'));
+const SmartLink = lazy(() => import('./pages/SmartLink'));
+const SmartLinks = lazy(() => import('./pages/SmartLinks'));
 
 import WelcomeScreen from './components/layout/WelcomeScreen';
 
@@ -124,28 +127,30 @@ export default function App() {
               <Route path="/signup" element={<Signup />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />
+              {/* Public-facing smart-link landing page. No auth — fans land here. */}
+              <Route path="/link/:slug" element={<SmartLink />} />
 
               {/* Protected Routes */}
               <Route element={<ProtectedRoute />}>
                 <Route element={<Layout />}>
                   <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/campaigns" element={<Campaigns />} />
-                  <Route path="/campaigns/:id" element={<CampaignDetails />} />
-                  <Route path="/campaigns/new" element={<NewCampaign />} />
-                  <Route path="/influencers" element={<Influencers />} />
-                  <Route path="/djs" element={<DJs />} />
-                  <Route path="/reactions" element={<Reactions />} />
-                  <Route path="/social" element={<SocialAds />} />
-                  <Route path="/splits" element={<Splits />} />
-                  <Route path="/anr" element={<ANR />} />
-                  <Route path="/content-lab" element={<ContentLab />} />
-                  <Route path="/promo" element={<PromoPacks />} />
-                  <Route path="/ugc" element={<UGCStudio />} />
-                  <Route path="/pre-release" element={<PreReleaseList />} />
-                  <Route path="/pre-release/new" element={<PreReleaseCreate />} />
-                  <Route path="/pre-release/:id" element={<PreReleaseDetails />} />
-                  <Route path="/platforms" element={<Platforms />} />
-                  <Route path="/compliance" element={<Compliance />} />
+                  <Route path="/campaigns" element={<ModuleGuard moduleId="campaigns"><Campaigns /></ModuleGuard>} />
+                  <Route path="/campaigns/:id" element={<ModuleGuard moduleId="campaigns"><CampaignDetails /></ModuleGuard>} />
+                  <Route path="/campaigns/new" element={<ModuleGuard moduleId="campaigns"><NewCampaign /></ModuleGuard>} />
+                  <Route path="/influencers" element={<ModuleGuard moduleId="influencers"><Influencers /></ModuleGuard>} />
+                  <Route path="/djs" element={<ModuleGuard moduleId="dj-packs"><DJs /></ModuleGuard>} />
+                  <Route path="/reactions" element={<ModuleGuard moduleId="reactions"><Reactions /></ModuleGuard>} />
+                  <Route path="/social" element={<ModuleGuard moduleId="social-ads"><SocialAds /></ModuleGuard>} />
+                  <Route path="/splits" element={<ModuleGuard moduleId="splits"><Splits /></ModuleGuard>} />
+                  <Route path="/anr" element={<ModuleGuard moduleId="anr"><ANR /></ModuleGuard>} />
+                  <Route path="/content-lab" element={<ModuleGuard moduleId="ugc-studio"><ContentLab /></ModuleGuard>} />
+                  <Route path="/promo" element={<ModuleGuard moduleId="promo-packs"><PromoPacks /></ModuleGuard>} />
+                  <Route path="/ugc" element={<ModuleGuard moduleId="ugc-studio"><UGCStudio /></ModuleGuard>} />
+                  <Route path="/pre-release" element={<ModuleGuard moduleId="pre-release"><PreReleaseList /></ModuleGuard>} />
+                  <Route path="/pre-release/new" element={<ModuleGuard moduleId="pre-release"><PreReleaseCreate /></ModuleGuard>} />
+                  <Route path="/pre-release/:id" element={<ModuleGuard moduleId="pre-release"><PreReleaseDetails /></ModuleGuard>} />
+                  <Route path="/platforms" element={<ModuleGuard moduleId="platforms"><Platforms /></ModuleGuard>} />
+                  <Route path="/compliance" element={<ModuleGuard moduleId="compliance"><Compliance /></ModuleGuard>} />
                   
                   {/* Influencer Portal Routes */}
                   <Route path="/influencer/missions" element={<InfluencerCampaigns />} />
@@ -162,16 +167,17 @@ export default function App() {
                   <Route path="/releases/:id/processing" element={<Processing />} />
                   <Route path="/releases/:id/status" element={<ReleaseStatus />} />
                   
-                  <Route path="/analytics" element={<Analytics />} />
-                  <Route path="/analytics/:id" element={<ReleaseAnalytics />} />
-                  <Route path="/earnings" element={<Earnings />} />
-                  <Route path="/assets" element={<Assets />} />
+                  <Route path="/analytics" element={<ModuleGuard moduleId="analytics"><Analytics /></ModuleGuard>} />
+                  <Route path="/analytics/:id" element={<ModuleGuard moduleId="analytics"><ReleaseAnalytics /></ModuleGuard>} />
+                  <Route path="/earnings" element={<ModuleGuard moduleId="earnings"><Earnings /></ModuleGuard>} />
+                  <Route path="/assets" element={<ModuleGuard moduleId="assets"><Assets /></ModuleGuard>} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/profile" element={<Profile />} />
-                  <Route path="/ai-providers" element={<AIProviders />} />
-                  <Route path="/academy" element={<Academy />} />
-                  <Route path="/messages" element={<Messages />} />
+                  <Route path="/ai-providers" element={<ModuleGuard moduleId="ai-providers"><AIProviders /></ModuleGuard>} />
+                  <Route path="/academy" element={<ModuleGuard moduleId="academy"><Academy /></ModuleGuard>} />
+                  <Route path="/messages" element={<ModuleGuard moduleId="messages"><Messages /></ModuleGuard>} />
                   <Route path="/roster" element={<Roster />} />
+                  <Route path="/links" element={<ModuleGuard moduleId="smart-links"><SmartLinks /></ModuleGuard>} />
                 </Route>
               </Route>
 
