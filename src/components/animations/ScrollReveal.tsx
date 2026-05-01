@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { ReactNode, Key } from 'react';
+import { ReactNode, Key, useMemo } from 'react';
 
 interface ScrollRevealProps {
   children: ReactNode;
@@ -11,6 +11,31 @@ interface ScrollRevealProps {
   key?: Key;
 }
 
+// ⚡ Bolt: Move constants outside the component to avoid object allocation on every render
+// for this high-frequency component used in 68+ locations.
+const DIRECTIONS = {
+  up: { y: 40 },
+  down: { y: -40 },
+  left: { x: 40 },
+  right: { x: -40 },
+  none: { x: 0, y: 0 }
+};
+
+const getVariants = (direction: keyof typeof DIRECTIONS) => ({
+  fade: {
+    hidden: { opacity: 0, ...DIRECTIONS[direction] },
+    visible: { opacity: 1, x: 0, y: 0 }
+  },
+  blur: {
+    hidden: { opacity: 0, filter: 'blur(10px)', ...DIRECTIONS[direction] },
+    visible: { opacity: 1, filter: 'blur(0px)', x: 0, y: 0 }
+  },
+  slide: {
+    hidden: { opacity: 0, ...DIRECTIONS[direction] },
+    visible: { opacity: 1, x: 0, y: 0 }
+  }
+});
+
 export default function ScrollReveal({
   children,
   delay = 0,
@@ -19,28 +44,8 @@ export default function ScrollReveal({
   width = "fit-content",
   className
 }: ScrollRevealProps) {
-  const directions = {
-    up: { y: 40 },
-    down: { y: -40 },
-    left: { x: 40 },
-    right: { x: -40 },
-    none: { x: 0, y: 0 }
-  };
-
-  const variants = {
-    fade: {
-      hidden: { opacity: 0, ...directions[direction] },
-      visible: { opacity: 1, x: 0, y: 0 }
-    },
-    blur: {
-      hidden: { opacity: 0, filter: 'blur(10px)', ...directions[direction] },
-      visible: { opacity: 1, filter: 'blur(0px)', x: 0, y: 0 }
-    },
-    slide: {
-      hidden: { opacity: 0, ...directions[direction] },
-      visible: { opacity: 1, x: 0, y: 0 }
-    }
-  };
+  // ⚡ Bolt: Use useMemo for variants to keep them stable unless direction changes
+  const variants = useMemo(() => getVariants(direction), [direction]);
 
   return (
     <div style={{ position: "relative", width, overflow: "visible" }} className={className}>
