@@ -218,8 +218,8 @@ export default function Earnings() {
           <h2 className="text-3xl font-black text-white italic tracking-tighter uppercase whitespace-nowrap">Payout History</h2>
           <div className="w-full ml-12 h-[1px] bg-white/5" />
         </div>
-        <div className="manifest-card !p-0 overflow-hidden shadow-2xl">
-          <table className="w-full text-left border-collapse">
+        <div className="manifest-card !p-0 overflow-x-auto shadow-2xl">
+          <table className="w-full min-w-[640px] text-left border-collapse">
             <thead className="bg-white/5">
               <tr>
                 <th className="px-8 py-6 text-[11px] font-bold text-white/30 uppercase tracking-widest italic">Date</th>

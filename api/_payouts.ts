@@ -79,38 +79,130 @@ class SimulatorPayoutAdapter implements PayoutAdapter {
 }
 
 /* =========================================================================
- * Stripe Connect (real — requires STRIPE_SECRET_KEY, scaffolded only)
+ * Stripe Connect (real — uses STRIPE_SECRET_KEY)
+ *
+ * Express accounts only — lightest onboarding, Stripe handles all KYC,
+ * tax-form (W-9/W-8BEN) collection, and payout schedules. We never see
+ * the bank details directly.
+ *
+ * Flow:
+ *   1. onboardCreator → POST /v1/accounts (express) → POST /v1/account_links
+ *      → return hosted onboarding URL.
+ *   2. Once the artist completes onboarding, Stripe webhook flips status
+ *      to 'active'. We poll account.charges_enabled at the same time.
+ *   3. pay → POST /v1/transfers from platform balance to the connected
+ *      account (we top up platform balance from royalty PSP receipts).
  * ========================================================================= */
 class StripeConnectAdapter implements PayoutAdapter {
   readonly id: PayoutProvider = 'stripe';
-  private apiKey: string;
+  private stripe: any;
   constructor(apiKey: string) {
-    this.apiKey = apiKey;
+    // Lazy require so this file can still parse when stripe isn't installed.
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const Stripe = require('stripe');
+    this.stripe = new Stripe(apiKey, { apiVersion: '2024-12-18.acacia' });
   }
 
-  // Real Stripe Connect calls would look like:
-  //   POST /v1/accounts { type: 'express', email, country, capabilities }
-  //   POST /v1/account_links { account, refresh_url, return_url, type: 'account_onboarding' }
-  //   POST /v1/transfers { amount, currency, destination, transfer_group }
-  // Hooked up here as no-ops so the API contract is stable; flip the
-  // commented blocks on once you confirm partnership terms.
+  async onboardCreator(input: {
+    payeeEmail: string;
+    payeeName?: string;
+    role: 'ARTIST' | 'INFLUENCER' | 'DJ';
+    country?: string;
+    returnUrl?: string;
+  }) {
+    try {
+      const account = await this.stripe.accounts.create({
+        type: 'express',
+        email: input.payeeEmail,
+        country: input.country || 'US',
+        capabilities: {
+          transfers: { requested: true },
+        },
+        business_type: 'individual',
+        business_profile: {
+          product_description: `DropKast ${input.role.toLowerCase()} payouts`,
+          mcc: '7929', // Bands, orchestras, and miscellaneous entertainers
+        },
+        metadata: {
+          dropkast_role: input.role,
+          dropkast_email: input.payeeEmail,
+        },
+      });
 
-  async onboardCreator(input: { payeeEmail: string; payeeName?: string; role: string; country?: string; returnUrl?: string }) {
-    logger.warn({ payeeEmail: input.payeeEmail }, 'Stripe Connect onboardCreator: not implemented (key set but adapter is scaffold)');
-    return {
-      accountId: '',
-      onboardingUrl: '',
-      status: 'pending' as const,
-    };
+      const baseUrl = process.env.PUBLIC_APP_URL || 'https://dropkast.vercel.app';
+      const accountLink = await this.stripe.accountLinks.create({
+        account: account.id,
+        refresh_url: `${baseUrl}/settings?stripe_refresh=1`,
+        return_url: input.returnUrl || `${baseUrl}/earnings?stripe_onboarded=1`,
+        type: 'account_onboarding',
+      });
+
+      logger.info(
+        { payeeEmail: input.payeeEmail, accountId: account.id },
+        'stripe connect: account created',
+      );
+
+      return {
+        accountId: account.id,
+        onboardingUrl: accountLink.url,
+        status: account.charges_enabled ? ('active' as const) : ('pending' as const),
+      };
+    } catch (err: any) {
+      logger.error({ err: err.message, payeeEmail: input.payeeEmail }, 'stripe connect: onboard failed');
+      throw err;
+    }
   }
 
-  async pay(input: { payeeEmail: string; amountCents: number }) {
-    logger.warn({ payeeEmail: input.payeeEmail, amountCents: input.amountCents }, 'Stripe Connect pay: not implemented');
-    return { ok: false, error: 'stripe_adapter_not_implemented' };
+  async pay(input: {
+    payeeEmail: string;
+    payeeAccountId?: string;
+    amountCents: number;
+    currency?: string;
+    description?: string;
+    metadata?: Record<string, unknown>;
+  }) {
+    if (!input.payeeAccountId) {
+      return { ok: false, error: 'missing_payee_account_id' };
+    }
+    try {
+      const transfer = await this.stripe.transfers.create({
+        amount: input.amountCents,
+        currency: (input.currency || 'usd').toLowerCase(),
+        destination: input.payeeAccountId,
+        description: input.description || 'DropKast royalty payout',
+        metadata: {
+          dropkast_payee_email: input.payeeEmail,
+          ...((input.metadata as Record<string, string>) || {}),
+        },
+      });
+      logger.info(
+        { payeeEmail: input.payeeEmail, transferId: transfer.id, amountCents: input.amountCents },
+        'stripe connect: transfer created',
+      );
+      return { ok: true, transferId: transfer.id };
+    } catch (err: any) {
+      logger.error(
+        { err: err.message, payeeEmail: input.payeeEmail, amountCents: input.amountCents },
+        'stripe connect: transfer failed',
+      );
+      return { ok: false, error: err.message || 'stripe_transfer_failed' };
+    }
   }
 
-  async getStatus(_transferId: string) {
-    return { status: 'failed' as const, raw: { error: 'stripe_adapter_not_implemented' } };
+  async getStatus(transferId: string) {
+    try {
+      const transfer = await this.stripe.transfers.retrieve(transferId);
+      // A Stripe Transfer is essentially "paid" the moment it succeeds — the
+      // delivery to the connected account is handled by Stripe's payout
+      // schedule. Reversed transfers count as failed.
+      if (transfer.reversed) {
+        return { status: 'failed' as const, raw: transfer };
+      }
+      return { status: 'paid' as const, raw: transfer };
+    } catch (err: any) {
+      logger.error({ err: err.message, transferId }, 'stripe connect: getStatus failed');
+      return { status: 'failed' as const, raw: { error: err.message } };
+    }
   }
 }
 
@@ -121,10 +213,19 @@ let _adapter: PayoutAdapter | null = null;
 
 export function getPayoutAdapter(): PayoutAdapter {
   if (_adapter) return _adapter;
-  if (process.env.STRIPE_SECRET_KEY && process.env.PAYOUT_PROVIDER === 'stripe') {
-    _adapter = new StripeConnectAdapter(process.env.STRIPE_SECRET_KEY);
+  // Auto-promote to Stripe when key is present. Override with PAYOUT_PROVIDER=simulator
+  // to force the simulator even when keys are loaded (useful for staging).
+  if (process.env.STRIPE_SECRET_KEY && process.env.PAYOUT_PROVIDER !== 'simulator') {
+    try {
+      _adapter = new StripeConnectAdapter(process.env.STRIPE_SECRET_KEY);
+      logger.info('Payouts: Stripe Connect adapter active');
+    } catch (err: any) {
+      logger.warn({ err: err.message }, 'Stripe init failed — falling back to simulator');
+      _adapter = new SimulatorPayoutAdapter();
+    }
   } else {
     _adapter = new SimulatorPayoutAdapter();
+    logger.info('Payouts: simulator adapter active (set STRIPE_SECRET_KEY to switch)');
   }
   return _adapter;
 }

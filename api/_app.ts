@@ -887,6 +887,62 @@ export function createApiApp() {
   });
 
   /* ================================================================
+   * STRIPE WEBHOOKS — required when STRIPE_SECRET_KEY is set.
+   * Verifies signature and updates payout/account status.
+   * ================================================================ */
+  app.post(
+    '/api/webhooks/stripe',
+    express.raw({ type: 'application/json' }),
+    async (req: any, res: any) => {
+      const sig = req.headers['stripe-signature'];
+      const whSecret = process.env.STRIPE_WEBHOOK_SECRET;
+      if (!whSecret || !sig || !process.env.STRIPE_SECRET_KEY) {
+        // Webhook not configured — return 200 so Stripe doesn't retry forever.
+        return res.json({ received: true, configured: false });
+      }
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const Stripe = require('stripe');
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-12-18.acacia' });
+        const event = stripe.webhooks.constructEvent(req.body, sig, whSecret);
+
+        switch (event.type) {
+          case 'account.updated': {
+            const account = event.data.object;
+            // Find the matching creator and flip payoutsEnabled
+            for (const email of Object.keys(memCreatorAccounts)) {
+              if (memCreatorAccounts[email].stripeAccountId === account.id) {
+                memCreatorAccounts[email].payoutsEnabled = !!account.charges_enabled;
+                memCreatorAccounts[email].onboardingStatus = account.charges_enabled ? 'active' : 'pending';
+                logger.info({ email, accountId: account.id }, 'stripe webhook: account updated');
+                break;
+              }
+            }
+            break;
+          }
+          case 'transfer.paid':
+          case 'transfer.failed': {
+            const transfer = event.data.object;
+            const payout = Object.values(memPayouts).find((p: any) => p.providerTransferId === transfer.id);
+            if (payout) {
+              (payout as any).status = event.type === 'transfer.paid' ? 'paid' : 'failed';
+              (payout as any).updatedAt = new Date();
+              logger.info({ payoutId: (payout as any).id, type: event.type }, 'stripe webhook: transfer status');
+            }
+            break;
+          }
+          default:
+            logger.debug({ type: event.type }, 'stripe webhook: ignored event type');
+        }
+        res.json({ received: true });
+      } catch (err: any) {
+        logger.error({ err: err.message }, 'stripe webhook: signature verify failed');
+        res.status(400).json({ error: 'webhook_verify_failed' });
+      }
+    },
+  );
+
+  /* ================================================================
    * PHASE 4 — CREATOR ECONOMY
    * ================================================================ */
 

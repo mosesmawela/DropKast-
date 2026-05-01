@@ -155,9 +155,12 @@ export const WelcomeScreen: React.FC<{ onComplete: () => void }> = ({ onComplete
     }
   };
 
-  const finish = (route: string) => {
+  const finish = (_route: string) => {
+    // Mark welcome complete (sets dropkast_welcome_seen) and route to /login.
+    // Login detects the flag and skips its own portal step — no duplicate.
+    // The post-auth redirect into the actual portal landing happens after sign-in.
     onComplete();
-    navigate(route);
+    navigate('/login');
   };
 
   const featureForSlide = useMemo(() => {
@@ -198,7 +201,10 @@ export const WelcomeScreen: React.FC<{ onComplete: () => void }> = ({ onComplete
         </div>
 
         <button
-          onClick={onComplete}
+          onClick={() => {
+            onComplete();
+            navigate('/login');
+          }}
           className="text-[10px] font-mono font-black text-white/30 hover:text-white tracking-[0.3em] uppercase italic flex items-center gap-2 group transition-colors shrink-0"
         >
           <span>Skip</span>

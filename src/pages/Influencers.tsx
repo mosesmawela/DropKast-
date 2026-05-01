@@ -78,7 +78,7 @@ export default function Influencers() {
         body: JSON.stringify(newInfluencer)
       });
       if (res.ok) {
-        notify('success', 'NODE_REGISTERED', 'Influencer node added to matrix.');
+        notify('success', 'Creator added', `${newInfluencer.name || 'Creator'} is now on your roster.`);
         setShowAddModal(false);
         fetchInfluencers();
       }

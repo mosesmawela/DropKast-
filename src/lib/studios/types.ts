@@ -1,0 +1,112 @@
+/**
+ * Studios system — types.
+ *
+ * A "Studio" is a self-contained AI generation tool. Inspired by the
+ * Open-Generative-AI architecture: every studio uses the same shell
+ * (input → brain picker → run → queue → gallery), only the input
+ * schema and output type vary.
+ *
+ * A "Job" is one run of a studio. It moves through:
+ *   queued → running → done | failed
+ *
+ * An "Output" is the persisted result of a successful job — saved to
+ * localStorage so the artist can revisit, copy, regenerate, or pipe
+ * into another studio.
+ */
+import type { LucideIcon } from 'lucide-react';
+
+export type StudioId =
+  | 'cover'
+  | 'video'
+  | 'ugc'
+  | 'anr'
+  | 'press'
+  | 'caption'
+  | 'lyrics'
+  | 'strategy'
+  | 'hook'
+  | 'lipsync';
+
+export type StudioCategory = 'visual' | 'video' | 'copy' | 'audio' | 'strategy';
+
+export type OutputKind = 'image' | 'video' | 'text' | 'audio' | 'json';
+
+export interface StudioInputField {
+  key: string;
+  label: string;
+  type: 'text' | 'textarea' | 'select' | 'file' | 'reference-images' | 'audio-file' | 'number';
+  placeholder?: string;
+  required?: boolean;
+  options?: Array<{ value: string; label: string }>;
+  /** Default value */
+  defaultValue?: any;
+  /** Help text shown under the input */
+  hint?: string;
+}
+
+export interface StudioDef {
+  id: StudioId;
+  name: string;
+  tagline: string;
+  category: StudioCategory;
+  icon: LucideIcon;
+  /** Brand accent color for the studio header */
+  accentColor: string;
+  /** Output type from a successful run */
+  outputKind: OutputKind;
+  /** Default persona to load (matches src/lib/ai-personas.ts ids) */
+  defaultPersona?: string;
+  /** Backend endpoint that runs the generation. Receives {brain, persona, input}. */
+  endpoint: string;
+  /** Whether the endpoint is async (returns jobId, then poll status). */
+  async?: boolean;
+  /** Polling endpoint template — supports `{id}` substitution. Required if async=true. */
+  pollEndpoint?: string;
+  /** Estimated cost in cents per run (informational). */
+  estimatedCostCents?: number;
+  /** Estimated runtime in seconds (informational). */
+  estimatedRuntimeSec?: number;
+  /** Input fields the studio collects. */
+  inputs: StudioInputField[];
+  /** Description shown in the catalog. */
+  description: string;
+  /** Whether this studio supports piping its output as input to another studio. */
+  pipeable?: boolean;
+}
+
+export type JobStatus = 'queued' | 'running' | 'done' | 'failed';
+
+export interface StudioJob {
+  id: string;
+  studioId: StudioId;
+  status: JobStatus;
+  brain: string;
+  persona?: string;
+  input: Record<string, any>;
+  output?: any;
+  error?: string;
+  remoteJobId?: string;
+  createdAt: string;
+  startedAt?: string;
+  finishedAt?: string;
+  /** Workflow recipe id when this job is part of a chained pipeline. */
+  workflowId?: string;
+}
+
+export interface StudioOutput {
+  id: string;
+  studioId: StudioId;
+  jobId: string;
+  kind: OutputKind;
+  /** For images/video/audio — URL. For text/json — null + use `text` field. */
+  url?: string;
+  text?: string;
+  data?: any;
+  thumbnailUrl?: string;
+  inputSnapshot: Record<string, any>;
+  brain: string;
+  persona?: string;
+  createdAt: string;
+  /** Stars / favorites — surfaces in gallery */
+  starred?: boolean;
+}

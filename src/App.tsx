@@ -70,6 +70,9 @@ const Roster = lazy(() => import('./pages/Roster'));
 const SmartLink = lazy(() => import('./pages/SmartLink'));
 const SmartLinks = lazy(() => import('./pages/SmartLinks'));
 const Advances = lazy(() => import('./pages/Advances'));
+const Drafts = lazy(() => import('./pages/Drafts'));
+const Studios = lazy(() => import('./pages/Studios'));
+const Studio = lazy(() => import('./pages/Studio'));
 
 import WelcomeScreen from './components/layout/WelcomeScreen';
 
@@ -180,6 +183,9 @@ export default function App() {
                   <Route path="/roster" element={<Roster />} />
                   <Route path="/links" element={<ModuleGuard moduleId="smart-links"><SmartLinks /></ModuleGuard>} />
                   <Route path="/advances" element={<ModuleGuard moduleId="advances"><Advances /></ModuleGuard>} />
+                  <Route path="/drafts" element={<Drafts />} />
+                  <Route path="/studios" element={<ModuleGuard moduleId="studios"><Studios /></ModuleGuard>} />
+                  <Route path="/studio/:id" element={<ModuleGuard moduleId="studios"><Studio /></ModuleGuard>} />
                 </Route>
               </Route>
 

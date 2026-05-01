@@ -32,6 +32,7 @@ export type ModuleId =
   | 'releases'
   | 'smart-links'
   | 'advances'
+  | 'studios'
   | 'settings';
 
 export type ModuleCategory = 'core' | 'ai-tools' | 'creators' | 'business';
@@ -64,9 +65,10 @@ export const MODULES: ModuleDef[] = [
   { id: 'assets',       label: 'Assets',       path: '/assets',        category: 'core',     description: 'Audio, artwork, video files.', defaultOn: true },
 
   // AI TOOLS — opt-in for artists who want them
+  { id: 'studios',      label: 'Studios',      path: '/studios',       category: 'ai-tools', description: 'All AI gen tools — covers, video, captions, A&R critique, EPKs. Unified gallery.', defaultOn: true },
   { id: 'ai-providers', label: 'AI Models',    path: '/ai-providers',  category: 'ai-tools', description: 'Pick which AI brain runs your assistant.', defaultOn: true },
-  { id: 'ugc-studio',   label: 'UGC Studio',   path: '/ugc',           category: 'ai-tools', description: 'AI-generated short-form video scripts and ideas.' },
-  { id: 'promo-packs',  label: 'Promo Packs',  path: '/promo',         category: 'ai-tools', description: 'AI-built press kits and one-sheets.' },
+  { id: 'ugc-studio',   label: 'UGC Studio',   path: '/ugc',           category: 'ai-tools', description: '(Legacy) Use the UGC Studio inside /studios instead.' },
+  { id: 'promo-packs',  label: 'Promo Packs',  path: '/promo',         category: 'ai-tools', description: '(Legacy) Use the Press Studio inside /studios instead.' },
   { id: 'pre-release',  label: 'Pre-Release',  path: '/pre-release',   category: 'ai-tools', description: 'TikTok/Reels seeding before drop day.', defaultOn: true },
   { id: 'academy',      label: 'Academy',      path: '/academy',       category: 'ai-tools', description: 'Tutorials and walkthroughs.' },
 

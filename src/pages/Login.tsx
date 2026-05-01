@@ -53,7 +53,11 @@ export default function Login() {
   const { login } = useAuth();
   const { role, setRole } = useTheme();
 
-  const [step, setStep] = useState<'portal' | 'creds'>('portal');
+  // Skip the portal step if the user already chose one in WelcomeScreen.
+  // Avoids the "Choose Your Portal" screen showing twice during first-run onboarding.
+  const welcomeAlreadyDone =
+    typeof window !== 'undefined' && localStorage.getItem('dropkast_welcome_seen') === 'true';
+  const [step, setStep] = useState<'portal' | 'creds'>(welcomeAlreadyDone ? 'creds' : 'portal');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [form, setForm] = useState({ email: '', password: '' });
