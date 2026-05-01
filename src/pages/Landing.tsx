@@ -37,6 +37,7 @@ export default function Landing() {
           </div>
           <div className="flex items-center gap-4">
             <ThemeToggle />
+            <Link to="/pricing" className="text-[9px] font-bold text-[var(--text-main)]/40 hover:text-[var(--text-main)] transition-all tracking-widest italic font-mono uppercase">Pricing</Link>
             <Link to="/login" className="text-[9px] font-bold text-[var(--text-main)]/40 hover:text-[var(--text-main)] transition-all tracking-widest italic font-mono uppercase">Login</Link>
             <Link to="/signup" className="primary-button h-9 flex items-center px-5 text-[9px] uppercase font-mono">
               Get Started
@@ -244,6 +245,7 @@ export default function Landing() {
            </div>
            <div className="barcode-sim h-4 w-20 opacity-5" />
            <div className="flex gap-8 uppercase">
+              <Link to="/pricing" className="hover:text-white transition-colors">Pricing</Link>
               <Link to="/privacy" className="hover:text-white transition-colors">Privacy</Link>
               <Link to="/terms" className="hover:text-white transition-colors">Terms</Link>
               <a href="mailto:moses@lvrn.com" className="hover:text-white transition-colors">Contact</a>

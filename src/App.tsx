@@ -9,6 +9,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import { AIProvider } from './context/AIContext';
 import { TutorialProvider } from './context/TutorialContext';
 import { WorkspaceProvider } from './context/WorkspaceContext';
+import { SubscriptionProvider } from './context/SubscriptionContext';
 import { useTheme } from './context/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Tutorial from './components/Tutorial';
@@ -73,6 +74,8 @@ const Advances = lazy(() => import('./pages/Advances'));
 const Drafts = lazy(() => import('./pages/Drafts'));
 const Studios = lazy(() => import('./pages/Studios'));
 const Studio = lazy(() => import('./pages/Studio'));
+const Pricing = lazy(() => import('./pages/Pricing'));
+const Subscription = lazy(() => import('./pages/Subscription'));
 
 import WelcomeScreen from './components/layout/WelcomeScreen';
 
@@ -92,6 +95,7 @@ export default function App() {
       <AuthProvider>
         <AIProvider>
           <NotificationProvider>
+            <SubscriptionProvider>
             <WorkspaceProvider>
             <ReleaseProvider>
               <CampaignProvider>
@@ -133,6 +137,8 @@ export default function App() {
               <Route path="/terms" element={<Terms />} />
               {/* Public-facing smart-link landing page. No auth — fans land here. */}
               <Route path="/link/:slug" element={<SmartLink />} />
+              {/* Public pricing page — drives conversion from Landing CTA. */}
+              <Route path="/pricing" element={<Pricing />} />
 
               {/* Protected Routes */}
               <Route element={<ProtectedRoute />}>
@@ -186,6 +192,7 @@ export default function App() {
                   <Route path="/drafts" element={<Drafts />} />
                   <Route path="/studios" element={<ModuleGuard moduleId="studios"><Studios /></ModuleGuard>} />
                   <Route path="/studio/:id" element={<ModuleGuard moduleId="studios"><Studio /></ModuleGuard>} />
+                  <Route path="/subscription" element={<Subscription />} />
                 </Route>
               </Route>
 
@@ -200,6 +207,7 @@ export default function App() {
           </CampaignProvider>
         </ReleaseProvider>
             </WorkspaceProvider>
+            </SubscriptionProvider>
       </NotificationProvider>
      </AIProvider>
     </AuthProvider>

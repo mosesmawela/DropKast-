@@ -286,6 +286,9 @@ export default function Sidebar({ open = false, onClose }: SidebarProps) {
           </div>
         )}
 
+        {/* Plan badge — links to /subscription. Shows current tier + upgrade hint when on free. */}
+        <PlanBadge />
+
         {/* Home shortcut (replaces useless Switch Portal) */}
         <Link
           to="/dashboard"
@@ -310,5 +313,39 @@ export default function Sidebar({ open = false, onClose }: SidebarProps) {
         </div>
       </div>
     </aside>
+  );
+}
+
+/* =========================================================================
+ * Plan badge — bottom-of-sidebar shortcut to /subscription with tier hint
+ * ========================================================================= */
+function PlanBadge() {
+  // Dynamic import to avoid hard cycle if SubscriptionContext isn't mounted yet
+  let tierName = 'Free';
+  let isPaid = false;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { useSubscription } = require('../../context/SubscriptionContext');
+    const sub = useSubscription();
+    tierName = sub.tier.name;
+    isPaid = sub.isPaid;
+  } catch {/* SubscriptionProvider not mounted — render Free state */}
+
+  return (
+    <Link
+      to="/subscription"
+      className={cn(
+        'flex items-center justify-between gap-2 w-full h-9 px-3 transition-all font-mono font-black text-[9px] uppercase tracking-widest italic',
+        isPaid
+          ? 'bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20'
+          : 'border border-white/5 text-white/30 hover:border-primary hover:text-primary',
+      )}
+    >
+      <span className="flex items-center gap-1.5">
+        <Sparkles className="w-3 h-3" />
+        {tierName}
+      </span>
+      {!isPaid && <span className="text-primary">Upgrade →</span>}
+    </Link>
   );
 }

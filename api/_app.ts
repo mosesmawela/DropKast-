@@ -40,6 +40,12 @@ import { parseRoyaltyCsv, appendToLedger, getLedger, aggregateEarnings, applySpl
 import { matchInfluencers } from "./_match.js";
 import { getPostVerifier, detectPlatform } from "./_post-verifier.js";
 import { signPackUrl, verifyPackUrl } from "./_signed-url.js";
+import {
+  getSubscription as getSubRecord,
+  createCheckoutSession,
+  createPortalSession,
+  applyStripeSubscriptionEvent,
+} from "./_billing.js";
 
 let uploadMiddleware: any = null;
 
@@ -931,6 +937,15 @@ export function createApiApp() {
             }
             break;
           }
+          // Subscription events — DropKast tier billing
+          case 'customer.subscription.created':
+          case 'customer.subscription.updated':
+          case 'customer.subscription.deleted':
+          case 'invoice.paid':
+          case 'invoice.payment_failed': {
+            applyStripeSubscriptionEvent(event.type, event.data.object);
+            break;
+          }
           default:
             logger.debug({ type: event.type }, 'stripe webhook: ignored event type');
         }
@@ -941,6 +956,41 @@ export function createApiApp() {
       }
     },
   );
+
+  /* ================================================================
+   * BILLING — Subscription tiers (Free / Indie / Pro / Label)
+   * ================================================================ */
+  // Get current subscription for the calling user.
+  app.get('/api/billing/subscription', async (req: any, res: any) => {
+    const userId = req.headers['x-user-id'] as string || 'anon';
+    res.json(getSubRecord(userId));
+  });
+
+  // Create Stripe Checkout Session for a tier upgrade.
+  app.post('/api/billing/checkout', async (req: any, res: any) => {
+    const userId = req.headers['x-user-id'] as string || 'anon';
+    const userEmail = (req.headers['x-user-email'] as string) || (req.body?.email) || `${userId}@dropkast.local`;
+    const { tierId, period, trialDays } = req.body ?? {};
+    if (!tierId || !period) {
+      return res.status(400).json({ error: 'tierId and period required' });
+    }
+    const result = await createCheckoutSession({
+      userId,
+      userEmail,
+      tierId,
+      period,
+      trialDays: trialDays || 14,
+    });
+    logAudit(req, { actorId: userId, action: 'billing.checkout.created', resource: tierId, metadata: { period } });
+    res.json(result);
+  });
+
+  // Create Stripe customer portal session.
+  app.post('/api/billing/portal', async (req: any, res: any) => {
+    const userId = req.headers['x-user-id'] as string || 'anon';
+    const result = await createPortalSession({ userId });
+    res.json(result);
+  });
 
   /* ================================================================
    * PHASE 4 — CREATOR ECONOMY
