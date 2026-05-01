@@ -32,14 +32,24 @@ export default function UnicornBackground() {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, [mouseX, mouseY]);
 
-  // ⚡ Bolt: Memoize particles to prevent re-generation and redundant Math.random() calls
+  // ⚡ Bolt: Stable particle data prevents visual "jumping" when theme changes
+  // and avoids redundant Math.random() calls on every theme toggle.
+  const particleData = useMemo(() => (
+    [...Array(20)].map(() => ({
+      x: Math.random() * 100 + 'vw',
+      y: Math.random() * 100 + 'vh',
+      duration: Math.random() * 10 + 10,
+      delay: Math.random() * 20,
+    }))
+  ), []);
+
   const particles = useMemo(() => (
-    [...Array(20)].map((_, i) => (
+    particleData.map((p, i) => (
       <motion.div
         key={i}
         initial={{
-          x: Math.random() * 100 + 'vw',
-          y: Math.random() * 100 + 'vh',
+          x: p.x,
+          y: p.y,
           opacity: 0
         }}
         animate={{
@@ -47,15 +57,15 @@ export default function UnicornBackground() {
           opacity: [0, theme === 'dark' ? 0.2 : 0.1, 0],
         }}
         transition={{
-          duration: Math.random() * 10 + 10,
+          duration: p.duration,
           repeat: Infinity,
           ease: "linear",
-          delay: Math.random() * 20,
+          delay: p.delay,
         }}
         className={`absolute w-1 h-1 rounded-full blur-sm transition-colors duration-1000 ${theme === 'dark' ? 'bg-white' : 'bg-black'}`}
       />
     ))
-  ), [theme]);
+  ), [theme, particleData]);
 
   return (
     <div className="fixed inset-0 -z-50 overflow-hidden pointer-events-none transition-colors duration-1000">
