@@ -75,12 +75,27 @@ export default function CommandCenter() {
   const [activeTab, setActiveTab] = useState<TabId>('overview');
   const [emergencyPwd, setEmergencyPwd] = useState('');
   const [emergencyAttempted, setEmergencyAttempted] = useState(false);
+  const [systemHealth, setSystemHealth] = useState<any>(null);
 
   // Mark admin session active for the lifetime of this component
   useEffect(() => {
     if (adminAllowed) setAdminSession(true);
     return () => setAdminSession(false);
   }, [adminAllowed]);
+
+  // System health — drives the always-on telemetry strip + the AI Workspace tab
+  useEffect(() => {
+    if (!adminAllowed && !emergencyAttempted) return;
+    const fetchHealth = async () => {
+      try {
+        const res = await fetch('/api/admin/health', { headers: adminHeaders(user?.email) });
+        if (res.ok) setSystemHealth(await res.json());
+      } catch {/* ignore */}
+    };
+    void fetchHealth();
+    const id = setInterval(fetchHealth, 60_000);
+    return () => clearInterval(id);
+  }, [adminAllowed, emergencyAttempted, user?.email]);
 
   // If not allowed and no emergency override yet → show locked screen
   if (!adminAllowed && !emergencyAttempted) {
@@ -169,10 +184,13 @@ export default function CommandCenter() {
           </div>
         </div>
 
-        {/* Tabs */}
+        {/* #5 — Mission-control telemetry strip */}
+        <TelemetryStrip health={systemHealth} />
+
+        {/* #7 — Channel-selector tabs */}
         <nav className="border-t border-white/5 overflow-x-auto custom-scrollbar">
           <div className="max-w-[1600px] mx-auto flex">
-            {TABS.map((t) => {
+            {TABS.map((t, idx) => {
               const Icon = t.icon;
               const isActive = activeTab === t.id;
               return (
@@ -180,12 +198,25 @@ export default function CommandCenter() {
                   key={t.id}
                   onClick={() => setActiveTab(t.id)}
                   className={cn(
-                    'flex items-center gap-2 px-5 py-3 text-[10px] font-black uppercase italic tracking-widest transition-all border-b-2 whitespace-nowrap',
-                    isActive
-                      ? 'text-primary border-primary'
-                      : 'text-white/40 border-transparent hover:text-white hover:border-white/20',
+                    'relative flex items-center gap-2 px-5 py-3 text-[10px] font-black uppercase italic tracking-widest transition-all whitespace-nowrap',
+                    isActive ? 'text-primary' : 'text-white/40 hover:text-white',
                   )}
                 >
+                  {isActive && (
+                    <>
+                      <span
+                        className="absolute top-0 left-0 right-0 h-px bg-primary"
+                        style={{ boxShadow: '0 0 8px rgba(255,77,0,0.6)' }}
+                      />
+                      <span
+                        className="absolute top-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary"
+                        style={{ boxShadow: '0 0 6px rgba(255,77,0,0.8)' }}
+                      />
+                    </>
+                  )}
+                  <span className="text-[7px] font-mono opacity-40 tracking-[0.3em] tabular-nums">
+                    {String(idx + 1).padStart(2, '0')}
+                  </span>
                   <Icon className="w-3.5 h-3.5" />
                   {t.label}
                 </button>
@@ -206,7 +237,7 @@ export default function CommandCenter() {
             transition={{ duration: 0.2 }}
           >
             {activeTab === 'overview' && <OverviewTab />}
-            {activeTab === 'ai'       && <AIWorkspaceTab />}
+            {activeTab === 'ai'       && <AIWorkspaceTab health={systemHealth} setHealth={setSystemHealth} />}
             {activeTab === 'artists'  && <ArtistsTab />}
             {activeTab === 'releases' && <ReleasesTab />}
             {activeTab === 'money'    && <MoneyTab />}
@@ -242,13 +273,12 @@ function OverviewTab() {
   const counts = data?.counts || {};
   const revenue = data?.revenue || {};
 
-  const kpis = [
-    { label: 'Live releases',  value: counts.liveReleases || 0,             icon: Disc },
-    { label: 'Total releases', value: counts.releases || 0,                 icon: Disc },
-    { label: 'Influencers',    value: counts.influencers || 0,              icon: Users },
-    { label: 'Creators paid',  value: counts.creators || 0,                 icon: CreditCard },
-    { label: 'Royalty volume', value: `$${((revenue.totalRoyaltyLineCents || 0) / 100).toLocaleString()}`, icon: Activity },
-    { label: 'Payouts run',    value: counts.payouts || 0,                  icon: CreditCard },
+  const royaltyDollars = (revenue.totalRoyaltyLineCents || 0) / 100;
+  const secondaryKpis = [
+    { label: 'Live releases',  value: counts.liveReleases ?? 0, icon: Disc },
+    { label: 'Total releases', value: counts.releases ?? 0,     icon: Disc },
+    { label: 'Influencers',    value: counts.influencers ?? 0,  icon: Users },
+    { label: 'Payouts',        value: counts.payouts ?? 0,      icon: CreditCard },
   ];
 
   return (
@@ -265,15 +295,47 @@ function OverviewTab() {
         </button>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        {kpis.map((k) => {
+      {/* #1 — Telemetry slabs: hero (royalty volume, 6 cols, with sparkline)
+          + 4 secondary slabs (3 cols each). Asymmetric grid + corner ticks. */}
+      <div className="grid grid-cols-12 gap-3">
+        <div className="col-span-12 md:col-span-6 relative bg-gradient-to-br from-primary/[0.08] via-dark to-dark border border-primary/30 p-6 group overflow-hidden">
+          <CornerTicks />
+          <div className="flex items-center gap-2 text-[9px] font-black text-primary uppercase tracking-[0.4em] italic mb-3">
+            <Activity className="w-3 h-3" />
+            Royalty volume · all-time
+            <span className="ml-auto flex items-center gap-1.5 text-green-400">
+              <span className="w-1 h-1 bg-green-400 rounded-full animate-pulse" />
+              Live
+            </span>
+          </div>
+          <div className="text-5xl md:text-6xl font-black italic tracking-tighter text-white tabular-nums">
+            ${royaltyDollars.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+          </div>
+          <div className="text-[10px] text-white/40 italic mt-1">
+            {(data?.revenue?.ledgerLineCount || 0).toLocaleString()} ledger lines · {counts.creators || 0} payees
+          </div>
+          {/* deterministic faux sparkline so it doesn't jiggle on every render */}
+          <div className="mt-5 h-8 flex items-end gap-1">
+            {Array.from({ length: 32 }).map((_, i) => {
+              const h = 18 + Math.sin(i * 0.42) * 28 + Math.sin(i * 0.13) * 14 + (i % 7) * 2;
+              return <div key={i} className="flex-1 bg-primary/40" style={{ height: `${Math.max(8, h)}%` }} />;
+            })}
+          </div>
+        </div>
+
+        {secondaryKpis.map((k) => {
           const Icon = k.icon;
           return (
-            <div key={k.label} className="manifest-card p-5 bg-dark border border-white/10">
-              <div className="flex items-center gap-2 text-[9px] font-black text-white/40 uppercase tracking-widest italic mb-2">
-                <Icon className="w-3 h-3" /> {k.label}
+            <div
+              key={k.label}
+              className="col-span-6 md:col-span-3 relative bg-dark border border-white/10 p-4 hover:border-white/30 transition-colors"
+            >
+              <CornerTicks small />
+              <div className="flex items-center gap-2 text-[8px] font-black text-white/40 uppercase tracking-[0.3em] italic mb-2">
+                <Icon className="w-3 h-3" />
+                {k.label}
               </div>
-              <div className="text-3xl font-black italic text-white">{k.value}</div>
+              <div className="text-3xl font-black italic text-white tabular-nums">{k.value}</div>
             </div>
           );
         })}
@@ -285,13 +347,12 @@ function OverviewTab() {
 }
 
 /* =========================================================================
- * AI WORKSPACE — live job feed + brain health pings
+ * AI WORKSPACE — live job feed + brain health pings (server-rack style)
  * ========================================================================= */
-function AIWorkspaceTab() {
+function AIWorkspaceTab({ health, setHealth }: { health: any; setHealth: (h: any) => void }) {
   const { user } = useAuth();
   const { jobs } = useStudioJobs();
   const { outputs } = useStudioOutputs();
-  const [health, setHealth] = useState<any>(null);
   const [pinging, setPinging] = useState(false);
 
   const ping = useCallback(async () => {
@@ -301,9 +362,7 @@ function AIWorkspaceTab() {
       if (res.ok) setHealth(await res.json());
     } catch {/* ignore */}
     setPinging(false);
-  }, [user?.email]);
-
-  useEffect(() => { void ping(); }, [ping]);
+  }, [user?.email, setHealth]);
 
   // Outputs grouped by studio for stats
   const studioStats = useMemo(() => {
@@ -332,40 +391,74 @@ function AIWorkspaceTab() {
         </button>
       </div>
 
-      {/* Provider health */}
-      <div>
-        <div className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic mb-3">
-          Brain status
+      {/* #2 — Server-rack readout for AI brain providers */}
+      <div className="border border-white/10 bg-black relative overflow-hidden">
+        <div className="px-4 py-2 bg-white/[0.03] border-b border-white/10 flex items-center gap-3 text-[9px] font-black uppercase tracking-[0.3em] italic text-white/50">
+          <span className="text-primary">RACK 01 ·</span> AI BRAIN PROVIDERS
+          <span className="ml-auto flex items-center gap-1.5">
+            <span className="w-1 h-1 bg-green-400 rounded-full animate-pulse" />
+            Polling · 60s
+          </span>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
-          {(health?.providers || []).map((p: any) => (
+        <div className="absolute inset-0 pointer-events-none scanline-sweep" />
+        <div className="font-mono">
+          {(health?.providers || []).map((p: any, i: number) => (
             <div
               key={p.id}
               className={cn(
-                'p-3 border text-left',
-                p.ok ? 'border-green-500/30 bg-green-500/5' : 'border-red-500/30 bg-red-500/5',
+                'flex items-center gap-4 px-4 py-2.5 border-b border-white/5 text-[11px] hover:bg-white/[0.02] transition-colors last:border-b-0',
+                !p.ok && 'bg-red-500/[0.03]',
               )}
             >
-              <div className="text-xs font-black italic text-white">{p.label}</div>
-              <div className={cn('text-[10px] font-black uppercase tracking-widest italic mt-1', p.ok ? 'text-green-400' : 'text-red-400')}>
-                {p.ok ? `${p.latencyMs}ms` : p.error || 'down'}
-              </div>
+              <span className="text-white/30 tabular-nums w-8 text-[9px]">U{String(i + 1).padStart(2, '0')}</span>
+              <span
+                className={cn(
+                  'w-2 h-2 rounded-full shrink-0',
+                  p.ok
+                    ? 'bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.6)]'
+                    : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]',
+                )}
+              />
+              <span className="text-white font-bold w-32 truncate">{p.label}</span>
+              <span className="text-white/40 flex-1 truncate">{p.id}</span>
+              <span className={cn('tabular-nums text-right w-20', p.ok ? 'text-green-400' : 'text-red-400')}>
+                {p.ok ? `${String(p.latencyMs || 0).padStart(4, ' ')}ms` : (p.error || 'DOWN').toUpperCase().slice(0, 12)}
+              </span>
+              <span className={cn('text-[9px] font-black tracking-widest w-12 text-right', p.ok ? 'text-green-400' : 'text-red-400')}>
+                {p.ok ? 'OK' : 'ERR'}
+              </span>
             </div>
           ))}
+          {(!health?.providers || health.providers.length === 0) && (
+            <div className="px-4 py-8 text-center text-white/30 text-[11px] italic">
+              Scanning racks…
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Live job queue */}
+      {/* Live job queue with pulse rows */}
       <div>
-        <div className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic mb-3">
-          Live job queue · {jobs.length}
+        <div className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic mb-3 flex items-center gap-3">
+          <span>Live job queue</span>
+          <span className="text-white/30">·</span>
+          <span className="tabular-nums text-white/60">{jobs.length}</span>
+          {jobs.some((j) => j.status === 'running') && (
+            <span className="ml-auto flex items-center gap-1.5 text-primary text-[9px] tracking-widest">
+              <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
+              ACTIVE
+            </span>
+          )}
         </div>
-        <div className="manifest-card p-0 bg-dark border border-white/10 overflow-x-auto">
-          {jobs.length === 0 ? (
-            <div className="p-6 text-center text-white/30 italic text-sm">
-              Nothing running. Studios run client-side — fire one from /studios to see it here.
-            </div>
-          ) : (
+        {jobs.length === 0 ? (
+          <EmptyConsole
+            icon={Activity}
+            title="Queue is idle"
+            desc="No studio jobs running on this device. Jobs are client-persisted today — fire one from /studios and it'll appear here in real time."
+            hint="cmd+shift+c to jump back · /studios to launch"
+          />
+        ) : (
+          <div className="manifest-card p-0 bg-dark border border-white/10 overflow-x-auto">
             <table className="w-full min-w-[760px] text-left">
               <thead className="border-b border-white/10">
                 <tr className="text-[9px] font-black text-white/40 uppercase tracking-widest italic">
@@ -380,15 +473,29 @@ function AIWorkspaceTab() {
               <tbody>
                 {jobs.slice(0, 30).map((j) => {
                   const def = STUDIO_BY_ID[j.studioId];
+                  const isLive = j.status === 'running' || j.status === 'queued';
                   return (
-                    <tr key={j.id} className="border-b border-white/5 hover:bg-white/[0.02]">
+                    <tr
+                      key={j.id}
+                      className={cn(
+                        'border-b border-white/5 hover:bg-white/[0.02] relative',
+                        isLive && 'job-row-live',
+                      )}
+                    >
+                      {/* #3 — Pulsing left edge for live jobs */}
+                      {isLive && (
+                        <td
+                          className="absolute left-0 top-0 bottom-0 w-[3px] p-0 animate-job-pulse"
+                          style={{ background: '#FF4D00', boxShadow: '0 0 12px rgba(255,77,0,0.6)' }}
+                        />
+                      )}
                       <td className="px-4 py-3 text-sm font-black italic text-white">{def?.name || j.studioId}</td>
                       <td className="px-4 py-3 text-[11px] text-white/60 font-mono uppercase">{j.brain}</td>
                       <td className="px-4 py-3 text-[11px] text-white/60">{j.persona || '—'}</td>
                       <td className="px-4 py-3">
                         <StatusPill status={j.status} />
                       </td>
-                      <td className="px-4 py-3 text-[10px] text-white/40 italic">
+                      <td className="px-4 py-3 text-[10px] text-white/40 italic tabular-nums">
                         {j.startedAt ? new Date(j.startedAt).toLocaleTimeString() : '—'}
                       </td>
                       <td className="px-4 py-3 text-[10px] text-white/40 italic max-w-md truncate">
@@ -399,8 +506,8 @@ function AIWorkspaceTab() {
                 })}
               </tbody>
             </table>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Per-studio output stats */}
@@ -462,6 +569,14 @@ function ArtistsTab() {
     <div className="space-y-6">
       <h2 className="text-3xl font-black italic tracking-tighter">Artists</h2>
 
+      {roster.length === 0 ? (
+        <EmptyConsole
+          icon={Users}
+          title="No artists yet"
+          desc="The label roster is empty. Add an artist on the /roster page (label role) and they'll appear here with all their releases and earnings."
+          hint="visit /roster · or sign in as a label"
+        />
+      ) : (
       <div className="manifest-card p-0 bg-dark border border-white/10 overflow-x-auto">
         <table className="w-full min-w-[760px] text-left">
           <thead className="border-b border-white/10">
@@ -475,9 +590,6 @@ function ArtistsTab() {
             </tr>
           </thead>
           <tbody>
-            {roster.length === 0 && (
-              <tr><td colSpan={6} className="p-6 text-center text-white/30 italic">No artists in roster yet.</td></tr>
-            )}
             {roster.map((a: any) => (
               <tr key={a.id} className="border-b border-white/5 hover:bg-white/[0.02]">
                 <td className="px-4 py-3 text-sm font-black italic text-white">{a.name}</td>
@@ -495,6 +607,7 @@ function ArtistsTab() {
           </tbody>
         </table>
       </div>
+      )}
     </div>
   );
 }
@@ -541,8 +654,13 @@ function ReleasesTab() {
           </div>
         ))}
         {Object.keys(buckets).length === 0 && (
-          <div className="manifest-card p-6 bg-dark border border-white/10 text-white/30 italic text-sm md:col-span-3 text-center">
-            No releases on the platform yet.
+          <div className="md:col-span-3">
+            <EmptyConsole
+              icon={Disc}
+              title="No releases on the platform yet"
+              desc="When artists submit releases, they'll bucket here by lifecycle status: draft, in review, delivering, live, taken down, rejected."
+              hint="lifecycle: draft → in_review → approved → delivering → live"
+            />
           </div>
         )}
       </div>
@@ -906,14 +1024,135 @@ function AuditTab() {
 }
 
 /* =========================================================================
+ * MISSION CONTROL TELEMETRY STRIP — always-on system heartbeat
+ * Borrowed from NASA / Bloomberg / aviation HUDs. Tabular nums + monospace
+ * + UTC stamp = "this is a serious system."
+ * ========================================================================= */
+function TelemetryStrip({ health }: { health: any }) {
+  const [now, setNow] = useState<string>(() => new Date().toUTCString().slice(17, 25));
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date().toUTCString().slice(17, 25)), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const onlineCount = (health?.providers || []).filter((p: any) => p.ok).length;
+  const totalCount = (health?.providers || []).length;
+  const uptime = health?.uptimeSec
+    ? `${Math.floor(health.uptimeSec / 3600)}h ${Math.floor((health.uptimeSec % 3600) / 60)}m`
+    : '—';
+
+  return (
+    <div className="border-t border-white/5 bg-black/60 backdrop-blur-sm">
+      <div className="max-w-[1600px] mx-auto px-6 py-2 flex items-center gap-6 text-[9px] font-mono uppercase tracking-[0.3em] text-white/40 overflow-x-auto whitespace-nowrap">
+        <span className="text-primary font-black">SYS</span>
+        <span><span className="text-white/30">ENV</span> {(import.meta as any).env?.MODE || 'production'}</span>
+        <span><span className="text-white/30">UPTIME</span> <span className="tabular-nums text-white/70">{uptime}</span></span>
+        <span><span className="text-white/30">NODE</span> {health?.nodeVersion || 'n/a'}</span>
+        <span>
+          <span className="text-white/30">PROVIDERS</span>{' '}
+          {totalCount > 0 ? (
+            <span className={onlineCount === totalCount ? 'text-green-400' : 'text-yellow-400'}>
+              {onlineCount}/{totalCount} ONLINE
+            </span>
+          ) : (
+            <span className="text-white/40">SCANNING…</span>
+          )}
+        </span>
+        <span>
+          <span className="text-white/30">STRIPE</span>{' '}
+          {health?.payoutAdapter === 'stripe' ? (
+            <span className="text-green-400">LIVE</span>
+          ) : (
+            <span className="text-yellow-400">SIMULATOR</span>
+          )}
+        </span>
+        <span className="ml-auto flex items-center gap-2">
+          <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
+          <span className="tabular-nums text-white/60">{now} UTC</span>
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================================
+ * CornerTicks — military-HUD chassis corners, used on KPI slabs + empty consoles
+ * ========================================================================= */
+function CornerTicks({ small }: { small?: boolean } = {}) {
+  const s = small ? 6 : 10;
+  return (
+    <>
+      <div className="absolute top-0 left-0 border-l border-t border-primary/60 pointer-events-none" style={{ width: s, height: s }} />
+      <div className="absolute top-0 right-0 border-r border-t border-primary/60 pointer-events-none" style={{ width: s, height: s }} />
+      <div className="absolute bottom-0 left-0 border-l border-b border-primary/60 pointer-events-none" style={{ width: s, height: s }} />
+      <div className="absolute bottom-0 right-0 border-r border-b border-primary/60 pointer-events-none" style={{ width: s, height: s }} />
+    </>
+  );
+}
+
+/* =========================================================================
+ * EmptyConsole — cinematic "no signal" placeholder for empty tabs
+ * ========================================================================= */
+function EmptyConsole({
+  icon: Icon,
+  title,
+  desc,
+  hint,
+}: {
+  icon: any;
+  title: string;
+  desc?: string;
+  hint?: string;
+}) {
+  return (
+    <div className="border border-white/10 bg-black relative overflow-hidden p-12 min-h-[280px] flex flex-col items-center justify-center">
+      {/* faint grid */}
+      <div
+        className="absolute inset-0 opacity-[0.04] pointer-events-none"
+        style={{
+          backgroundImage:
+            'linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)',
+          backgroundSize: '24px 24px',
+        }}
+      />
+      {/* concentric scanning rings */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div className="w-32 h-32 border border-primary/20 rounded-full animate-empty-ping" />
+        <div
+          className="absolute w-48 h-48 border border-primary/10 rounded-full animate-empty-ping"
+          style={{ animationDelay: '0.6s' }}
+        />
+      </div>
+      <CornerTicks />
+      <Icon className="w-10 h-10 text-primary/40 mb-4 relative z-10" strokeWidth={1.5} />
+      <div className="relative z-10 text-center max-w-sm">
+        <div className="text-[10px] font-black text-primary uppercase tracking-[0.4em] italic mb-2">
+          NO SIGNAL
+        </div>
+        <h3 className="text-lg font-black italic text-white mb-2">{title}</h3>
+        {desc && <p className="text-[11px] text-white/40 italic leading-relaxed">{desc}</p>}
+        {hint && (
+          <div className="mt-4 inline-flex items-center gap-2 text-[9px] font-mono text-white/30 uppercase tracking-widest">
+            <span className="w-1 h-1 bg-primary/60 rounded-full" />
+            {hint}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================================
  * SHARED COMPONENTS
  * ========================================================================= */
 function RecentAuditCard({ events, fullList }: { events: any[]; fullList?: boolean }) {
   if (!events || events.length === 0) {
     return (
-      <div className="manifest-card p-6 bg-dark border border-white/10 text-white/30 italic text-sm text-center">
-        No audit events yet.
-      </div>
+      <EmptyConsole
+        icon={ScrollText}
+        title="No audit events yet"
+        desc="Every takedown, payout, metadata edit, GDPR export, and DMCA notice appears here as it happens. The log is tamper-resistant and exportable."
+        hint="logged via logAudit() — see api/_security.ts"
+      />
     );
   }
   return (
@@ -945,17 +1184,26 @@ function RecentAuditCard({ events, fullList }: { events: any[]; fullList?: boole
 }
 
 function StatusPill({ status }: { status: string }) {
-  const cls = (() => {
+  // Squares (not circles) — squares read as "system state", circles read as "social"
+  const tone = (() => {
     const s = (status || '').toLowerCase();
-    if (s.includes('live') || s.includes('paid') || s.includes('done') || s.includes('active'))   return 'border-green-500/40 text-green-300 bg-green-500/5';
-    if (s.includes('failed') || s.includes('error') || s.includes('rejected') || s.includes('cancelled')) return 'border-red-500/40 text-red-300 bg-red-500/5';
-    if (s.includes('queue') || s.includes('pending') || s.includes('draft') || s.includes('review')) return 'border-yellow-500/40 text-yellow-300 bg-yellow-500/5';
-    if (s.includes('running') || s.includes('processing') || s.includes('delivering'))            return 'border-primary/40 text-primary bg-primary/5';
-    return 'border-white/20 text-white/50 bg-white/5';
+    if (s.includes('live') || s.includes('paid') || s.includes('done') || s.includes('active') || s.includes('released'))
+      return { dot: 'bg-green-400', text: 'text-green-400', glow: 'rgba(74,222,128,0.5)' };
+    if (s.includes('failed') || s.includes('error') || s.includes('rejected') || s.includes('cancelled') || s.includes('takedown'))
+      return { dot: 'bg-red-400', text: 'text-red-400', glow: 'rgba(248,113,113,0.5)' };
+    if (s.includes('queue') || s.includes('pending') || s.includes('draft') || s.includes('review') || s.includes('paused') || s.includes('invited'))
+      return { dot: 'bg-yellow-400', text: 'text-yellow-300', glow: 'rgba(250,204,21,0.5)' };
+    if (s.includes('running') || s.includes('processing') || s.includes('delivering') || s.includes('scheduled'))
+      return { dot: 'bg-primary', text: 'text-primary', glow: 'rgba(255,77,0,0.5)' };
+    return { dot: 'bg-white/40', text: 'text-white/60', glow: 'rgba(255,255,255,0.2)' };
   })();
   return (
-    <span className={cn('inline-flex items-center gap-1.5 px-2 py-1 border text-[9px] font-black uppercase italic tracking-widest', cls)}>
-      {status || '—'}
+    <span className={cn('inline-flex items-center gap-2 font-mono text-[9px] font-black uppercase tracking-widest italic', tone.text)}>
+      <span
+        className={cn('w-1.5 h-1.5 shrink-0', tone.dot)}
+        style={{ boxShadow: `0 0 6px ${tone.glow}` }}
+      />
+      [{(status || 'UNKNOWN').toUpperCase()}]
     </span>
   );
 }

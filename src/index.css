@@ -436,3 +436,51 @@
 .animate-skeleton-shimmer {
   animation: skeleton-shimmer 1.6s ease-in-out infinite;
 }
+
+/* ===========================================================================
+ * Command Center — bridge-of-a-starship telemetry animations
+ * =========================================================================== */
+
+/* #2 — Server-rack scanline sweep */
+@keyframes scanline-sweep {
+  0%   { transform: translateY(-100%); opacity: 0; }
+  10%  { opacity: 0.15; }
+  100% { transform: translateY(100%); opacity: 0; }
+}
+.scanline-sweep::before {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  background: linear-gradient(180deg, transparent 0%, rgba(255,77,0,0.4) 50%, transparent 100%);
+  height: 60px;
+  pointer-events: none;
+  animation: scanline-sweep 4s linear infinite;
+}
+
+/* #3 — Live job pulse + horizontal shimmer */
+@keyframes job-pulse {
+  0%, 100% { opacity: 0.4; }
+  50%      { opacity: 1; }
+}
+.animate-job-pulse { animation: job-pulse 1.4s ease-in-out infinite; }
+
+@keyframes job-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.job-row-live {
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255,77,0,0.06) 50%,
+    transparent 100%);
+  background-size: 200% 100%;
+  animation: job-shimmer 2.4s linear infinite;
+}
+
+/* #4 — Empty console crosshair pings */
+@keyframes empty-ping {
+  0%   { transform: scale(0.85); opacity: 0.4; }
+  70%  { transform: scale(1.15); opacity: 0; }
+  100% { transform: scale(1.15); opacity: 0; }
+}
+.animate-empty-ping { animation: empty-ping 2.4s cubic-bezier(0,0,0.2,1) infinite; }
