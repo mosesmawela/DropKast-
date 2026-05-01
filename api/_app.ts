@@ -46,6 +46,16 @@ import {
   createPortalSession,
   applyStripeSubscriptionEvent,
 } from "./_billing.js";
+import {
+  adminOnly,
+  inventoryKeys,
+  pingProviders,
+  testProvider,
+  getFlags,
+  setFlag,
+  recentAudit,
+  isAdminEmail,
+} from "./_admin.js";
 
 let uploadMiddleware: any = null;
 
@@ -1128,6 +1138,101 @@ export function createApiApp() {
       chartReadinessScore: Math.round(((sumR / items.length) / 5) * 50 + (willPlayCount / items.length) * 50),
       items,
     });
+  });
+
+  /* ================================================================
+   * COMMAND CENTER — admin-only oversight endpoints
+   * ================================================================ */
+  // Bulk overview KPIs for the command-center dashboard
+  app.get('/api/admin/overview', adminOnly, async (_req: any, res: any) => {
+    const releases = await store.listReleases().catch(() => []);
+    const influencers = await store.listInfluencers().catch(() => []);
+    const audit = recentAudit(20);
+    const ledger = getLedger();
+    const totalRoyaltyCents = ledger.reduce((s, l) => s + (l.amountCents || 0), 0);
+    const liveReleases = (releases as any[]).filter((r) => /live|released|delivering/i.test(r.status || '')).length;
+    res.json({
+      timestamp: new Date().toISOString(),
+      counts: {
+        releases: releases.length,
+        liveReleases,
+        influencers: influencers.length,
+        creators: Object.keys(memCreatorAccounts).length,
+        payouts: Object.keys(memPayouts).length,
+      },
+      revenue: {
+        totalRoyaltyLineCents: totalRoyaltyCents,
+        ledgerLineCount: ledger.length,
+        payoutCount: Object.keys(memPayouts).length,
+      },
+      recentAudit: audit.slice(0, 8),
+    });
+  });
+
+  // Real-time provider health
+  app.get('/api/admin/health', adminOnly, async (_req: any, res: any) => {
+    const providers = await pingProviders();
+    res.json({
+      timestamp: new Date().toISOString(),
+      providers,
+      payoutAdapter: payoutAdapter.id,
+      uptimeSec: Math.round(process.uptime()),
+      nodeVersion: process.version,
+    });
+  });
+
+  // Inventory of API keys — never returns the keys themselves
+  app.get('/api/admin/keys', adminOnly, (_req: any, res: any) => {
+    res.json({ keys: inventoryKeys() });
+  });
+
+  // Test a single provider's key
+  app.post('/api/admin/keys/test', adminOnly, async (req: any, res: any) => {
+    const { providerId } = req.body || {};
+    if (!providerId) return res.status(400).json({ error: 'providerId required' });
+    const result = await testProvider(providerId);
+    res.json(result);
+  });
+
+  // Flat finance rollup
+  app.get('/api/admin/finance', adminOnly, (_req: any, res: any) => {
+    const subs: any[] = []; // billing module is in-memory; expose via dedicated getter when needed
+    const payouts = Object.values(memPayouts);
+    const totalPayoutsCents = payouts.reduce((s: number, p: any) => s + (p.amountCents || 0), 0);
+    const summary = aggregateEarnings(getLedger());
+    res.json({
+      payouts: { count: payouts.length, totalCents: totalPayoutsCents, list: payouts.slice(0, 50) },
+      royalties: summary,
+      subscriptions: { count: subs.length },
+    });
+  });
+
+  // Recent AI / studio jobs (today only — frontend can paginate later)
+  app.get('/api/admin/jobs', adminOnly, (_req: any, res: any) => {
+    // We don't persist AI jobs server-side yet (they live in the user's
+    // localStorage). Return an empty stream + a note so the UI shows the
+    // expected shape.
+    res.json({
+      note: 'Studio jobs are client-persisted today. Cross-user feed lights up when /api/studio/jobs ships.',
+      jobs: [],
+    });
+  });
+
+  // Feature flags
+  app.get('/api/admin/feature-flags', adminOnly, (_req: any, res: any) => {
+    res.json({ flags: getFlags() });
+  });
+  app.post('/api/admin/feature-flag', adminOnly, (req: any, res: any) => {
+    const { key, value } = req.body || {};
+    if (!key) return res.status(400).json({ error: 'key required' });
+    setFlag(key, !!value);
+    res.json({ ok: true, flags: getFlags() });
+  });
+
+  // Cheap "am I an admin?" probe so the UI can know before showing the page
+  app.get('/api/admin/whoami', (req: any, res: any) => {
+    const email = (req.headers['x-user-email'] as string) || '';
+    res.json({ email, isAdmin: isAdminEmail(email) });
   });
 
   // Generic error handler

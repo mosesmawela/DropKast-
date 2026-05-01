@@ -14,6 +14,7 @@ import { useTheme } from './context/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Tutorial from './components/Tutorial';
 import ModuleGuard from './components/ModuleGuard';
+import CommandCenterHotkey from './components/CommandCenterHotkey';
 
 // Lazy load pages
 const Landing = lazy(() => import('./pages/Landing'));
@@ -74,6 +75,7 @@ const Studios = lazy(() => import('./pages/Studios'));
 const Studio = lazy(() => import('./pages/Studio'));
 const Pricing = lazy(() => import('./pages/Pricing'));
 const Subscription = lazy(() => import('./pages/Subscription'));
+const CommandCenter = lazy(() => import('./pages/CommandCenter'));
 
 import WelcomeScreen from './components/layout/WelcomeScreen';
 
@@ -99,6 +101,7 @@ export default function App() {
               <CampaignProvider>
                 <BrowserRouter>
                   <Tutorial />
+                  <CommandCenterHotkey />
                   <AnimatePresence mode="wait">
                     {showWelcome ? (
                       <WelcomeScreen key="welcome" onComplete={handleWelcomeComplete} />
@@ -137,6 +140,8 @@ export default function App() {
               <Route path="/link/:slug" element={<SmartLink />} />
               {/* Public pricing page — drives conversion from Landing CTA. */}
               <Route path="/pricing" element={<Pricing />} />
+              {/* Hidden Command Center — page handles its own admin gate. */}
+              <Route path="/command" element={<CommandCenter />} />
 
               {/* Protected Routes */}
               <Route element={<ProtectedRoute />}>
