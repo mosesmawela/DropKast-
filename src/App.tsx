@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Suspense, lazy, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AuthProvider } from './context/AuthContext';
@@ -42,10 +42,8 @@ const DJs = lazy(() => import('./pages/DJs'));
 const Reactions = lazy(() => import('./pages/Reactions'));
 const SocialAds = lazy(() => import('./pages/SocialAds'));
 const Splits = lazy(() => import('./pages/Splits'));
-const ANR = lazy(() => import('./pages/ANR'));
-const ContentLab = lazy(() => import('./pages/ContentLab'));
-const PromoPacks = lazy(() => import('./pages/PromoPacks'));
-const UGCStudio = lazy(() => import('./pages/UGCStudio'));
+// Legacy gen pages (UGCStudio, PromoPacks, ContentLab, ANR) are gone.
+// All gen tools live in /studios now — these routes redirect.
 const PreReleaseList = lazy(() => import('./pages/PreReleaseList'));
 const PreReleaseCreate = lazy(() => import('./pages/PreReleaseCreate'));
 const PreReleaseDetails = lazy(() => import('./pages/PreReleaseDetails'));
@@ -152,10 +150,11 @@ export default function App() {
                   <Route path="/reactions" element={<ModuleGuard moduleId="reactions"><Reactions /></ModuleGuard>} />
                   <Route path="/social" element={<ModuleGuard moduleId="social-ads"><SocialAds /></ModuleGuard>} />
                   <Route path="/splits" element={<ModuleGuard moduleId="splits"><Splits /></ModuleGuard>} />
-                  <Route path="/anr" element={<ModuleGuard moduleId="anr"><ANR /></ModuleGuard>} />
-                  <Route path="/content-lab" element={<ModuleGuard moduleId="ugc-studio"><ContentLab /></ModuleGuard>} />
-                  <Route path="/promo" element={<ModuleGuard moduleId="promo-packs"><PromoPacks /></ModuleGuard>} />
-                  <Route path="/ugc" element={<ModuleGuard moduleId="ugc-studio"><UGCStudio /></ModuleGuard>} />
+                  {/* Legacy gen routes — redirect to consolidated /studios */}
+                  <Route path="/anr"          element={<Navigate to="/studio/anr" replace />} />
+                  <Route path="/promo"        element={<Navigate to="/studio/press" replace />} />
+                  <Route path="/ugc"          element={<Navigate to="/studio/ugc" replace />} />
+                  <Route path="/content-lab"  element={<Navigate to="/studios" replace />} />
                   <Route path="/pre-release" element={<ModuleGuard moduleId="pre-release"><PreReleaseList /></ModuleGuard>} />
                   <Route path="/pre-release/new" element={<ModuleGuard moduleId="pre-release"><PreReleaseCreate /></ModuleGuard>} />
                   <Route path="/pre-release/:id" element={<ModuleGuard moduleId="pre-release"><PreReleaseDetails /></ModuleGuard>} />

@@ -15,13 +15,10 @@ export type ModuleId =
   | 'pre-release'
   | 'campaigns'
   | 'influencers'
-  | 'promo-packs'
-  | 'ugc-studio'
   | 'dj-packs'
   | 'reactions'
   | 'social-ads'
   | 'splits'
-  | 'anr'
   | 'analytics'
   | 'earnings'
   | 'assets'
@@ -67,8 +64,6 @@ export const MODULES: ModuleDef[] = [
   // AI TOOLS — opt-in for artists who want them
   { id: 'studios',      label: 'Studios',      path: '/studios',       category: 'ai-tools', description: 'All AI gen tools — covers, video, captions, A&R critique, EPKs. Unified gallery.', defaultOn: true },
   { id: 'ai-providers', label: 'AI Models',    path: '/ai-providers',  category: 'ai-tools', description: 'Pick which AI brain runs your assistant.', defaultOn: true },
-  { id: 'ugc-studio',   label: 'UGC Studio',   path: '/ugc',           category: 'ai-tools', description: '(Legacy) Use the UGC Studio inside /studios instead.' },
-  { id: 'promo-packs',  label: 'Promo Packs',  path: '/promo',         category: 'ai-tools', description: '(Legacy) Use the Press Studio inside /studios instead.' },
   { id: 'pre-release',  label: 'Pre-Release',  path: '/pre-release',   category: 'ai-tools', description: 'TikTok/Reels seeding before drop day.', defaultOn: true },
   { id: 'academy',      label: 'Academy',      path: '/academy',       category: 'ai-tools', description: 'Tutorials and walkthroughs.' },
 
@@ -81,7 +76,6 @@ export const MODULES: ModuleDef[] = [
 
   // BUSINESS — back-office for serious users
   { id: 'splits',       label: 'Split Sheets', path: '/splits',        category: 'business', description: 'Co-writer and producer splits.', defaultOn: true },
-  { id: 'anr',          label: 'A&R Feedback', path: '/anr',           category: 'business', description: 'Submit tracks for label-style critique.' },
   { id: 'compliance',   label: 'Compliance',   path: '/compliance',    category: 'business', description: 'GDPR exports, DMCA, audit log.' },
 ];
 

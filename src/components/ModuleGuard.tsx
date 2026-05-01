@@ -7,7 +7,7 @@
  * URL-reachable.
  *
  * Usage in App.tsx:
- *   <Route path="/ugc" element={<ModuleGuard moduleId="ugc-studio"><UGCStudio /></ModuleGuard>} />
+ *   <Route path="/campaigns" element={<ModuleGuard moduleId="campaigns"><Campaigns /></ModuleGuard>} />
  */
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';

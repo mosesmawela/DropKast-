@@ -33,28 +33,76 @@ import { useWorkspace } from '../../context/WorkspaceContext';
 import { PRESETS, type ModuleId, type WorkspacePreset } from '../../lib/workspace';
 import { toast } from 'sonner';
 
-const artistNav: Array<{ id: string; icon: any; label: string; path: string; moduleId: ModuleId }> = [
-  { id: '01', icon: LayoutDashboard, label: 'Home',         path: '/dashboard',     moduleId: 'home' },
-  { id: '02', icon: Mail,            label: 'Messages',     path: '/messages',      moduleId: 'messages' },
-  { id: '03', icon: Megaphone,       label: 'Pre-Release',  path: '/pre-release',   moduleId: 'pre-release' },
-  { id: '04', icon: Target,          label: 'Campaigns',    path: '/campaigns',     moduleId: 'campaigns' },
-  { id: '05', icon: Users,           label: 'Influencers',  path: '/influencers',   moduleId: 'influencers' },
-  { id: '06', icon: Package,         label: 'Promo Packs',  path: '/promo',         moduleId: 'promo-packs' },
-  { id: '07', icon: Video,           label: 'UGC Studio',   path: '/ugc',           moduleId: 'ugc-studio' },
-  { id: '08', icon: Radio,           label: 'DJ Packs',     path: '/djs',           moduleId: 'dj-packs' },
-  { id: '09', icon: Zap,             label: 'Reactions',    path: '/reactions',     moduleId: 'reactions' },
-  { id: '10', icon: Share2,          label: 'Social Ads',   path: '/social',        moduleId: 'social-ads' },
-  { id: '11', icon: FileText,        label: 'Split Sheets', path: '/splits',        moduleId: 'splits' },
-  { id: '12', icon: MessageSquare,   label: 'A&R Feedback', path: '/anr',           moduleId: 'anr' },
-  { id: '13', icon: BarChart,        label: 'Analytics',    path: '/analytics',     moduleId: 'analytics' },
-  { id: '14', icon: Wallet,          label: 'Earnings',     path: '/earnings',      moduleId: 'earnings' },
-  { id: '14b', icon: Sparkles,       label: 'Advances',     path: '/advances',      moduleId: 'advances' },
-  { id: '15', icon: Camera,          label: 'Assets',       path: '/assets',        moduleId: 'assets' },
-  { id: '15b', icon: Link2,          label: 'Smart Links',  path: '/links',         moduleId: 'smart-links' },
-  { id: '15c', icon: Sparkles,       label: 'Studios',      path: '/studios',       moduleId: 'studios' },
-  { id: '16', icon: Sparkles,        label: 'AI Models',    path: '/ai-providers',  moduleId: 'ai-providers' },
-  { id: '17', icon: Cpu,             label: 'Settings',     path: '/settings',      moduleId: 'settings' },
+interface NavItem {
+  icon: any;
+  label: string;
+  path: string;
+  moduleId: ModuleId;
+}
+
+interface NavGroup {
+  label?: string;
+  items: NavItem[];
+}
+
+/**
+ * Artist sidebar — grouped to keep the surface scannable.
+ * Each group renders with a subtle uppercase eyebrow header (or no header
+ * for the "Daily" group at the top).
+ *
+ * Order matters: most-used at the top, business stuff toward the bottom.
+ */
+const artistNavGroups: NavGroup[] = [
+  // Daily flow — no header, top of the bar
+  {
+    items: [
+      { icon: LayoutDashboard, label: 'Home',        path: '/dashboard', moduleId: 'home' },
+      { icon: Mail,            label: 'Messages',    path: '/messages',  moduleId: 'messages' },
+      { icon: Sparkles,        label: 'Studios',     path: '/studios',   moduleId: 'studios' },
+    ],
+  },
+  // Catalogue — releases + artwork-style assets
+  {
+    label: 'Catalogue',
+    items: [
+      { icon: Megaphone, label: 'Pre-Release', path: '/pre-release', moduleId: 'pre-release' },
+      { icon: Link2,     label: 'Smart Links', path: '/links',       moduleId: 'smart-links' },
+      { icon: Camera,    label: 'Assets',      path: '/assets',      moduleId: 'assets' },
+    ],
+  },
+  // Promote — humans you pay to push the music
+  {
+    label: 'Promote',
+    items: [
+      { icon: Target,  label: 'Campaigns',   path: '/campaigns',   moduleId: 'campaigns' },
+      { icon: Users,   label: 'Influencers', path: '/influencers', moduleId: 'influencers' },
+      { icon: Radio,   label: 'DJ Packs',    path: '/djs',         moduleId: 'dj-packs' },
+      { icon: Zap,     label: 'Reactions',   path: '/reactions',   moduleId: 'reactions' },
+      { icon: Share2,  label: 'Social Ads',  path: '/social',      moduleId: 'social-ads' },
+    ],
+  },
+  // Money
+  {
+    label: 'Money',
+    items: [
+      { icon: BarChart,  label: 'Analytics',    path: '/analytics', moduleId: 'analytics' },
+      { icon: Wallet,    label: 'Earnings',     path: '/earnings',  moduleId: 'earnings' },
+      { icon: Sparkles,  label: 'Advances',     path: '/advances',  moduleId: 'advances' },
+      { icon: FileText,  label: 'Split Sheets', path: '/splits',    moduleId: 'splits' },
+    ],
+  },
+  // Setup
+  {
+    label: 'Setup',
+    items: [
+      { icon: Cpu,   label: 'AI Models', path: '/ai-providers', moduleId: 'ai-providers' },
+      { icon: Cpu,   label: 'Settings',  path: '/settings',     moduleId: 'settings' },
+    ],
+  },
 ];
+
+/** Flat list (used by ARTIST + LABEL roles). Items shown depend on workspace toggles. */
+const artistNav: NavItem[] = artistNavGroups.flatMap((g) => g.items);
 
 const influencerNav = [
   { id: 'i1', icon: LayoutDashboard, label: 'Home', path: '/dashboard' },
@@ -132,28 +180,20 @@ export default function Sidebar({ open = false, onClose }: SidebarProps) {
   const { enabled, isEnabled, setPreset } = useWorkspace();
   const activePreset = detectActivePreset(enabled);
 
-  const labelNav: typeof artistNav = [
-    { id: '00', icon: Building2, label: 'Roster', path: '/roster', moduleId: 'home' },
-    ...artistNav,
-  ];
+  // For artist/label, render grouped. Filter items by enabled workspace modules.
+  // The Roster item is special — only on label, always pinned at the top.
+  const showsGroups = role === 'ARTIST' || role === 'LABEL';
 
-  const baseNav =
-    role === 'LABEL'
-      ? labelNav
-      : role === 'ARTIST'
-      ? artistNav
-      : role === 'INFLUENCER'
-      ? influencerNav
-      : djNav;
+  const groupsForRender: NavGroup[] = showsGroups
+    ? artistNavGroups
+        .map((g) => ({
+          ...g,
+          items: g.items.filter((item) => isEnabled(item.moduleId)),
+        }))
+        .filter((g) => g.items.length > 0)
+    : [];
 
-  // For artists & labels, hide modules disabled in their workspace.
-  // The Roster item (only on labels) bypasses the module filter — it's always shown.
-  const navItems =
-    role === 'ARTIST' || role === 'LABEL'
-      ? (baseNav as typeof artistNav).filter(
-          (item) => item.path === '/roster' || isEnabled(item.moduleId),
-        )
-      : baseNav;
+  const flatItems = role === 'INFLUENCER' ? influencerNav : role === 'DJ' ? djNav : [];
 
   const resetPortal = () => {
     localStorage.removeItem('dropkast_welcome_seen');
@@ -207,42 +247,43 @@ export default function Sidebar({ open = false, onClose }: SidebarProps) {
 
       {/* Scrollable nav */}
       <nav className="flex-1 overflow-y-auto custom-scrollbar min-h-0 py-2 overscroll-contain">
-        {navItems.map((item) => {
-          const isActive = location.pathname === item.path;
-          const tourId = TOUR_TARGETS[item.path];
-          return (
-            <Link
+        {showsGroups ? (
+          <>
+            {/* Roster pinned for label */}
+            {role === 'LABEL' && (
+              <div className="pb-1">
+                <NavLinkRow
+                  item={{ icon: Building2, label: 'Roster', path: '/roster', moduleId: 'home' as ModuleId }}
+                  active={location.pathname === '/roster'}
+                />
+              </div>
+            )}
+            {groupsForRender.map((group, gi) => (
+              <div key={gi} className={cn('pb-1', gi > 0 && 'pt-3')}>
+                {group.label && (
+                  <div className="px-5 pb-1.5 text-[8px] font-mono font-black text-white/20 tracking-[0.4em] uppercase italic">
+                    {group.label}
+                  </div>
+                )}
+                {group.items.map((item) => (
+                  <NavLinkRow
+                    key={item.path}
+                    item={item}
+                    active={location.pathname === item.path}
+                  />
+                ))}
+              </div>
+            ))}
+          </>
+        ) : (
+          flatItems.map((item: any) => (
+            <NavLinkRow
               key={item.path}
-              to={item.path}
-              data-tour={tourId}
-              className={cn(
-                'flex items-center gap-3 px-5 md:px-5 py-2.5 transition-all group relative',
-                isActive
-                  ? 'bg-primary/5 text-primary'
-                  : 'text-[var(--text-main)]/40 hover:bg-[var(--text-main)]/[0.02] hover:text-[var(--text-main)]',
-              )}
-            >
-              {isActive && <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />}
-              <span
-                className={cn(
-                  'text-[10px] font-mono font-bold tracking-widest',
-                  isActive ? 'text-primary' : 'text-white/10',
-                )}
-              >
-                {item.id}
-              </span>
-              <item.icon
-                className={cn(
-                  'w-4 h-4 transition-transform shrink-0',
-                  isActive ? 'text-primary scale-110' : 'text-white/20 group-hover:scale-110',
-                )}
-              />
-              <span className="text-[11px] font-mono font-bold uppercase tracking-widest leading-none">
-                {item.label}
-              </span>
-            </Link>
-          );
-        })}
+              item={{ ...item, moduleId: 'home' as ModuleId }}
+              active={location.pathname === item.path}
+            />
+          ))
+        )}
       </nav>
 
       {/* Footer */}
@@ -313,6 +354,36 @@ export default function Sidebar({ open = false, onClose }: SidebarProps) {
         </div>
       </div>
     </aside>
+  );
+}
+
+/* =========================================================================
+ * NavLinkRow — single sidebar entry, used by both grouped and flat layouts
+ * ========================================================================= */
+function NavLinkRow({ item, active }: { item: NavItem; active: boolean }) {
+  const tourId = TOUR_TARGETS[item.path];
+  return (
+    <Link
+      to={item.path}
+      data-tour={tourId}
+      className={cn(
+        'flex items-center gap-3 px-5 py-2 transition-all group relative',
+        active
+          ? 'bg-primary/5 text-primary'
+          : 'text-[var(--text-main)]/40 hover:bg-[var(--text-main)]/[0.02] hover:text-[var(--text-main)]',
+      )}
+    >
+      {active && <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />}
+      <item.icon
+        className={cn(
+          'w-4 h-4 transition-transform shrink-0',
+          active ? 'text-primary scale-110' : 'text-white/30 group-hover:scale-110',
+        )}
+      />
+      <span className="text-[11px] font-mono font-bold uppercase tracking-widest leading-none">
+        {item.label}
+      </span>
+    </Link>
   );
 }
 

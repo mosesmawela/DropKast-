@@ -118,13 +118,13 @@ export default function Dashboard() {
             { label: 'Node Network', value: '840+', trend: 'Global Reach', color: 'text-white/40', icon: Globe2 },
           ],
           actions: [
-            { title: 'Global Pre-Release', icon: Zap, path: '/pre-release', desc: 'Break songs before they drop with viral activation.' },
-            { title: 'Influencer Outreach', icon: MessageSquare, path: '/influencers', desc: 'Deploy personalized AI pitches to creator nodes.' },
-            { title: 'DJ Propagation', icon: Radio, path: '/djs', desc: 'Distribute DJ Packs to regional broadcast hubs.' },
-            { title: 'A&R Protocol', icon: ShieldCheck, path: '/anr', desc: 'Submit tracks for editorial analysis and label review.' },
+            { title: 'Pre-Release Plan', icon: Zap, path: '/pre-release', desc: 'Build hype before drop day with hook teasers and creator briefs.' },
+            { title: 'Influencer Outreach', icon: MessageSquare, path: '/influencers', desc: 'Browse and brief vetted creators for paid posts.' },
+            { title: 'DJ Packs', icon: Radio, path: '/djs', desc: 'Send stems and edits to DJs with signed download URLs.' },
+            { title: 'AI Studios', icon: ShieldCheck, path: '/studios', desc: 'Cover art, video, captions, EPKs, A&R critique — all in one place.' },
           ],
-          chartLabel: 'Sonic Trajectory Telemetry',
-          chartUnit: 'Signal Frequency'
+          chartLabel: 'Stream trajectory',
+          chartUnit: 'plays'
         };
     }
   };

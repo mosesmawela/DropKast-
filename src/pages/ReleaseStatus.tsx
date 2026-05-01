@@ -162,7 +162,7 @@ export default function ReleaseStatus() {
            </div>
 
             <div 
-              onClick={() => navigate('/ugc')}
+              onClick={() => navigate('/studio/ugc')}
               className="p-8 bg-white/5 border border-white/5 flex items-center justify-between group cursor-pointer hover:bg-white/[0.07] hover:border-primary/30 transition-all font-mono"
             >
               <div className="flex items-center gap-6">
@@ -242,7 +242,7 @@ export default function ReleaseStatus() {
                     Deploy Promo Packs
                  </button>
                  <button 
-                  onClick={() => navigate('/ugc')}
+                  onClick={() => navigate('/studio/ugc')}
                   className="h-12 w-full bg-white/10 border border-white/20 text-white font-mono font-black italic uppercase tracking-widest text-[9px] hover:bg-white hover:text-black transition-all flex items-center justify-center gap-2"
                  >
                     <Video className="w-3.5 h-3.5" />

@@ -184,7 +184,7 @@ Three filters every A&R applies in 30 seconds:
 Most artists fail filter #1 because they think "originality" means avoiding comps. It doesn't. Originality lives inside a clear lane — Tyler the Creator is unmistakably his lane, but he's still on a lane (alt-rap-pop). "Genre-bending" without a clear primary lane = playlist nowhere-land.
 
 Use the A&R Feedback page to get a Claude critique scored 1-10 on these filters. Score below 6? Edit. Don't release.`,
-        cta: { label: 'Submit for critique', href: '/anr' },
+        cta: { label: 'Submit for critique', href: '/studio/anr' },
       },
       {
         id: 'comp-artists',
