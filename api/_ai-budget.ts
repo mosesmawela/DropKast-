@@ -76,6 +76,57 @@ export async function isOverBudget(userId: string | undefined): Promise<{ over: 
   return { over: row.costCents >= budget, spentCents: row.costCents, budgetCents: budget };
 }
 
+/**
+ * Admin-only: aggregate ALL token usage across users for today.
+ * Returns totals + per-user breakdown for the Command Center Tokens tab.
+ */
+export async function getAllUsage(): Promise<{
+  totalInputTokens: number;
+  totalOutputTokens: number;
+  totalCachedTokens: number;
+  totalCostCents: number;
+  byUser: Array<{ userId: string; inputTokens: number; outputTokens: number; cachedTokens: number; costCents: number; resetAt: number }>;
+}> {
+  const db = getDb();
+  if (db) {
+    try {
+      const rows = await db.select().from(schema.aiUsage);
+      const byUser = rows.map((r: any) => ({
+        userId: r.userId,
+        inputTokens: r.inputTokens,
+        outputTokens: r.outputTokens,
+        cachedTokens: r.cachedTokens,
+        costCents: r.costCents,
+        resetAt: r.resetAt ? new Date(r.resetAt).getTime() : 0,
+      }));
+      return {
+        totalInputTokens: byUser.reduce((s: number, u) => s + u.inputTokens, 0),
+        totalOutputTokens: byUser.reduce((s: number, u) => s + u.outputTokens, 0),
+        totalCachedTokens: byUser.reduce((s: number, u) => s + u.cachedTokens, 0),
+        totalCostCents: byUser.reduce((s: number, u) => s + u.costCents, 0),
+        byUser,
+      };
+    } catch (err) {
+      console.warn('[AI budget] DB getAllUsage failed, using memory:', err);
+    }
+  }
+  const byUser = Array.from(memoryUsage.entries()).map(([userId, r]) => ({
+    userId,
+    inputTokens: r.inputTokens,
+    outputTokens: r.outputTokens,
+    cachedTokens: r.cachedTokens,
+    costCents: r.costCents,
+    resetAt: r.resetAt,
+  }));
+  return {
+    totalInputTokens: byUser.reduce((s, u) => s + u.inputTokens, 0),
+    totalOutputTokens: byUser.reduce((s, u) => s + u.outputTokens, 0),
+    totalCachedTokens: byUser.reduce((s, u) => s + u.cachedTokens, 0),
+    totalCostCents: byUser.reduce((s, u) => s + u.costCents, 0),
+    byUser,
+  };
+}
+
 export async function recordUsage(userId: string | undefined, d: UsageDelta): Promise<void> {
   const id = userId || '__anon__';
   const cost = costCents(d);

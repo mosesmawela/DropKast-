@@ -55,6 +55,10 @@ import {
   setFlag,
   recentAudit,
   isAdminEmail,
+  getAllUsage,
+  adminEvents,
+  emitAdminEvent,
+  scanForSecrets,
 } from "./_admin.js";
 
 let uploadMiddleware: any = null;
@@ -1233,6 +1237,50 @@ export function createApiApp() {
   app.get('/api/admin/whoami', (req: any, res: any) => {
     const email = (req.headers['x-user-email'] as string) || '';
     res.json({ email, isAdmin: isAdminEmail(email) });
+  });
+
+  // AI token usage rollup — feeds the Tokens tab
+  app.get('/api/admin/tokens', adminOnly, async (_req: any, res: any) => {
+    const usage = await getAllUsage();
+    res.json(usage);
+  });
+
+  // Server-Sent Events — pushes audit, health, job, payout updates as they happen
+  app.get('/api/admin/events', adminOnly, (req: any, res: any) => {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no');
+    res.flushHeaders?.();
+
+    const writeEvent = (e: any) => {
+      try {
+        res.write(`data: ${JSON.stringify(e)}\n\n`);
+      } catch {/* socket dead */}
+    };
+
+    // Welcome
+    writeEvent({ type: 'hello', ts: Date.now() });
+
+    // Forward all admin events
+    const onEvent = (e: any) => writeEvent(e);
+    adminEvents.on('event', onEvent);
+
+    // Heartbeat every 25s — keeps proxies happy
+    const hb = setInterval(() => {
+      try { res.write(`: keepalive\n\n`); } catch {/* ignore */}
+    }, 25_000);
+
+    req.on('close', () => {
+      clearInterval(hb);
+      adminEvents.off('event', onEvent);
+    });
+  });
+
+  // Test the exfiltration guard from the UI
+  app.post('/api/admin/scan', adminOnly, (req: any, res: any) => {
+    const text = String(req.body?.text || '');
+    res.json(scanForSecrets(text));
   });
 
   // Generic error handler

@@ -16,8 +16,10 @@
  *   POST /api/admin/feature-flag   — flip a runtime feature flag
  *   GET  /api/admin/feature-flags  — read all flags
  */
+import { EventEmitter } from 'events';
 import { logger } from './_logger.js';
 import { listAuditEvents } from './_security.js';
+import { getAllUsage } from './_ai-budget.js';
 
 const DEFAULT_ADMIN_EMAILS = ['moses@lvrn.com', 'jshep@lvrn.com'];
 
@@ -28,12 +30,19 @@ export function isAdminEmail(email?: string): boolean {
   return allowed.includes(email.toLowerCase());
 }
 
-/** Express middleware — 403 if caller isn't an admin. */
+/** Express middleware — 403 if caller isn't an admin.
+ *  Accepts email from X-User-Email header OR ?email= query param (the latter
+ *  is for EventSource which can't set custom headers). Same goes for the
+ *  emergency password — header OR ?password= query param. */
 export function adminOnly(req: any, res: any, next: any): void {
-  const email = (req.headers['x-user-email'] as string) || '';
-  // Also accept a one-time admin password header for emergency access from a
-  // device where SSO isn't possible (e.g. a notebook in a meeting).
-  const adminPassword = req.headers['x-admin-password'] as string | undefined;
+  const email =
+    (req.headers['x-user-email'] as string) ||
+    (req.query?.email as string) ||
+    '';
+  const adminPassword =
+    (req.headers['x-admin-password'] as string) ||
+    (req.query?.password as string) ||
+    undefined;
   const expectedPwd = process.env.ADMIN_EMERGENCY_PASSWORD;
 
   if (isAdminEmail(email)) return next();
@@ -197,4 +206,99 @@ export function setFlag(key: string, value: boolean): void {
  * ========================================================================= */
 export function recentAudit(limit = 100) {
   return listAuditEvents().slice(-limit).reverse();
+}
+
+/* =========================================================================
+ * Token usage re-export
+ * ========================================================================= */
+export { getAllUsage };
+
+/* =========================================================================
+ * Server-Sent Events bus — pushes admin updates to the Command Center
+ * without polling. Subscribe to events.on('event', listener), emit from
+ * audit / studio jobs / billing webhooks as they happen.
+ * ========================================================================= */
+export const adminEvents = new EventEmitter();
+adminEvents.setMaxListeners(50);
+
+export type AdminEventType = 'audit' | 'health' | 'job' | 'flag' | 'payout' | 'subscription';
+
+export interface AdminEvent {
+  type: AdminEventType;
+  payload: unknown;
+  ts: number;
+}
+
+export function emitAdminEvent(type: AdminEventType, payload: unknown): void {
+  adminEvents.emit('event', { type, payload, ts: Date.now() } as AdminEvent);
+}
+
+/* =========================================================================
+ * Exfiltration guard — scans outbound text for leaked API keys / secrets
+ * before they reach the user. Inspired by ClaudeClaw Pack 5.
+ *
+ * 16 patterns covering Anthropic, OpenAI, Google, AWS, Stripe, GitHub,
+ * Slack, Twilio, SendGrid, Mailgun, Firebase, generic SK, Telegram,
+ * private keys, long hex strings, and base64 blobs.
+ * ========================================================================= */
+const SECRET_PATTERNS: Array<{ name: string; re: RegExp }> = [
+  { name: 'anthropic',     re: /sk-ant-[a-zA-Z0-9_-]{20,}/g },
+  { name: 'openai',        re: /sk-(?!ant-)[a-zA-Z0-9]{32,}/g },
+  { name: 'generic-sk',    re: /sk-[a-zA-Z0-9]{20,40}\b/g },
+  { name: 'google',        re: /AIza[0-9A-Za-z_-]{35}/g },
+  { name: 'aws',           re: /AKIA[0-9A-Z]{16}/g },
+  { name: 'github-pat',    re: /gh[po]_[a-zA-Z0-9]{20,}/g },
+  { name: 'slack',         re: /xox[bp]-[a-zA-Z0-9-]{10,}/g },
+  { name: 'stripe-live',   re: /sk_live_[a-zA-Z0-9]{24,}/g },
+  { name: 'stripe-test',   re: /sk_test_[a-zA-Z0-9]{24,}/g },
+  { name: 'twilio',        re: /SK[0-9a-fA-F]{32}/g },
+  { name: 'sendgrid',      re: /SG\.[a-zA-Z0-9_-]{22}\.[a-zA-Z0-9_-]{43}/g },
+  { name: 'mailgun',       re: /key-[a-zA-Z0-9]{32}/g },
+  { name: 'firebase',      re: /AAAA[a-zA-Z0-9_-]{7}:[a-zA-Z0-9_-]{140,}/g },
+  { name: 'private-key',   re: /-----BEGIN (?:RSA |EC |DSA |OPENSSH |PGP )?PRIVATE KEY-----/g },
+  { name: 'telegram-bot',  re: /\b\d{8,10}:[a-zA-Z0-9_-]{35}\b/g },
+  // Long hex (>= 41) — catches lots of API keys but excludes git SHAs (40 chars)
+  { name: 'long-hex',      re: /\b[0-9a-fA-F]{41,}\b/g },
+];
+
+/** Names of env vars whose values, if echoed back, should be redacted. */
+const PROTECTED_ENV_HINTS = ['KEY', 'TOKEN', 'SECRET', 'PASSWORD', 'DSN', 'PRIVATE'];
+
+export interface ScanResult {
+  clean: string;
+  leaked: Array<{ pattern: string; preview: string }>;
+}
+
+export function scanForSecrets(text: string): ScanResult {
+  if (!text) return { clean: text, leaked: [] };
+  let clean = text;
+  const leaked: Array<{ pattern: string; preview: string }> = [];
+
+  for (const { name, re } of SECRET_PATTERNS) {
+    const matches = text.match(re);
+    if (matches) {
+      for (const m of matches) {
+        leaked.push({ pattern: name, preview: m.slice(0, 6) + '…' + m.slice(-4) });
+      }
+      clean = clean.replace(re, '[REDACTED]');
+    }
+  }
+
+  // Scan for leaked env-var values themselves
+  for (const [k, v] of Object.entries(process.env)) {
+    if (!v || v.length < 8) continue;
+    const looksProtected = PROTECTED_ENV_HINTS.some((h) => k.includes(h));
+    if (!looksProtected) continue;
+    if (clean.includes(v)) {
+      leaked.push({ pattern: `env:${k}`, preview: v.slice(0, 4) + '…' + v.slice(-4) });
+      clean = clean.split(v).join('[REDACTED_ENV]');
+    }
+  }
+
+  if (leaked.length > 0) {
+    logger.warn({ count: leaked.length, kinds: leaked.map((l) => l.pattern) }, 'exfiltration guard: secrets detected');
+    emitAdminEvent('audit', { event: 'secrets_blocked', count: leaked.length, kinds: leaked.map((l) => l.pattern) });
+  }
+
+  return { clean, leaked };
 }

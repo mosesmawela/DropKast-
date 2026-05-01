@@ -53,11 +53,12 @@ import { STUDIO_BY_ID } from '../lib/studios/registry';
 import { useSubscription } from '../context/SubscriptionContext';
 import { useReleases } from '../context/ReleaseContext';
 
-type TabId = 'overview' | 'ai' | 'artists' | 'releases' | 'money' | 'keys' | 'flags' | 'audit';
+type TabId = 'overview' | 'ai' | 'tokens' | 'artists' | 'releases' | 'money' | 'keys' | 'flags' | 'audit';
 
 const TABS: Array<{ id: TabId; label: string; icon: any }> = [
   { id: 'overview', label: 'Overview',     icon: Activity },
   { id: 'ai',       label: 'AI Workspace', icon: Sparkles },
+  { id: 'tokens',   label: 'Tokens',       icon: Activity },
   { id: 'artists',  label: 'Artists',      icon: Users },
   { id: 'releases', label: 'Releases',     icon: Disc },
   { id: 'money',    label: 'Money',        icon: CreditCard },
@@ -76,12 +77,40 @@ export default function CommandCenter() {
   const [emergencyPwd, setEmergencyPwd] = useState('');
   const [emergencyAttempted, setEmergencyAttempted] = useState(false);
   const [systemHealth, setSystemHealth] = useState<any>(null);
+  const [privacyBlur, setPrivacyBlur] = useState<boolean>(() => {
+    try { return localStorage.getItem('dropkast.command.blur') === '1'; } catch { return false; }
+  });
+  const [liveEvents, setLiveEvents] = useState<any[]>([]);
+  const [sseConnected, setSseConnected] = useState(false);
 
   // Mark admin session active for the lifetime of this component
   useEffect(() => {
     if (adminAllowed) setAdminSession(true);
     return () => setAdminSession(false);
   }, [adminAllowed]);
+
+  useEffect(() => {
+    try { localStorage.setItem('dropkast.command.blur', privacyBlur ? '1' : '0'); } catch {/* ignore */}
+  }, [privacyBlur]);
+
+  // Server-Sent Events — pushes audit / health / job updates from backend
+  useEffect(() => {
+    if (!adminAllowed && !emergencyAttempted) return;
+    const url = new URL('/api/admin/events', window.location.origin);
+    if (user?.email) url.searchParams.set('email', user.email);
+    // EventSource doesn't support custom headers — encode in query string for the demo
+    const es = new EventSource(url.toString(), { withCredentials: false } as any);
+    es.onopen = () => setSseConnected(true);
+    es.onerror = () => setSseConnected(false);
+    es.onmessage = (msg) => {
+      try {
+        const e = JSON.parse(msg.data);
+        if (e.type === 'hello') return;
+        setLiveEvents((prev) => [{ ...e, _id: Math.random() }, ...prev].slice(0, 50));
+      } catch {/* ignore */}
+    };
+    return () => es.close();
+  }, [adminAllowed, emergencyAttempted, user?.email]);
 
   // System health — drives the always-on telemetry strip + the AI Workspace tab
   useEffect(() => {
@@ -160,7 +189,7 @@ export default function CommandCenter() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className={cn('min-h-screen bg-black text-white', privacyBlur && 'cmd-blur')}>
       {/* Top bar */}
       <header className="border-b border-white/10 bg-gradient-to-r from-primary/5 via-black to-black sticky top-0 z-30 backdrop-blur-xl">
         <div className="max-w-[1600px] mx-auto px-6 py-4 flex items-center justify-between">
@@ -174,11 +203,25 @@ export default function CommandCenter() {
               <h1 className="text-2xl font-black italic tracking-tight">Command Center</h1>
             </div>
           </div>
-          <div className="hidden md:flex items-center gap-4 text-[10px] font-black text-white/40 uppercase tracking-widest italic">
+          <div className="hidden md:flex items-center gap-3 text-[10px] font-black text-white/40 uppercase tracking-widest italic">
             <span className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
-              Live
+              <span className={cn('w-1.5 h-1.5 rounded-full', sseConnected ? 'bg-green-400 animate-pulse' : 'bg-yellow-400')} />
+              {sseConnected ? 'SSE LIVE' : 'POLLING'}
             </span>
+            {liveEvents.length > 0 && (
+              <span className="text-primary">{liveEvents.length} events</span>
+            )}
+            <span>·</span>
+            <button
+              onClick={() => setPrivacyBlur(!privacyBlur)}
+              className={cn(
+                'h-7 px-2 border text-[9px] font-black uppercase tracking-widest italic transition-colors',
+                privacyBlur ? 'border-primary bg-primary/10 text-primary' : 'border-white/15 text-white/50 hover:text-white',
+              )}
+              title="Toggle blur on financial values · for screen sharing"
+            >
+              {privacyBlur ? '🛡 Demo blur ON' : '🛡 Demo blur'}
+            </button>
             <span>·</span>
             <span>{user?.email || 'emergency'}</span>
           </div>
@@ -236,8 +279,9 @@ export default function CommandCenter() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
           >
-            {activeTab === 'overview' && <OverviewTab />}
+            {activeTab === 'overview' && <OverviewTab liveEvents={liveEvents} />}
             {activeTab === 'ai'       && <AIWorkspaceTab health={systemHealth} setHealth={setSystemHealth} />}
+            {activeTab === 'tokens'   && <TokensTab />}
             {activeTab === 'artists'  && <ArtistsTab />}
             {activeTab === 'releases' && <ReleasesTab />}
             {activeTab === 'money'    && <MoneyTab />}
@@ -254,7 +298,7 @@ export default function CommandCenter() {
 /* =========================================================================
  * OVERVIEW — top-level KPIs
  * ========================================================================= */
-function OverviewTab() {
+function OverviewTab({ liveEvents = [] as any[] }: { liveEvents?: any[] }) {
   const { user } = useAuth();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -341,7 +385,192 @@ function OverviewTab() {
         })}
       </div>
 
+      {/* Live SSE feed */}
+      {liveEvents.length > 0 && (
+        <div>
+          <div className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic mb-3 flex items-center gap-2">
+            <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
+            Live event stream · {liveEvents.length}
+          </div>
+          <div className="manifest-card p-0 bg-dark border border-white/10 overflow-hidden">
+            <div className="max-h-64 overflow-y-auto custom-scrollbar font-mono">
+              {liveEvents.slice(0, 20).map((e: any) => (
+                <div key={e._id} className="flex items-center gap-3 px-4 py-2 border-b border-white/5 text-[10px] last:border-b-0">
+                  <span className="text-white/30 tabular-nums w-20">{new Date(e.ts).toLocaleTimeString()}</span>
+                  <span className={cn(
+                    'text-[9px] font-black uppercase tracking-widest w-16',
+                    e.type === 'audit' ? 'text-primary' : e.type === 'health' ? 'text-green-400' : 'text-white/60',
+                  )}>
+                    {e.type}
+                  </span>
+                  <span className="text-white/60 truncate flex-1">
+                    {(e.payload as any)?.action || (e.payload as any)?.event || JSON.stringify(e.payload).slice(0, 80)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       <RecentAuditCard events={data?.recentAudit || []} />
+    </div>
+  );
+}
+
+/* =========================================================================
+ * TOKENS — AI spend rollup across all users + per-provider stats
+ * ========================================================================= */
+function TokensTab() {
+  const { user } = useAuth();
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/admin/tokens', { headers: adminHeaders(user?.email) });
+      if (res.ok) setData(await res.json());
+    } catch {/* ignore */}
+    setLoading(false);
+  }, [user?.email]);
+
+  useEffect(() => { void refresh(); }, [refresh]);
+
+  const totalDollars = (data?.totalCostCents || 0) / 100;
+  const totalIn = data?.totalInputTokens || 0;
+  const totalOut = data?.totalOutputTokens || 0;
+  const totalCached = data?.totalCachedTokens || 0;
+  const totalTokens = totalIn + totalOut + totalCached;
+  const cachedRatio = totalTokens > 0 ? Math.round((totalCached / totalTokens) * 100) : 0;
+
+  return (
+    <div className="space-y-8">
+      <div className="flex items-center justify-between">
+        <h2 className="text-3xl font-black italic tracking-tighter">AI token spend</h2>
+        <button
+          onClick={refresh}
+          disabled={loading}
+          className="flex items-center gap-2 h-9 px-4 border border-white/10 text-[10px] font-black uppercase italic tracking-widest text-white/60 hover:bg-white hover:text-black transition-all"
+        >
+          {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
+          Refresh
+        </button>
+      </div>
+
+      {/* Hero spend card + secondary stats — same telemetry-slab pattern */}
+      <div className="grid grid-cols-12 gap-3">
+        <div className="col-span-12 md:col-span-6 relative bg-gradient-to-br from-primary/[0.08] via-dark to-dark border border-primary/30 p-6">
+          <CornerTicks />
+          <div className="flex items-center gap-2 text-[9px] font-black text-primary uppercase tracking-[0.4em] italic mb-3">
+            <Activity className="w-3 h-3" /> Today's spend · all users
+          </div>
+          <div className="text-5xl md:text-6xl font-black italic tracking-tighter text-white tabular-nums sensitive-value">
+            ${totalDollars.toFixed(2)}
+          </div>
+          <div className="text-[10px] text-white/40 italic mt-1">
+            {(data?.byUser?.length || 0)} active users · resets daily at 00:00 UTC
+          </div>
+          {/* Token volume bar */}
+          {totalTokens > 0 && (
+            <div className="mt-5 space-y-2">
+              <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-widest">
+                <span className="text-white/40">Token mix</span>
+                <span className="text-white/60 tabular-nums">{(totalTokens / 1000).toFixed(1)}K</span>
+              </div>
+              <div className="h-2 bg-white/5 flex overflow-hidden">
+                <div className="bg-primary" style={{ width: `${(totalIn / totalTokens) * 100}%` }} title={`Input · ${totalIn.toLocaleString()}`} />
+                <div className="bg-yellow-400/70" style={{ width: `${(totalOut / totalTokens) * 100}%` }} title={`Output · ${totalOut.toLocaleString()}`} />
+                <div className="bg-green-400/70" style={{ width: `${(totalCached / totalTokens) * 100}%` }} title={`Cached · ${totalCached.toLocaleString()}`} />
+              </div>
+              <div className="flex items-center gap-4 text-[9px] font-mono uppercase tracking-widest text-white/50">
+                <span className="flex items-center gap-1.5"><span className="w-2 h-2 bg-primary" /> Input</span>
+                <span className="flex items-center gap-1.5"><span className="w-2 h-2 bg-yellow-400/70" /> Output</span>
+                <span className="flex items-center gap-1.5"><span className="w-2 h-2 bg-green-400/70" /> Cached ({cachedRatio}%)</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="col-span-6 md:col-span-3 relative bg-dark border border-white/10 p-4">
+          <CornerTicks small />
+          <div className="text-[8px] font-black text-white/40 uppercase tracking-[0.3em] italic mb-2">Input tokens</div>
+          <div className="text-3xl font-black italic text-white tabular-nums">{(totalIn / 1000).toFixed(1)}K</div>
+        </div>
+        <div className="col-span-6 md:col-span-3 relative bg-dark border border-white/10 p-4">
+          <CornerTicks small />
+          <div className="text-[8px] font-black text-white/40 uppercase tracking-[0.3em] italic mb-2">Output tokens</div>
+          <div className="text-3xl font-black italic text-white tabular-nums">{(totalOut / 1000).toFixed(1)}K</div>
+        </div>
+        <div className="col-span-6 md:col-span-3 relative bg-dark border border-white/10 p-4">
+          <CornerTicks small />
+          <div className="text-[8px] font-black text-white/40 uppercase tracking-[0.3em] italic mb-2">Cache hits</div>
+          <div className="text-3xl font-black italic text-white tabular-nums">{(totalCached / 1000).toFixed(1)}K</div>
+        </div>
+        <div className="col-span-6 md:col-span-3 relative bg-dark border border-white/10 p-4">
+          <CornerTicks small />
+          <div className="text-[8px] font-black text-white/40 uppercase tracking-[0.3em] italic mb-2">Active users</div>
+          <div className="text-3xl font-black italic text-white tabular-nums">{data?.byUser?.length || 0}</div>
+        </div>
+      </div>
+
+      {/* Per-user breakdown */}
+      <div>
+        <div className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic mb-3">
+          Per-user spend (today)
+        </div>
+        {(!data?.byUser || data.byUser.length === 0) ? (
+          <EmptyConsole
+            icon={Activity}
+            title="No spend recorded today"
+            desc="When users hit the AI assistant or studios, their token usage shows up here. Resets at 00:00 UTC."
+            hint="default budget · $1/day per user · override AI_DAILY_BUDGET_CENTS"
+          />
+        ) : (
+          <div className="manifest-card p-0 bg-dark border border-white/10 overflow-x-auto">
+            <table className="w-full min-w-[640px] text-left">
+              <thead className="border-b border-white/10">
+                <tr className="text-[9px] font-black text-white/40 uppercase tracking-widest italic">
+                  <th className="px-4 py-3">User</th>
+                  <th className="px-4 py-3 text-right">Input</th>
+                  <th className="px-4 py-3 text-right">Output</th>
+                  <th className="px-4 py-3 text-right">Cached</th>
+                  <th className="px-4 py-3 text-right">Spend</th>
+                  <th className="px-4 py-3">Resets</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.byUser
+                  .slice()
+                  .sort((a: any, b: any) => b.costCents - a.costCents)
+                  .map((u: any) => (
+                    <tr key={u.userId} className="border-b border-white/5">
+                      <td className="px-4 py-3 text-[11px] text-white/70 font-mono truncate max-w-[200px]">{u.userId}</td>
+                      <td className="px-4 py-3 text-[11px] text-white/60 text-right tabular-nums">{u.inputTokens.toLocaleString()}</td>
+                      <td className="px-4 py-3 text-[11px] text-white/60 text-right tabular-nums">{u.outputTokens.toLocaleString()}</td>
+                      <td className="px-4 py-3 text-[11px] text-green-400 text-right tabular-nums">{u.cachedTokens.toLocaleString()}</td>
+                      <td className="px-4 py-3 text-[11px] text-primary font-black italic text-right tabular-nums sensitive-value">
+                        ${(u.costCents / 100).toFixed(2)}
+                      </td>
+                      <td className="px-4 py-3 text-[10px] text-white/30 italic">
+                        {u.resetAt ? new Date(u.resetAt).toLocaleTimeString() : '—'}
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      <div className="manifest-card p-5 bg-primary/5 border border-primary/20 flex items-start gap-3">
+        <AlertTriangle className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+        <div className="text-[12px] text-white/70 italic leading-relaxed">
+          <strong className="text-white">Pricing reference (May 2026):</strong>{' '}
+          Sonnet 4.6 = $3 input / $15 output per Mtok · Haiku 4.5 = $0.25 input / $1.25 output per Mtok · cache hits at 10% of input.
+          Daily budget enforced at <code className="text-primary">AI_DAILY_BUDGET_CENTS</code> (default $1.00 per user).
+        </div>
+      </div>
     </div>
   );
 }

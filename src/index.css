@@ -484,3 +484,26 @@
   100% { transform: scale(1.15); opacity: 0; }
 }
 .animate-empty-ping { animation: empty-ping 2.4s cubic-bezier(0,0,0.2,1) infinite; }
+
+/* Command Center privacy blur — toggled via top-bar button.
+ * Blurs every element marked with .sensitive-value (financial figures,
+ * user emails, tokens). Hover any blurred value to temporarily reveal.
+ *
+ * In demo mode .cmd-blur turns it on globally; without that class the
+ * sensitive-value treatment is a no-op so the rest of the app is fine. */
+.cmd-blur .sensitive-value {
+  filter: blur(6px);
+  transition: filter 0.18s ease;
+}
+.cmd-blur .sensitive-value:hover {
+  filter: blur(0);
+}
+/* Also blur all dollar amounts and tabular-num spans inside command center
+ * for the demo screenshot use case. Cheap heuristic, easy to widen later. */
+.cmd-blur .tabular-nums {
+  filter: blur(4px);
+  transition: filter 0.18s ease;
+}
+.cmd-blur .tabular-nums:hover {
+  filter: blur(0);
+}

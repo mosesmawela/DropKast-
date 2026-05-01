@@ -112,6 +112,12 @@ export function logAudit(req: Request, ev: Omit<AuditEvent, 'id' | 'ts' | 'ip'>)
   if (auditEvents.length > AUDIT_LIMIT) auditEvents.length = AUDIT_LIMIT;
   // Mirror to structured log
   console.log(JSON.stringify({ level: 'info', kind: 'audit', ...event }));
+  // Push to Command Center SSE stream — lazy import to avoid circular dep
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { emitAdminEvent } = require('./_admin.js');
+    emitAdminEvent('audit', event);
+  } catch {/* admin module not loaded — fine */}
 }
 
 export function listAuditEvents(opts?: { actorId?: string; action?: string; limit?: number }): AuditEvent[] {
