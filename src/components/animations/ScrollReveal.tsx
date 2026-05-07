@@ -11,6 +11,45 @@ interface ScrollRevealProps {
   key?: Key;
 }
 
+// ⚡ Bolt: Hoist static configurations to prevent redundant object allocations on every render.
+// This is critical for ScrollReveal as it's used ~68 times in the application.
+const DIRECTIONS = {
+  up: { y: 40 },
+  down: { y: -40 },
+  left: { x: 40 },
+  right: { x: -40 },
+  none: { x: 0, y: 0 }
+};
+
+const EASE_CURVE = [0.21, 0.47, 0.32, 0.98] as const;
+
+const VIEWPORT_CONFIG = { once: true, margin: "-100px" };
+
+const VARIANTS = {
+  fade: {
+    hidden: (direction: keyof typeof DIRECTIONS) => ({
+      opacity: 0,
+      ...DIRECTIONS[direction]
+    }),
+    visible: { opacity: 1, x: 0, y: 0 }
+  },
+  blur: {
+    hidden: (direction: keyof typeof DIRECTIONS) => ({
+      opacity: 0,
+      filter: 'blur(10px)',
+      ...DIRECTIONS[direction]
+    }),
+    visible: { opacity: 1, filter: 'blur(0px)', x: 0, y: 0 }
+  },
+  slide: {
+    hidden: (direction: keyof typeof DIRECTIONS) => ({
+      opacity: 0,
+      ...DIRECTIONS[direction]
+    }),
+    visible: { opacity: 1, x: 0, y: 0 }
+  }
+};
+
 export default function ScrollReveal({
   children,
   delay = 0,
@@ -19,40 +58,18 @@ export default function ScrollReveal({
   width = "fit-content",
   className
 }: ScrollRevealProps) {
-  const directions = {
-    up: { y: 40 },
-    down: { y: -40 },
-    left: { x: 40 },
-    right: { x: -40 },
-    none: { x: 0, y: 0 }
-  };
-
-  const variants = {
-    fade: {
-      hidden: { opacity: 0, ...directions[direction] },
-      visible: { opacity: 1, x: 0, y: 0 }
-    },
-    blur: {
-      hidden: { opacity: 0, filter: 'blur(10px)', ...directions[direction] },
-      visible: { opacity: 1, filter: 'blur(0px)', x: 0, y: 0 }
-    },
-    slide: {
-      hidden: { opacity: 0, ...directions[direction] },
-      visible: { opacity: 1, x: 0, y: 0 }
-    }
-  };
-
   return (
     <div style={{ position: "relative", width, overflow: "visible" }} className={className}>
       <motion.div
-        variants={variants[variant]}
+        variants={VARIANTS[variant]}
+        custom={direction}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
+        viewport={VIEWPORT_CONFIG}
         transition={{
           duration: 0.8,
           delay: delay,
-          ease: [0.21, 0.47, 0.32, 0.98]
+          ease: EASE_CURVE as any // Bolt: Using 'as any' to bypass strict Easing type check while maintaining performance
         }}
       >
         {children}
