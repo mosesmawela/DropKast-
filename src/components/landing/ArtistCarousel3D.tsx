@@ -6,8 +6,8 @@
  *
  * Drop in real artist photos by editing the ARTISTS array below.
  */
-import { useEffect, useRef, useState } from 'react';
-import { motion } from 'motion/react';
+import { useEffect, useRef, useState, memo, useCallback } from 'react';
+import { motion, useMotionValue, useAnimationFrame, useTransform, useMotionValueEvent, MotionValue } from 'motion/react';
 import { Headphones, TrendingUp, Music } from 'lucide-react';
 
 interface Artist {
@@ -34,33 +34,27 @@ const ARTISTS: Artist[] = [
 ];
 
 export default function ArtistCarousel3D() {
-  const [angle, setAngle] = useState(0);
+  // ⚡ Bolt: Use MotionValue for 60fps rotation to bypass React reconciliation
+  const angle = useMotionValue(0);
   const [paused, setPaused] = useState(false);
-  const rafRef = useRef<number | null>(null);
-  const lastT = useRef<number | null>(null);
 
-  // Continuous rotation
-  useEffect(() => {
-    const tick = (t: number) => {
-      if (lastT.current === null) lastT.current = t;
-      const dt = t - lastT.current;
-      lastT.current = t;
-      if (!paused) {
-        // ~10° per second — slow + cinematic
-        setAngle((a) => (a + (dt / 1000) * 10) % 360);
-      }
-      rafRef.current = requestAnimationFrame(tick);
-    };
-    rafRef.current = requestAnimationFrame(tick);
-    return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      lastT.current = null;
-    };
-  }, [paused]);
+  // ⚡ Bolt: useAnimationFrame is more efficient and cleaner than manual RAF + useEffect
+  useAnimationFrame((_, delta) => {
+    if (!paused) {
+      // ~10° per second
+      const current = angle.get();
+      angle.set((current + (delta / 1000) * 10) % 360);
+    }
+  });
 
   const radius = 360;
   const cardCount = ARTISTS.length;
   const stepDeg = 360 / cardCount;
+
+  // Memoize handle dot click to avoid re-renders of Pagination
+  const handleDotClick = useCallback((index: number) => {
+    angle.set((360 - index * stepDeg) % 360);
+  }, [angle, stepDeg]);
 
   return (
     <div className="relative w-full py-20 px-4 overflow-hidden">
@@ -89,21 +83,16 @@ export default function ArtistCarousel3D() {
         onTouchStart={() => setPaused(true)}
         onTouchEnd={() => setPaused(false)}
       >
-        <div
+        <motion.div
           className="absolute left-1/2 top-1/2 w-72 h-96 -ml-36 -mt-48"
           style={{
             transformStyle: 'preserve-3d',
-            transform: `translateZ(-${radius}px) rotateY(${angle}deg)`,
-            transition: 'none',
+            rotateY: angle,
+            z: -radius,
           }}
         >
           {ARTISTS.map((a, i) => {
             const cardAngle = i * stepDeg;
-            // Compute facing factor — front-most card scales / glows brighter
-            const relative = ((cardAngle + angle) % 360 + 360) % 360;
-            const distFromFront = Math.min(relative, 360 - relative); // 0..180
-            const isFront = distFromFront < 30;
-
             return (
               <div
                 key={a.name}
@@ -113,33 +102,18 @@ export default function ArtistCarousel3D() {
                   transformStyle: 'preserve-3d',
                 }}
               >
-                <ArtistCard artist={a} isFront={isFront} />
+                <ArtistCard artist={a} angle={angle} cardAngle={cardAngle} />
               </div>
             );
           })}
-        </div>
+        </motion.div>
 
         {/* Floor reflection / vignette */}
         <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-black to-transparent pointer-events-none" />
       </div>
 
-      {/* Pagination dots */}
-      <div className="flex items-center justify-center gap-2 mt-8 relative z-10">
-        {ARTISTS.map((_, i) => {
-          const targetAngle = i * stepDeg;
-          const relative = ((targetAngle + angle) % 360 + 360) % 360;
-          const distFromFront = Math.min(relative, 360 - relative);
-          const isActive = distFromFront < stepDeg / 2;
-          return (
-            <button
-              key={i}
-              onClick={() => setAngle((360 - i * stepDeg) % 360)}
-              aria-label={`Show ${ARTISTS[i].name}`}
-              className={`h-1.5 transition-all ${isActive ? 'w-8 bg-primary' : 'w-1.5 bg-white/20 hover:bg-white/40'}`}
-            />
-          );
-        })}
-      </div>
+      {/* ⚡ Bolt: Optimized pagination dots that only re-render on index change */}
+      <Pagination angle={angle} stepDeg={stepDeg} onDotClick={handleDotClick} />
 
       {/* Hint */}
       <div className="text-center mt-4 text-[10px] font-black tracking-[0.3em] uppercase italic text-white/20">
@@ -150,21 +124,78 @@ export default function ArtistCarousel3D() {
 }
 
 /* =========================================================================
- * Artist card — front-facing flair when isFront
+ * Pagination dots — optimized to only re-render when active index changes
  * ========================================================================= */
-function ArtistCard({ artist, isFront }: { artist: Artist; isFront: boolean }) {
+const Pagination = memo(({ angle, stepDeg, onDotClick }: { angle: MotionValue<number>; stepDeg: number; onDotClick: (i: number) => void }) => {
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useMotionValueEvent(angle, "change", (latest) => {
+    // Find which card is closest to front
+    let bestDist = Infinity;
+    let bestIdx = 0;
+
+    for (let i = 0; i < ARTISTS.length; i++) {
+      const targetAngle = i * stepDeg;
+      const relative = ((targetAngle + latest) % 360 + 360) % 360;
+      const dist = Math.min(relative, 360 - relative);
+      if (dist < bestDist) {
+        bestDist = dist;
+        bestIdx = i;
+      }
+    }
+
+    if (bestIdx !== activeIndex) {
+      setActiveIndex(bestIdx);
+    }
+  });
+
+  return (
+    <div className="flex items-center justify-center gap-2 mt-8 relative z-10">
+      {ARTISTS.map((_, i) => (
+        <button
+          key={i}
+          onClick={() => onDotClick(i)}
+          aria-label={`Show ${ARTISTS[i].name}`}
+          className={`h-1.5 transition-all duration-300 ${i === activeIndex ? 'w-8 bg-primary' : 'w-1.5 bg-white/20 hover:bg-white/40'}`}
+        />
+      ))}
+    </div>
+  );
+});
+
+Pagination.displayName = 'Pagination';
+
+/* =========================================================================
+ * Artist card — front-facing flair driven by MotionValue
+ * ========================================================================= */
+const ArtistCard = memo(({ artist, angle, cardAngle }: { artist: Artist; angle: MotionValue<number>; cardAngle: number }) => {
   const accent = artist.accent || '#FF4D00';
+
+  // ⚡ Bolt: Derive visual properties directly from the rotation angle MotionValue
+  // This avoids React re-renders for every card on every frame.
+  const distFromFront = useTransform(angle, (latest) => {
+    const relative = ((cardAngle + latest) % 360 + 360) % 360;
+    return Math.min(relative, 360 - relative); // 0..180
+  });
+
+  const scale = useTransform(distFromFront, [0, 30], [1.05, 1], { clamp: true });
+  const shadowOpacity = useTransform(distFromFront, [0, 30], [0.33, 0], { clamp: true });
+  const liveBadgeOpacity = useTransform(distFromFront, [20, 30], [1, 0], { clamp: true });
+
+  // Dynamic box shadow based on distance from front
+  const boxShadow = useTransform(shadowOpacity, (opacity) => {
+    if (opacity === 0) return `0 10px 30px rgba(0,0,0,0.5)`;
+    return `0 30px 80px ${accent}${Math.round(opacity * 255).toString(16).padStart(2, '0')}, 0 0 0 1px ${accent}${Math.round(opacity * 2 * 255).toString(16).padStart(2, '0')}`;
+  });
+
   return (
     <motion.div
-      animate={{
-        scale: isFront ? 1.05 : 1,
-        boxShadow: isFront
-          ? `0 30px 80px ${accent}55, 0 0 0 1px ${accent}66`
-          : `0 10px 30px rgba(0,0,0,0.5)`,
+      style={{
+        backfaceVisibility: 'hidden',
+        scale,
+        boxShadow,
       }}
-      transition={{ duration: 0.6 }}
       className="w-full h-full bg-dark border border-white/10 overflow-hidden flex flex-col"
-      style={{ backfaceVisibility: 'hidden' }}
     >
       {/* Cover */}
       <div className="relative flex-1 overflow-hidden">
@@ -195,13 +226,14 @@ function ArtistCard({ artist, isFront }: { artist: Artist; isFront: boolean }) {
           {artist.genre}
         </div>
 
-        {/* Now-playing pulse when front */}
-        {isFront && (
-          <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2 py-1 bg-primary text-white text-[9px] font-black uppercase tracking-widest italic">
-            <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
-            Live
-          </div>
-        )}
+        {/* Now-playing pulse when front — opacity driven by MotionValue */}
+        <motion.div
+          style={{ opacity: liveBadgeOpacity }}
+          className="absolute top-3 right-3 flex items-center gap-1.5 px-2 py-1 bg-primary text-white text-[9px] font-black uppercase tracking-widest italic"
+        >
+          <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+          Live
+        </motion.div>
       </div>
 
       {/* Bottom strip */}
@@ -223,4 +255,6 @@ function ArtistCard({ artist, isFront }: { artist: Artist; isFront: boolean }) {
       </div>
     </motion.div>
   );
-}
+});
+
+ArtistCard.displayName = 'ArtistCard';

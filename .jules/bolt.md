@@ -1,3 +1,6 @@
 ## 2025-04-29 - [High-frequency Event Optimization]
 **Learning:** Using React state (useState) for high-frequency events like `mousemove` triggers full component re-renders and reconciliation on every event (often ~60fps). This causes high CPU usage and can lead to jank in complex components.
 **Action:** Replace `useState` with Framer Motion's `useMotionValue` and `useSpring`. These values update the DOM directly via Framer Motion's internal loop, bypassing React's reconciliation cycle entirely. Combine with the `style` prop instead of `animate` for the most efficient path.
+## 2025-05-13 - [State-driven 3D Animation Optimization]
+**Learning:** Re-rendering complex 3D components like 'ArtistCarousel3D' at 60fps via React state causes significant CPU overhead. Using 'useMotionValue' and 'useAnimationFrame' allows bypassing React's reconciliation for the main loop. Memoizing sub-components ('ArtistCard') and deriving their visuals via 'useTransform' further reduces re-renders. 'useMotionValueEvent' can be used to update non-frame-critical state (like pagination dots) only when necessary.
+**Action:** Always prefer 'useMotionValue' for frame-by-frame UI updates. Ensure child components are memoized and use 'useTransform' to stay in the Framer Motion pipeline.
