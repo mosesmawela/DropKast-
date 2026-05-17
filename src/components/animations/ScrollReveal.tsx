@@ -11,6 +11,62 @@ interface ScrollRevealProps {
   key?: Key;
 }
 
+const DIRECTIONS = {
+  up: { y: 40 },
+  down: { y: -40 },
+  left: { x: 40 },
+  right: { x: -40 },
+  none: { x: 0, y: 0 }
+};
+
+const VIEWPORT_CONFIG = { once: true, margin: "-100px" };
+
+const EASE_CURVE = [0.21, 0.47, 0.32, 0.98] as unknown as [number, number, number, number];
+
+const ANIMATION_VARIANTS = {
+  fade: {
+    hidden: (direction: keyof typeof DIRECTIONS) => ({
+      opacity: 0,
+      ...DIRECTIONS[direction]
+    }),
+    visible: {
+      opacity: 1,
+      x: 0,
+      y: 0
+    }
+  },
+  blur: {
+    hidden: (direction: keyof typeof DIRECTIONS) => ({
+      opacity: 0,
+      filter: 'blur(10px)',
+      ...DIRECTIONS[direction]
+    }),
+    visible: {
+      opacity: 1,
+      filter: 'blur(0px)',
+      x: 0,
+      y: 0
+    }
+  },
+  slide: {
+    hidden: (direction: keyof typeof DIRECTIONS) => ({
+      opacity: 0,
+      ...DIRECTIONS[direction]
+    }),
+    visible: {
+      opacity: 1,
+      x: 0,
+      y: 0
+    }
+  }
+};
+
+/**
+ * ⚡ Bolt: Performance Optimized ScrollReveal
+ * - Hoisted static configuration objects outside the component to prevent redundant allocations
+ * - Uses 'custom' prop for dynamic directions to reuse variant objects across ~68 instances
+ * - Reduces garbage collection pressure and reconciliation overhead during scroll
+ */
 export default function ScrollReveal({
   children,
   delay = 0,
@@ -19,40 +75,18 @@ export default function ScrollReveal({
   width = "fit-content",
   className
 }: ScrollRevealProps) {
-  const directions = {
-    up: { y: 40 },
-    down: { y: -40 },
-    left: { x: 40 },
-    right: { x: -40 },
-    none: { x: 0, y: 0 }
-  };
-
-  const variants = {
-    fade: {
-      hidden: { opacity: 0, ...directions[direction] },
-      visible: { opacity: 1, x: 0, y: 0 }
-    },
-    blur: {
-      hidden: { opacity: 0, filter: 'blur(10px)', ...directions[direction] },
-      visible: { opacity: 1, filter: 'blur(0px)', x: 0, y: 0 }
-    },
-    slide: {
-      hidden: { opacity: 0, ...directions[direction] },
-      visible: { opacity: 1, x: 0, y: 0 }
-    }
-  };
-
   return (
     <div style={{ position: "relative", width, overflow: "visible" }} className={className}>
       <motion.div
-        variants={variants[variant]}
+        custom={direction}
+        variants={ANIMATION_VARIANTS[variant]}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
+        viewport={VIEWPORT_CONFIG}
         transition={{
           duration: 0.8,
           delay: delay,
-          ease: [0.21, 0.47, 0.32, 0.98]
+          ease: EASE_CURVE
         }}
       >
         {children}
