@@ -1,4 +1,4 @@
-import { motion } from 'motion/react';
+import { motion, Variants } from 'motion/react';
 import { ReactNode } from 'react';
 import { cn } from '../../lib/utils';
 
@@ -11,6 +11,30 @@ interface MarqueeProps {
   fadeEdges?: boolean;
 }
 
+/**
+ * Performance-optimized variants for Marquee.
+ * Hoisted outside the component to prevent re-allocation on every render.
+ * Uses the 'custom' prop to pass dynamic speed to the transition.
+ */
+const MARQUEE_VARIANTS: Variants = {
+  left: (speed: number) => ({
+    x: ['0%', '-50%'],
+    transition: {
+      duration: speed,
+      repeat: Infinity,
+      ease: "linear",
+    },
+  }),
+  right: (speed: number) => ({
+    x: ['-50%', '0%'],
+    transition: {
+      duration: speed,
+      repeat: Infinity,
+      ease: "linear",
+    },
+  }),
+};
+
 export default function Marquee({
   children,
   direction = 'left',
@@ -19,8 +43,6 @@ export default function Marquee({
   className,
   fadeEdges = true,
 }: MarqueeProps) {
-  const isLeft = direction === 'left';
-
   return (
     <div className={cn("relative flex overflow-hidden group", className)}>
       {fadeEdges && (
@@ -31,14 +53,9 @@ export default function Marquee({
       )}
 
       <motion.div
-        animate={{
-          x: isLeft ? ['0%', '-50%'] : ['-50%', '0%'],
-        }}
-        transition={{
-          duration: speed,
-          repeat: Infinity,
-          ease: "linear",
-        }}
+        custom={speed}
+        variants={MARQUEE_VARIANTS}
+        animate={direction}
         className={cn(
           "flex min-w-full shrink-0 items-center justify-around gap-8 py-4",
           pauseOnHover && "group-hover:[animation-play-state:paused]"
