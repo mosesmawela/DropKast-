@@ -129,7 +129,7 @@ class StripeConnectAdapter implements PayoutAdapter {
         },
       });
 
-      const baseUrl = process.env.PUBLIC_APP_URL || 'https://dropkast.vercel.app';
+      const baseUrl = process.env.PUBLIC_APP_URL || 'https://dropkast.lvrn.dev';
       const accountLink = await this.stripe.accountLinks.create({
         account: account.id,
         refresh_url: `${baseUrl}/settings?stripe_refresh=1`,

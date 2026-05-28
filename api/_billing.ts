@@ -10,7 +10,7 @@
  *   STRIPE_PRICE_INDIE_YEARLY, STRIPE_PRICE_INDIE_MONTHLY
  *   STRIPE_PRICE_PRO_YEARLY,   STRIPE_PRICE_PRO_MONTHLY
  *   STRIPE_PRICE_LABEL_YEARLY, STRIPE_PRICE_LABEL_MONTHLY
- *   PUBLIC_APP_URL  (e.g. https://dropkast.vercel.app)
+ *   PUBLIC_APP_URL  (e.g. https://dropkast.lvrn.dev)
  */
 import { logger } from './_logger.js';
 
@@ -104,7 +104,7 @@ export async function createCheckoutSession(input: {
     const Stripe = require('stripe');
     const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
 
-    const baseUrl = process.env.PUBLIC_APP_URL || 'https://dropkast.vercel.app';
+    const baseUrl = process.env.PUBLIC_APP_URL || 'https://dropkast.lvrn.dev';
 
     // Reuse existing customer if we already have one for this user
     const existing = memSubscriptions[input.userId];
@@ -155,7 +155,7 @@ export async function createPortalSession(input: {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const Stripe = require('stripe');
     const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
-    const baseUrl = process.env.PUBLIC_APP_URL || 'https://dropkast.vercel.app';
+    const baseUrl = process.env.PUBLIC_APP_URL || 'https://dropkast.lvrn.dev';
     const session = await stripe.billingPortal.sessions.create({
       customer: sub.stripeCustomerId,
       return_url: `${baseUrl}/subscription`,
