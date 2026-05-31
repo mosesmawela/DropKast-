@@ -10,6 +10,32 @@ interface CircularPulseProps {
   pulse?: boolean;
 }
 
+/**
+ * Performance Optimization: Hoisted static animation configurations outside the component.
+ * This prevents redundant object allocations on every render cycle, reducing GC pressure.
+ */
+const RING_ANIMATE = {
+  scale: [1, 2],
+  opacity: [0.5, 0],
+};
+
+const RING_TRANSITION = {
+  duration: 2,
+  repeat: Infinity,
+  ease: "easeOut",
+} as const;
+
+const OUTLINE_ANIMATE = {
+  scale: [1, 1.1, 1],
+  opacity: [0.2, 0.4, 0.2],
+};
+
+const OUTLINE_TRANSITION = {
+  duration: 3,
+  repeat: Infinity,
+  ease: "easeInOut",
+} as const;
+
 export default function CircularPulse({
   children,
   className,
@@ -25,15 +51,8 @@ export default function CircularPulse({
       {/* Expanding Ring */}
       {pulse && (
         <motion.div
-          animate={{
-            scale: [1, 2],
-            opacity: [0.5, 0],
-          }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: "easeOut",
-          }}
+          animate={RING_ANIMATE}
+          transition={RING_TRANSITION}
           className="absolute inset-0 rounded-full border border-current"
           style={{ color }}
         />
@@ -41,15 +60,8 @@ export default function CircularPulse({
       
       {/* Pulsing Outline */}
       <motion.div
-        animate={pulse ? {
-          scale: [1, 1.1, 1],
-          opacity: [0.2, 0.4, 0.2],
-        } : {}}
-        transition={{
-          duration: 3,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
+        animate={pulse ? OUTLINE_ANIMATE : undefined}
+        transition={OUTLINE_TRANSITION}
         className="absolute inset-4 rounded-full border-2 border-current"
         style={{ color }}
       />
