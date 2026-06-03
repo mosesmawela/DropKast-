@@ -11,6 +11,7 @@ import ThemeToggle from '../components/ThemeToggle';
 import LiquidBackground from '../components/layout/LiquidBackground';
 import RandomSentence from '../components/landing/RandomSentence';
 import ArtistCarousel3D from '../components/landing/ArtistCarousel3D';
+import AIAssistant from '../components/AIAssistant';
 
 export default function Landing() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -22,6 +23,7 @@ export default function Landing() {
     >
       <UnicornBackground />
       <LiquidBackground />
+      <AIAssistant />
 
       {/* Nav */}
       <nav className="fixed top-0 w-full z-[100] border-b border-[var(--border-main)] bg-[var(--bg-main)]/80 backdrop-blur-xl">
