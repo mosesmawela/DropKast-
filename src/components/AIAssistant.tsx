@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, memo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MessageSquare, X, Send, Zap, Sliders, Wrench, Loader2 } from 'lucide-react';
 import { cn } from '../lib/utils';
@@ -31,6 +31,57 @@ type Message = {
   toolCalls?: { name: string; ts: number }[];
   streaming?: boolean;
 };
+
+const PANEL_VARIANTS = {
+  initial: { opacity: 0, scale: 0.9, y: 20 },
+  animate: { opacity: 1, scale: 1, y: 0 },
+  exit: { opacity: 0, scale: 0.9, y: 20 },
+};
+
+const CHAT_TAB_VARIANTS = {
+  initial: { opacity: 0, x: -10 },
+  animate: { opacity: 1, x: 0 },
+  exit: { opacity: 0, x: -10 },
+};
+
+const CONFIG_TAB_VARIANTS = {
+  initial: { opacity: 0, x: 10 },
+  animate: { opacity: 1, x: 0 },
+  exit: { opacity: 0, x: 10 },
+};
+
+const ChatMessage = memo(({ msg }: { msg: Message }) => {
+  return (
+    <div className={cn('flex flex-col gap-2', msg.role === 'user' ? 'items-end' : 'items-start')}>
+      {msg.toolCalls && msg.toolCalls.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mr-8">
+          {msg.toolCalls.map((t, j) => (
+            <div
+              key={j}
+              className="flex items-center gap-1.5 px-2 py-1 bg-primary/10 border border-primary/30 text-[8px] font-black text-primary uppercase tracking-widest italic"
+            >
+              <Wrench className="w-2.5 h-2.5" />
+              <span>{t.name}</span>
+            </div>
+          ))}
+        </div>
+      )}
+      <div
+        className={cn(
+          'p-4 text-[11px] font-medium leading-relaxed whitespace-pre-wrap break-words',
+          msg.role === 'user'
+            ? 'bg-primary text-white ml-8 italic uppercase tracking-tight font-black'
+            : 'bg-white/5 text-white/85 border border-white/5 mr-8',
+        )}
+      >
+        {msg.text}
+        {msg.streaming && (
+          <span className="inline-block ml-1 w-1.5 h-3 bg-primary animate-pulse align-middle" />
+        )}
+      </div>
+    </div>
+  );
+});
 
 export default function AIAssistant() {
   const [isOpen, setIsOpen] = useState(false);
@@ -174,43 +225,51 @@ export default function AIAssistant() {
           currentEvent = eventName;
 
           setHistory((h) => {
-            const copy = [...h];
-            const last = copy[copy.length - 1];
-            if (last.role !== 'ai') return copy;
+            const last = h[h.length - 1];
+            if (!last || last.role !== 'ai') return h;
+
+            const updatedLast = { ...last };
             if (eventName === 'token') {
-              last.text += data.text || '';
+              updatedLast.text += data.text || '';
             } else if (eventName === 'tool_call') {
-              last.toolCalls = [...(last.toolCalls || []), { name: data.name, ts: Date.now() }];
+              updatedLast.toolCalls = [...(last.toolCalls || []), { name: data.name, ts: Date.now() }];
             } else if (eventName === 'done') {
-              last.streaming = false;
+              updatedLast.streaming = false;
             } else if (eventName === 'error') {
-              last.text += `\n\n⚠️ ${data.message || 'error'}`;
-              last.streaming = false;
+              updatedLast.text += `\n\n⚠️ ${data.message || 'error'}`;
+              updatedLast.streaming = false;
             }
-            return copy;
+
+            return [...h.slice(0, -1), updatedLast];
           });
         }
       }
 
       // Make sure streaming flag clears on close
       setHistory((h) => {
-        const copy = [...h];
-        const last = copy[copy.length - 1];
-        if (last && last.role === 'ai') last.streaming = false;
-        return copy;
+        const last = h[h.length - 1];
+        if (last && last.role === 'ai' && last.streaming) {
+          return [...h.slice(0, -1), { ...last, streaming: false }];
+        }
+        return h;
       });
     } catch (err: any) {
       if (err.name === 'AbortError') return;
       console.error(err);
       toast.error(err.message || 'Chat failed');
       setHistory((h) => {
-        const copy = [...h];
-        const last = copy[copy.length - 1];
+        const last = h[h.length - 1];
         if (last && last.role === 'ai') {
-          last.text = last.text || '⚠️ Chat failed. Please try again.';
-          last.streaming = false;
+          return [
+            ...h.slice(0, -1),
+            {
+              ...last,
+              text: last.text || '⚠️ Chat failed. Please try again.',
+              streaming: false,
+            }
+          ];
         }
-        return copy;
+        return h;
       });
     } finally {
       setIsSending(false);
@@ -223,9 +282,10 @@ export default function AIAssistant() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            variants={PANEL_VARIANTS}
+            initial="initial"
+            animate="animate"
+            exit="exit"
             className="fixed sm:relative bottom-20 right-4 left-4 sm:bottom-auto sm:right-0 sm:left-auto sm:w-96 h-[min(560px,calc(100vh-7rem))] mb-4 sm:mb-6 bg-black border border-white/10 shadow-[0_20px_80px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden"
           >
             {/* Header */}
@@ -265,44 +325,15 @@ export default function AIAssistant() {
                 {activeTab === 'CHAT' ? (
                   <motion.div
                     key="chat"
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -10 }}
+                    variants={CHAT_TAB_VARIANTS}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
                     className="flex-1 overflow-y-auto p-6 space-y-5 scrollbar-hide"
                     ref={scrollRef}
                   >
                     {history.map((msg, i) => (
-                      <div
-                        key={i}
-                        className={cn('flex flex-col gap-2', msg.role === 'user' ? 'items-end' : 'items-start')}
-                      >
-                        {msg.toolCalls && msg.toolCalls.length > 0 && (
-                          <div className="flex flex-wrap gap-1.5 mr-8">
-                            {msg.toolCalls.map((t, j) => (
-                              <div
-                                key={j}
-                                className="flex items-center gap-1.5 px-2 py-1 bg-primary/10 border border-primary/30 text-[8px] font-black text-primary uppercase tracking-widest italic"
-                              >
-                                <Wrench className="w-2.5 h-2.5" />
-                                <span>{t.name}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                        <div
-                          className={cn(
-                            'p-4 text-[11px] font-medium leading-relaxed whitespace-pre-wrap break-words',
-                            msg.role === 'user'
-                              ? 'bg-primary text-white ml-8 italic uppercase tracking-tight font-black'
-                              : 'bg-white/5 text-white/85 border border-white/5 mr-8',
-                          )}
-                        >
-                          {msg.text}
-                          {msg.streaming && (
-                            <span className="inline-block ml-1 w-1.5 h-3 bg-primary animate-pulse align-middle" />
-                          )}
-                        </div>
-                      </div>
+                      <ChatMessage key={i} msg={msg} />
                     ))}
                     {isSending && history[history.length - 1]?.text === '' && (
                       <div className="flex items-center gap-2 text-white/30 text-[10px] font-mono uppercase tracking-widest italic">
@@ -314,9 +345,10 @@ export default function AIAssistant() {
                 ) : (
                   <motion.div
                     key="config"
-                    initial={{ opacity: 0, x: 10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 10 }}
+                    variants={CONFIG_TAB_VARIANTS}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
                     className="flex-1 p-8 space-y-10"
                   >
                     <div className="space-y-2">
