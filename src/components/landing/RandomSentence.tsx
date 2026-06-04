@@ -155,6 +155,48 @@ const TEMPLATES: Template[] = [
   { tone: 'slick', tokens: [':noun_target', '→', ':reach_word', '→', 'paid', '.'] },
 ];
 
+/** Hoisted to avoid re-creation on every render */
+const PUNCT_REGEX = /^[.,—→\s]+$/;
+const TRANSITION_EASE = [0.22, 1, 0.36, 1] as const;
+
+const PARENT_VARIANTS = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit: { opacity: 0 },
+};
+
+const TOKEN_VARIANTS = {
+  initial: {
+    y: 24,
+    opacity: 0,
+    rotateX: -45,
+    filter: 'blur(8px)',
+  },
+  animate: (custom: ResolvedToken) => ({
+    y: 0,
+    opacity: 1,
+    rotateX: 0,
+    filter: 'blur(0px)',
+    transition: {
+      duration: 0.55,
+      ease: TRANSITION_EASE,
+      // Slot words land slightly later than literals — gives the
+      // "filling in the blanks" feel
+      delay: (custom.fromSlot ? 0.18 : 0.05) + custom.index * 0.04,
+    },
+  }),
+  exit: (custom: ResolvedToken) => ({
+    y: -24,
+    opacity: 0,
+    filter: 'blur(8px)',
+    transition: {
+      duration: 0.4,
+      ease: TRANSITION_EASE,
+      delay: custom.index * 0.02,
+    },
+  }),
+};
+
 function pickRandom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
@@ -165,16 +207,29 @@ interface ResolvedToken {
   fromSlot: boolean;
   /** A stable key for re-animation when the value changes */
   key: string;
+  /** Pre-calculated to avoid regex execution during render */
+  isPunct: boolean;
+  /** Index for staggered animations, stored in the token to avoid per-render object allocation */
+  index: number;
 }
 
 function resolveTemplate(t: Template): ResolvedToken[] {
   return t.tokens.map((tok, i) => {
+    let text = tok;
+    let fromSlot = false;
     if (tok.startsWith(':')) {
       const slot = tok.slice(1);
-      const word = pickRandom(BANK[slot] ?? ['']);
-      return { text: word, fromSlot: true, key: `${slot}-${i}-${word}` };
+      text = pickRandom(BANK[slot] ?? ['']);
+      fromSlot = true;
     }
-    return { text: tok, fromSlot: false, key: `lit-${i}-${tok}` };
+
+    return {
+      text,
+      fromSlot,
+      key: fromSlot ? `${tok.slice(1)}-${i}-${text}` : `lit-${i}-${tok}`,
+      isPunct: PUNCT_REGEX.test(text),
+      index: i,
+    };
   });
 }
 
@@ -210,17 +265,16 @@ export default function RandomSentence({ intervalMs = 3800, className }: Props) 
       <AnimatePresence mode="wait">
         <motion.div
           key={phaseId}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+          variants={PARENT_VARIANTS}
+          initial="initial"
+          animate="animate"
+          exit="exit"
           transition={{ duration: 0.4 }}
           className="inline-flex flex-wrap gap-x-2 gap-y-1 justify-center"
         >
           {tokens.map((tok, i) => {
-            // Punctuation / spaces shouldn't animate
-            const isPunct = /^[.,—→\s]+$/.test(tok.text);
             if (!tok.text) return null;
-            if (isPunct) {
+            if (tok.isPunct) {
               return (
                 <span key={tok.key} className="text-current">
                   {tok.text}
@@ -230,30 +284,11 @@ export default function RandomSentence({ intervalMs = 3800, className }: Props) 
             return (
               <motion.span
                 key={tok.key}
-                initial={{
-                  y: 24,
-                  opacity: 0,
-                  rotateX: -45,
-                  filter: 'blur(8px)',
-                }}
-                animate={{
-                  y: 0,
-                  opacity: 1,
-                  rotateX: 0,
-                  filter: 'blur(0px)',
-                }}
-                exit={{
-                  y: -24,
-                  opacity: 0,
-                  filter: 'blur(8px)',
-                }}
-                transition={{
-                  duration: 0.55,
-                  ease: [0.22, 1, 0.36, 1],
-                  // Slot words land slightly later than literals — gives the
-                  // "filling in the blanks" feel
-                  delay: (tok.fromSlot ? 0.18 : 0.05) + i * 0.04,
-                }}
+                custom={tok}
+                variants={TOKEN_VARIANTS}
+                initial="initial"
+                animate="animate"
+                exit="exit"
                 style={{ display: 'inline-block', transformOrigin: 'bottom center' }}
                 className={tok.fromSlot ? 'text-primary font-black' : 'text-current'}
               >
