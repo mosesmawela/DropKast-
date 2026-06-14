@@ -11,6 +11,51 @@ interface ScrollRevealProps {
   key?: Key;
 }
 
+// ⚡ Bolt: Hoist static configuration objects to prevent redundant allocations on every render.
+// This component is used ~68 times across the app, making this a high-impact optimization
+// for reducing memory churn and GC pressure.
+const DIRECTIONS = {
+  up: { y: 40 },
+  down: { y: -40 },
+  left: { x: 40 },
+  right: { x: -40 },
+  none: { x: 0, y: 0 }
+} as const;
+
+// ⚡ Bolt: Hoisted variants using the 'custom' prop for dynamic directions.
+const SCROLL_REVEAL_VARIANTS = {
+  fade: {
+    hidden: (direction: keyof typeof DIRECTIONS) => ({
+      opacity: 0,
+      ...DIRECTIONS[direction]
+    }),
+    visible: { opacity: 1, x: 0, y: 0 }
+  },
+  blur: {
+    hidden: (direction: keyof typeof DIRECTIONS) => ({
+      opacity: 0,
+      filter: 'blur(10px)',
+      ...DIRECTIONS[direction]
+    }),
+    visible: { opacity: 1, filter: 'blur(0px)', x: 0, y: 0 }
+  },
+  slide: {
+    hidden: (direction: keyof typeof DIRECTIONS) => ({
+      opacity: 0,
+      ...DIRECTIONS[direction]
+    }),
+    visible: { opacity: 1, x: 0, y: 0 }
+  }
+};
+
+const VIEWPORT_CONFIG = { once: true, margin: "-100px" } as const;
+const TRANSITION_EASE = [0.21, 0.47, 0.32, 0.98] as const;
+
+/**
+ * ⚡ Bolt: ScrollReveal handles entry animations for elements as they enter the viewport.
+ * Refactored to hoist all static motion objects and use the 'custom' prop for variants,
+ * significantly reducing per-render memory overhead across the application.
+ */
 export default function ScrollReveal({
   children,
   delay = 0,
@@ -19,40 +64,18 @@ export default function ScrollReveal({
   width = "fit-content",
   className
 }: ScrollRevealProps) {
-  const directions = {
-    up: { y: 40 },
-    down: { y: -40 },
-    left: { x: 40 },
-    right: { x: -40 },
-    none: { x: 0, y: 0 }
-  };
-
-  const variants = {
-    fade: {
-      hidden: { opacity: 0, ...directions[direction] },
-      visible: { opacity: 1, x: 0, y: 0 }
-    },
-    blur: {
-      hidden: { opacity: 0, filter: 'blur(10px)', ...directions[direction] },
-      visible: { opacity: 1, filter: 'blur(0px)', x: 0, y: 0 }
-    },
-    slide: {
-      hidden: { opacity: 0, ...directions[direction] },
-      visible: { opacity: 1, x: 0, y: 0 }
-    }
-  };
-
   return (
     <div style={{ position: "relative", width, overflow: "visible" }} className={className}>
       <motion.div
-        variants={variants[variant]}
+        custom={direction}
+        variants={SCROLL_REVEAL_VARIANTS[variant]}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
+        viewport={VIEWPORT_CONFIG}
         transition={{
           duration: 0.8,
           delay: delay,
-          ease: [0.21, 0.47, 0.32, 0.98]
+          ease: TRANSITION_EASE
         }}
       >
         {children}
