@@ -5,6 +5,7 @@ import { useRef } from 'react';
 import Marquee from '../components/animations/Marquee';
 import ScrollReveal from '../components/animations/ScrollReveal';
 import AnimatedBeam from '../components/animations/AnimatedBeam';
+import TextMask from '../components/animations/TextMask';
 import UnicornBackground from '../components/animations/UnicornBackground';
 import PerspectiveScroll from '../components/animations/PerspectiveScroll';
 import ThemeToggle from '../components/ThemeToggle';
@@ -69,9 +70,9 @@ export default function Landing() {
           </div>
 
           <h1 className="text-5xl md:text-8xl lg:text-9xl font-black tracking-[calc(-0.04em)] mb-8 leading-[0.85] italic uppercase font-mono">
-            Drop. Distribute.<br />
+            <TextMask>Drop. Distribute.</TextMask><br />
             <span className="text-primary relative">
-              Get paid.
+              <TextMask delay={0.5}>Get paid.</TextMask>
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: '100%' }}
