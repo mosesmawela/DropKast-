@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { 
   Wallet, 
   ArrowUpRight, 
@@ -20,6 +21,8 @@ import { cn } from '../lib/utils';
 import { BarChart, Bar, ResponsiveContainer, XAxis, Tooltip, Cell, PieChart, Pie } from 'recharts';
 import ScrollReveal from '../components/animations/ScrollReveal';
 import AnimatedBeam from '../components/animations/AnimatedBeam';
+import { toast } from 'sonner';
+import { StatSkeleton, CardSkeleton } from '../components/Skeleton';
 
 const payoutHistory = [
   { id: 1, date: '2024-04-15', amount: '$4,290.00', method: 'Direct Deposit', status: 'Completed' },
@@ -36,6 +39,40 @@ const platformProjections = [
 ];
 
 export default function Earnings() {
+  const [loading, setLoading] = useState(true);
+  const [earningsData, setEarningsData] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/api/earnings')
+      .then(r => r.json())
+      .then(data => {
+        setEarningsData(data);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="space-y-12 max-w-7xl mx-auto py-8 font-sans">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+          <div className="lg:col-span-2 manifest-card p-12 min-h-[450px]">
+            <StatSkeleton />
+          </div>
+          <div className="space-y-8">
+            <CardSkeleton rows={4} />
+            <CardSkeleton rows={2} />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <CardSkeleton key={i} rows={3} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-12 max-w-7xl mx-auto py-8 font-sans">
       <ScrollReveal direction="down">
@@ -49,7 +86,15 @@ export default function Earnings() {
           </div>
           <div className="flex items-center gap-4">
             <AnimatedBeam containerClassName="w-fit">
-              <button className="primary-button h-14 flex items-center gap-3 px-10">
+              <button 
+                onClick={async () => {
+                  try {
+                    const res = await fetch('/api/earnings/payout-request', { method: 'POST' });
+                    if (res.ok) toast.success('Payout requested', 'Your payout is being processed.');
+                  } catch { toast.error('Failed to request payout'); }
+                }}
+                className="primary-button h-14 flex items-center gap-3 px-10"
+              >
                 <ArrowUpRight className="w-4 h-4" />
                 Request Payout
               </button>
@@ -69,8 +114,7 @@ export default function Earnings() {
               <span className="text-[11px] font-bold tracking-widest text-primary italic uppercase">Available Balance</span>
             </div>
             <div className="text-7xl md:text-[110px] font-black leading-none tracking-tighter italic flex items-baseline gap-4 font-mono">
-              <span className="text-white">$12,492.</span>
-              <span className="text-white/20 text-5xl underline decoration-primary underline-offset-8">50</span>
+              <span className="text-white">{earningsData?.summary?.totalCents ? `$${(earningsData.summary.totalCents / 100).toLocaleString()}` : '$0.00'}</span>
             </div>
           </div>
           

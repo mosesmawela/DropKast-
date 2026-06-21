@@ -27,6 +27,9 @@ export type StudioId =
   | 'hook'
   | 'lipsync';
 
+/** Model provider types */
+export type ModelProvider = 'anthropic' | 'openai' | 'internal' | 'external-api';
+
 export type StudioCategory = 'visual' | 'video' | 'copy' | 'audio' | 'strategy';
 
 export type OutputKind = 'image' | 'video' | 'text' | 'audio' | 'json';
@@ -72,6 +75,9 @@ export interface StudioDef {
   description: string;
   /** Whether this studio supports piping its output as input to another studio. */
   pipeable?: boolean;
+  /** References a model definition from models.ts. When set, input fields,
+   *  endpoint, async config, and capabilities are inherited from the model. */
+  modelId?: string;
 }
 
 export type JobStatus = 'queued' | 'running' | 'done' | 'failed';
@@ -109,4 +115,49 @@ export interface StudioOutput {
   createdAt: string;
   /** Stars / favorites — surfaces in gallery */
   starred?: boolean;
+}
+
+/* =========================================================================
+ * Workflow pipeline types
+ * ========================================================================= */
+
+/** A single step in a workflow pipeline */
+export interface WorkflowStep {
+  /** Which studio to run */
+  studioId: StudioId;
+  /** Input overrides for this step. Supports {stepN.output} references. */
+  input: Record<string, any>;
+  /** Optional label (shown in pipeline UI) */
+  label?: string;
+}
+
+/** A reusable workflow recipe */
+export interface WorkflowDef {
+  id: string;
+  name: string;
+  description: string;
+  steps: WorkflowStep[];
+}
+
+/** Result of executing one step in a workflow */
+export interface WorkflowStepResult {
+  stepIndex: number;
+  studioId: StudioId;
+  label?: string;
+  jobId: string;
+  status: 'running' | 'done' | 'failed';
+  output?: any;
+  error?: string;
+  startedAt?: string;
+  finishedAt?: string;
+}
+
+/** Full result of a workflow run */
+export interface WorkflowRun {
+  id: string;
+  workflowId: string;
+  status: 'running' | 'done' | 'failed';
+  steps: WorkflowStepResult[];
+  createdAt: string;
+  finishedAt?: string;
 }

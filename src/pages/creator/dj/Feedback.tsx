@@ -19,7 +19,7 @@ export default function DJFeedback() {
   const [comment, setComment] = useState('');
   const [isSending, setIsSending] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (rating === 0) {
       notify('error', 'Rating required', 'Pick a 1–5 rating before submitting.');
@@ -27,12 +27,27 @@ export default function DJFeedback() {
     }
 
     setIsSending(true);
-    setTimeout(() => {
+    try {
+      const res = await fetch('/api/dj/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          djId: 'dj-self', // real impl: pull from auth context
+          releaseId: 'rel-current',
+          rating,
+          comment,
+          willPlayInSet: rating >= 4,
+        }),
+      });
+      if (!res.ok) throw new Error('Submit failed');
       notify('success', 'Feedback sent', 'The artist will see your rating and notes.');
       setRating(0);
       setComment('');
+    } catch (err: any) {
+      notify('error', 'Submit failed', err?.message || 'Try again in a moment.');
+    } finally {
       setIsSending(false);
-    }, 1500);
+    }
   };
 
   return (

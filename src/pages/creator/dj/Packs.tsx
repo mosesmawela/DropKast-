@@ -13,6 +13,7 @@ import {
 import { motion } from 'motion/react';
 import { cn } from '../../../lib/utils';
 import { useNotify } from '../../../context/NotificationContext';
+import { toast } from 'sonner';
 
 export default function DJPacks() {
   const { notify } = useNotify();
@@ -88,10 +89,22 @@ export default function DJPacks() {
               </div>
 
               <div className="space-y-4 pt-4">
-                 <button 
-                  onClick={() => notify('success', 'DOWNLOAD_INITIATED', 'Payload encryption complete. Streaming data packet...')}
-                  className="h-16 w-full bg-white text-black hover:bg-primary hover:text-white transition-all font-mono font-black italic text-[11px] tracking-widest flex items-center justify-center gap-4 group shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
-                 >
+                  <button 
+                   onClick={async () => {
+                     const res = await fetch(`/api/dj/packs/${String(p.id)}/deliver`, {
+                       method: 'POST',
+                       headers: { 'Content-Type': 'application/json' },
+                       body: JSON.stringify({ djId: 'user-1' })
+                     });
+                     const data = await res.json();
+                     if (data.ok) {
+                       toast.success(data.url);
+                       await navigator.clipboard.writeText(data.url);
+                       notify('success', 'DOWNLOAD_READY', 'Signed URL generated.');
+                     }
+                   }}
+                   className="h-16 w-full bg-white text-black hover:bg-primary hover:text-white transition-all font-mono font-black italic text-[11px] tracking-widest flex items-center justify-center gap-4 group shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
+                  >
                    <span>DOWNLOAD_PACK</span>
                    <Download className="w-5 h-5 group-hover:translate-y-1 transition-transform" />
                  </button>

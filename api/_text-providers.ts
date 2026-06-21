@@ -8,12 +8,28 @@
  * The adapter exposes:
  *   - listAvailableTextProviders() → which providers have keys configured
  *   - streamOpenAICompatible(provider, body) → SSE stream of token chunks
+ *   - FALLBACK_ORDER → ordered list for automatic provider rotation
  *
  * Tool use is NOT supported on the OpenAI-compatible providers (they require
  * separate function-calling protocols). Use Claude (Anthropic) for tool use.
  */
 
 export type TextProviderId = 'anthropic' | 'nvidia' | 'groq' | 'cerebras' | 'openrouter' | 'moonshot' | 'openai' | 'google';
+
+/**
+ * Default fallback order for AI provider rotation. Fastest / most reliable
+ * come first. Used when the primary provider is unavailable or times out.
+ */
+export const FALLBACK_ORDER: TextProviderId[] = [
+  'anthropic',
+  'groq',
+  'nvidia',
+  'cerebras',
+  'openrouter',
+  'moonshot',
+  'openai',
+  'google',
+];
 
 interface ProviderConfig {
   id: TextProviderId;
@@ -93,18 +109,44 @@ export function listAvailableTextProviders(): { id: TextProviderId; name: string
 }
 
 /**
+ * Wraps fetch with an AbortController-based timeout. Calls abort() on the
+ * underlying signal when the timeout fires so the socket is released.
+ */
+export async function fetchWithTimeout(
+  url: string,
+  init: RequestInit,
+  ms: number,
+): Promise<Response> {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ms);
+  try {
+    return await fetch(url, { ...init, signal: ctrl.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/**
+ * Provider timeout (ms). If a provider hasn't responded in this window,
+ * the connection is aborted and the next fallback is tried.
+ */
+export const PROVIDER_TIMEOUT_MS = 14_000;
+
+/**
  * Streams an OpenAI-compatible chat completion as Server-Sent Events from
  * the provider, yielding `{ token: string }` for each text delta and
  * `{ done: true }` at end of stream.
  *
  * Anthropic is NOT handled here — use the Anthropic SDK directly. For
  * `provider === 'anthropic'`, this throws.
+ *
+ * Accepts an optional `AbortSignal` for external cancellation.
  */
 export async function* streamOpenAICompatible(
   provider: TextProviderId,
   messages: { role: 'system' | 'user' | 'assistant'; content: string }[],
-  opts?: { model?: string; max_tokens?: number; temperature?: number },
-): AsyncGenerator<{ token?: string; done?: boolean; error?: string }> {
+  opts?: { model?: string; max_tokens?: number; temperature?: number; signal?: AbortSignal },
+): AsyncGenerator<{ token?: string; done?: boolean; error?: string; provider?: TextProviderId }> {
   if (provider === 'anthropic') {
     throw new Error('Use the Anthropic SDK directly for the anthropic provider.');
   }
@@ -115,20 +157,25 @@ export async function* streamOpenAICompatible(
     return;
   }
 
-  const res = await fetch(`${cfg.baseUrl}/chat/completions`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
+  const res = await fetchWithTimeout(
+    `${cfg.baseUrl}/chat/completions`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: opts?.model || cfg.defaultModel,
+        messages,
+        stream: true,
+        max_tokens: opts?.max_tokens ?? 1024,
+        temperature: opts?.temperature ?? 0.7,
+      }),
+      signal: opts?.signal,
     },
-    body: JSON.stringify({
-      model: opts?.model || cfg.defaultModel,
-      messages,
-      stream: true,
-      max_tokens: opts?.max_tokens ?? 1024,
-      temperature: opts?.temperature ?? 0.7,
-    }),
-  });
+    PROVIDER_TIMEOUT_MS,
+  );
 
   if (!res.ok || !res.body) {
     const errText = await res.text().catch(() => 'unknown');
@@ -150,7 +197,7 @@ export async function* streamOpenAICompatible(
       if (!trimmed.startsWith('data:')) continue;
       const payload = trimmed.slice(5).trim();
       if (payload === '[DONE]') {
-        yield { done: true };
+        yield { done: true, provider };
         return;
       }
       try {
@@ -164,5 +211,5 @@ export async function* streamOpenAICompatible(
       }
     }
   }
-  yield { done: true };
+  yield { done: true, provider };
 }

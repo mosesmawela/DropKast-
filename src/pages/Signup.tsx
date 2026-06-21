@@ -1,7 +1,8 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { Music, Mail, Lock, User, Globe, ArrowRight } from 'lucide-react';
+import { Music, Mail, Lock, User, Globe, ArrowRight, AlertCircle } from 'lucide-react';
 import { motion } from 'motion/react';
 import React, { useState } from 'react';
+import { cn } from '../lib/utils';
 import { useAuth } from '../context/AuthContext';
 
 export default function Signup() {
@@ -15,19 +16,32 @@ export default function Signup() {
     confirmPassword: '',
     country: 'United States'
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const validate = () => {
+    const errs: Record<string, string> = {};
+    if (!formData.artistName.trim()) errs.artistName = 'Artist name is required';
+    if (!formData.email) errs.email = 'Email is required';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) errs.email = 'Invalid email format';
+    if (!formData.password) errs.password = 'Password is required';
+    else if (formData.password.length < 8) errs.password = 'Minimum 8 characters';
+    else if (!/[A-Z]/.test(formData.password)) errs.password = 'Needs an uppercase letter';
+    else if (!/[0-9]/.test(formData.password)) errs.password = 'Needs a number';
+    if (!formData.confirmPassword) errs.confirmPassword = 'Confirm your password';
+    else if (formData.password !== formData.confirmPassword) errs.confirmPassword = 'Passwords do not match';
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
+  const clearError = (field: string) => setErrors(prev => ({ ...prev, [field]: '' }));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match");
-      return;
-    }
+    if (!validate()) return;
     
     setIsLoading(true);
-    // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 1500));
     
-    // In mock mode, we just log them in with the artist name they provided
     login(formData.email, formData.password, formData.artistName);
     setIsLoading(false);
     navigate('/dashboard');
@@ -66,11 +80,17 @@ export default function Signup() {
                   type="text"
                   required
                   value={formData.artistName}
-                  onChange={e => setFormData({ ...formData, artistName: e.target.value })}
+                  onChange={e => { setFormData({ ...formData, artistName: e.target.value }); clearError('artistName'); }}
                   placeholder="e.g. The Weeknd"
-                  className="w-full bg-transparent border-b border-white/10 py-5 pl-8 pr-4 text-white placeholder:text-white/5 focus:outline-none focus:border-primary transition-all text-sm font-black uppercase italic"
+                  className={cn(
+                    "w-full bg-transparent border-b py-5 pl-8 pr-4 text-white placeholder:text-white/5 focus:outline-none transition-all text-sm font-black uppercase italic",
+                    errors.artistName ? "border-red-500/50 focus:border-red-500" : "border-white/10 focus:border-primary"
+                  )}
                 />
               </div>
+              {errors.artistName && (
+                <span className="text-[9px] font-black text-red-400 uppercase tracking-widest font-mono italic">{errors.artistName}</span>
+              )}
             </div>
 
             <div className="space-y-3">
@@ -81,11 +101,17 @@ export default function Signup() {
                   type="email"
                   required
                   value={formData.email}
-                  onChange={e => setFormData({ ...formData, email: e.target.value })}
+                  onChange={e => { setFormData({ ...formData, email: e.target.value }); clearError('email'); }}
                   placeholder="you@email.com"
-                  className="w-full bg-transparent border-b border-white/10 py-5 pl-8 pr-4 text-white placeholder:text-white/5 focus:outline-none focus:border-primary transition-all text-sm font-black uppercase italic"
+                  className={cn(
+                    "w-full bg-transparent border-b py-5 pl-8 pr-4 text-white placeholder:text-white/5 focus:outline-none transition-all text-sm font-black uppercase italic",
+                    errors.email ? "border-red-500/50 focus:border-red-500" : "border-white/10 focus:border-primary"
+                  )}
                 />
               </div>
+              {errors.email && (
+                <span className="text-[9px] font-black text-red-400 uppercase tracking-widest font-mono italic">{errors.email}</span>
+              )}
             </div>
 
             <div className="space-y-3">
@@ -124,11 +150,17 @@ export default function Signup() {
                   type="password" 
                   required
                   value={formData.password}
-                  onChange={e => setFormData({ ...formData, password: e.target.value })}
+                  onChange={e => { setFormData({ ...formData, password: e.target.value }); clearError('password'); }}
                   placeholder="********"
-                  className="w-full bg-transparent border-b border-white/10 py-5 pl-8 pr-4 text-white placeholder:text-white/5 focus:outline-none focus:border-primary transition-all text-sm font-black italic"
+                  className={cn(
+                    "w-full bg-transparent border-b py-5 pl-8 pr-4 text-white placeholder:text-white/5 focus:outline-none transition-all text-sm font-black italic",
+                    errors.password ? "border-red-500/50 focus:border-red-500" : "border-white/10 focus:border-primary"
+                  )}
                 />
               </div>
+              {errors.password && (
+                <span className="text-[9px] font-black text-red-400 uppercase tracking-widest font-mono italic">{errors.password}</span>
+              )}
             </div>
 
             <div className="space-y-3">
@@ -139,11 +171,17 @@ export default function Signup() {
                   type="password" 
                   required
                   value={formData.confirmPassword}
-                  onChange={e => setFormData({ ...formData, confirmPassword: e.target.value })}
+                  onChange={e => { setFormData({ ...formData, confirmPassword: e.target.value }); clearError('confirmPassword'); }}
                   placeholder="********"
-                  className="w-full bg-transparent border-b border-white/10 py-5 pl-8 pr-4 text-white placeholder:text-white/5 focus:outline-none focus:border-primary transition-all text-sm font-black italic"
+                  className={cn(
+                    "w-full bg-transparent border-b py-5 pl-8 pr-4 text-white placeholder:text-white/5 focus:outline-none transition-all text-sm font-black italic",
+                    errors.confirmPassword ? "border-red-500/50 focus:border-red-500" : "border-white/10 focus:border-primary"
+                  )}
                 />
               </div>
+              {errors.confirmPassword && (
+                <span className="text-[9px] font-black text-red-400 uppercase tracking-widest font-mono italic">{errors.confirmPassword}</span>
+              )}
             </div>
 
             <div className="md:col-span-2 flex items-start gap-4 py-4 px-0">

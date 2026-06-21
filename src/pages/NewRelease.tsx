@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { useReleases } from "../context/ReleaseContext";
 import { useAuth } from "../context/AuthContext";
 import { useNotify } from "../context/NotificationContext";
+import { useTierGate, UpgradeModal } from "../components/UpgradePrompt";
 import { 
   Disc, 
   Settings, 
@@ -34,13 +35,21 @@ const steps = [
 
 export default function NewRelease() {
   const navigate = useNavigate();
-  const { addRelease } = useReleases();
+  const { addRelease, releases } = useReleases();
   const { user } = useAuth();
   const { notify } = useNotify();
-  
+  const gate = useTierGate();
+
   const [step, setStep] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
   const [hasDraft, setHasDraft] = useState(false);
+  const [upgradeBlocked, setUpgradeBlocked] = useState<string | null>(null);
+
+  // Count releases used this year for tier cap (Free=2/yr)
+  const thisYearReleaseCount = useMemo(() => {
+    const startOfYear = new Date(); startOfYear.setMonth(0, 1); startOfYear.setHours(0,0,0,0);
+    return (releases || []).filter((r: any) => r.createdAt && new Date(r.createdAt) >= startOfYear).length;
+  }, [releases]);
 
   const [data, setData] = useState<any>({
     audio: null,
@@ -51,7 +60,7 @@ export default function NewRelease() {
     releaseDate: "",
     platforms: [],
     format: "Single",
-    label: user?.label || "Independent",
+    label: "Independent",
     // Technical Manifest Fields (Sync with LVRN Template)
     upc: "",
     sales_date: "",
@@ -101,7 +110,9 @@ export default function NewRelease() {
     if (savedData) {
       try {
         const parsed = JSON.parse(savedData);
-        // Note: audio and artwork files can't be stringified, user needs to re-upload them
+        // Strip placeholder file references that can't survive serialization
+        if (parsed.audio === '[object File]') parsed.audio = null;
+        if (parsed.artwork === '[object File]') parsed.artwork = null;
         setData(prev => ({ ...prev, ...parsed, audio: null, artwork: null }));
         setHasDraft(false);
         notify('info', 'Draft restored', 'Re-attach your audio and artwork files to continue.');
@@ -126,13 +137,36 @@ export default function NewRelease() {
     setTimeout(() => setIsSaving(false), 800);
   };
 
-  const next = () => setStep((s) => s + 1);
+  const [stepErrors, setStepErrors] = useState<Record<string, string>>({});
+
+  const next = () => {
+    const errs: Record<string, string> = {};
+    if (step === 0 && !data.audio) errs.audio = 'Upload an audio file to continue';
+    if (step === 1 && !data.title?.trim()) errs.title = 'Release title is required';
+    if (step === 2 && !data.artwork) errs.artwork = 'Cover artwork is required';
+    if (step === 3 && (!data.releaseDate || data.platforms.length === 0)) {
+      if (!data.releaseDate) errs.releaseDate = 'Release date is required';
+      if (data.platforms.length === 0) errs.platforms = 'Select at least one platform';
+    }
+    setStepErrors(errs);
+    if (Object.keys(errs).length > 0) return;
+    setStep((s) => s + 1);
+    setStepErrors({});
+  };
   const back = () => setStep((s) => s - 1);
 
-  const update = (fields: any) =>
+  const update = (fields: any) => {
+    setStepErrors({});
     setData((prev) => ({ ...prev, ...fields }));
+  };
 
   const handleSubmit = async (finalData: any) => {
+    // Tier cap check — Free=2 releases/yr
+    const capCheck = gate.check('release', thisYearReleaseCount);
+    if (!capCheck.allowed) {
+      setUpgradeBlocked(capCheck.reason || 'Release cap reached.');
+      return;
+    }
     try {
       const res = await addRelease({
         ...finalData,
@@ -239,6 +273,17 @@ export default function NewRelease() {
            <div className="text-[150px] font-black italic uppercase leading-none tracking-tighter">DISTRO</div>
            <div className="text-[150px] font-black italic uppercase leading-none tracking-tighter text-primary ml-24">MASTER</div>
         </div>
+
+        {Object.keys(stepErrors).length > 0 && (
+          <div className="mb-8 p-4 bg-red-900/20 border border-red-500/30 flex flex-wrap gap-3">
+            {Object.values(stepErrors).map((err, i) => (
+              <span key={i} className="text-[9px] font-black text-red-400 uppercase tracking-widest font-mono italic flex items-center gap-2">
+                <div className="w-1.5 h-1.5 bg-red-500 rounded-full" />
+                {err}
+              </span>
+            ))}
+          </div>
+        )}
         
         <AnimatePresence mode="wait">
           <motion.div
@@ -269,6 +314,14 @@ export default function NewRelease() {
             <span>Audit-logged</span>
          </div>
       </div>
+
+      <UpgradeModal
+        open={!!upgradeBlocked}
+        feature="Unlimited releases"
+        requiredTier="indie"
+        reason={upgradeBlocked || undefined}
+        onClose={() => setUpgradeBlocked(null)}
+      />
     </div>
   );
 }

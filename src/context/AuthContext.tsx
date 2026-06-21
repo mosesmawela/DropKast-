@@ -150,11 +150,14 @@ function toAppUser(supaUser: { id: string; email?: string; user_metadata?: any }
   const artistName =
     supaUser.user_metadata?.artist_name ||
     (supaUser.email ? supaUser.email.split('@')[0] : 'Artist');
+  const rawRole = supaUser.user_metadata?.role as string;
+  const VALID_ROLES = ['admin', 'artist', 'manager', 'ARTIST', 'INFLUENCER', 'DJ', 'LABEL'];
+  const role = VALID_ROLES.includes(rawRole) ? rawRole as User['role'] : 'artist';
   return {
     id: supaUser.id,
     email: supaUser.email ?? '',
     artistName,
-    role: (supaUser.user_metadata?.role as User['role']) || 'artist',
+    role,
     avatar:
       supaUser.user_metadata?.avatar_url ||
       `https://api.dicebear.com/7.x/avataaars/svg?seed=${artistName}`,

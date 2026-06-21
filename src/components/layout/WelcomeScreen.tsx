@@ -155,10 +155,10 @@ export const WelcomeScreen: React.FC<{ onComplete: () => void }> = ({ onComplete
     }
   };
 
-  const finish = (_route: string) => {
-    // Mark welcome complete (sets dropkast_welcome_seen) and route to /login.
-    // Login detects the flag and skips its own portal step — no duplicate.
-    // The post-auth redirect into the actual portal landing happens after sign-in.
+  const finish = (_route: string, selectedRole?: UserRole) => {
+    if (selectedRole) {
+      localStorage.setItem('campaign-os-role', selectedRole);
+    }
     onComplete();
     navigate('/login');
   };
@@ -274,10 +274,10 @@ export const WelcomeScreen: React.FC<{ onComplete: () => void }> = ({ onComplete
                 <PortalSlide
                   selected={role}
                   onSelect={setRole}
-                  onConfirm={(r) => {
+                    onConfirm={(r) => {
                     setRole(r);
                     const portal = PORTALS.find((p) => p.id === r) ?? PORTALS[0];
-                    finish(portal.route);
+                    finish(portal.route, r);
                   }}
                   accent={colorObj.hex}
                 />
@@ -322,7 +322,7 @@ export const WelcomeScreen: React.FC<{ onComplete: () => void }> = ({ onComplete
             <button
               onClick={() => {
                 const portal = PORTALS.find((p) => p.id === role) ?? PORTALS[0];
-                finish(portal.route);
+                finish(portal.route, role);
               }}
               className="h-11 sm:h-12 px-4 sm:px-8 text-[10px] font-mono font-black uppercase italic tracking-[0.2em] sm:tracking-[0.3em] flex items-center gap-2 sm:gap-3 text-black transition-all hover:scale-[1.03]"
               style={{ backgroundColor: colorObj.hex }}
@@ -622,7 +622,7 @@ const PortalSlide: React.FC<{
               'manifest-card relative p-3 sm:p-5 text-left flex flex-row md:flex-col gap-3 sm:gap-4 transition-all border bg-white/[0.02] hover:bg-white/[0.05] md:min-h-[260px]',
               active ? 'border-white/40 scale-[1.01]' : 'border-white/10',
             )}
-            style={active ? { borderColor: accent, boxShadow: `0 0 0 1px ${accent}, 0 30px 80px ${accent}33` } : undefined}
+            style={active ? { borderColor: accent, boxShadow: `0 0 0 1px ${accent}, 0 30px 80px ${accent}33`, background: `linear-gradient(135deg, ${accent}08 0%, transparent 100%)` } : undefined}
           >
             <div
               className="w-9 h-9 sm:w-11 sm:h-11 border flex items-center justify-center shrink-0 self-start"

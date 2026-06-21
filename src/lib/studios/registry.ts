@@ -18,6 +18,7 @@ import {
   Smile,
 } from 'lucide-react';
 import type { StudioDef, StudioId } from './types';
+import { getModel } from './models';
 
 export const STUDIOS: StudioDef[] = [
   /* =====================================================================
@@ -31,6 +32,7 @@ export const STUDIOS: StudioDef[] = [
     icon: ImageIcon,
     accentColor: '#FF4D00',
     outputKind: 'image',
+    modelId: 'cover-gen',
     endpoint: '/api/assets/cover',
     estimatedCostCents: 8,
     estimatedRuntimeSec: 18,
@@ -80,6 +82,7 @@ export const STUDIOS: StudioDef[] = [
     icon: Video,
     accentColor: '#FF4D00',
     outputKind: 'video',
+    modelId: 'video-teaser',
     endpoint: '/api/assets/video',
     async: true,
     pollEndpoint: '/api/assets/video/{id}',
@@ -118,6 +121,7 @@ export const STUDIOS: StudioDef[] = [
     icon: Smile,
     accentColor: '#FF4D00',
     outputKind: 'json',
+    modelId: 'ugc-gen',
     endpoint: '/api/ugc/generate',
     async: true,
     pollEndpoint: '/api/ugc/{id}',
@@ -160,6 +164,7 @@ export const STUDIOS: StudioDef[] = [
     icon: Mic2,
     accentColor: '#FF4D00',
     outputKind: 'video',
+    modelId: 'lipsync',
     endpoint: '/api/assets/lipsync',
     async: true,
     pollEndpoint: '/api/assets/lipsync/{id}',
@@ -184,6 +189,7 @@ export const STUDIOS: StudioDef[] = [
     icon: MessageSquare,
     accentColor: '#FF4D00',
     outputKind: 'text',
+    modelId: 'chat-llm',
     defaultPersona: 'caption-writer',
     endpoint: '/api/ai/chat',
     estimatedRuntimeSec: 4,
@@ -216,6 +222,7 @@ export const STUDIOS: StudioDef[] = [
     icon: Layers,
     accentColor: '#FF4D00',
     outputKind: 'json',
+    modelId: 'press-pack',
     defaultPersona: 'press-pitcher',
     endpoint: '/api/promo/generate',
     estimatedRuntimeSec: 12,
@@ -246,6 +253,7 @@ export const STUDIOS: StudioDef[] = [
     icon: Mic2,
     accentColor: '#FF4D00',
     outputKind: 'text',
+    modelId: 'chat-llm',
     defaultPersona: 'lyric-coach',
     endpoint: '/api/ai/chat',
     estimatedRuntimeSec: 6,
@@ -284,6 +292,7 @@ export const STUDIOS: StudioDef[] = [
     icon: ShieldCheck,
     accentColor: '#FF4D00',
     outputKind: 'json',
+    modelId: 'ar-critique',
     defaultPersona: 'ar-critic',
     endpoint: '/api/anr',
     estimatedRuntimeSec: 15,
@@ -309,6 +318,7 @@ export const STUDIOS: StudioDef[] = [
     icon: Target,
     accentColor: '#FF4D00',
     outputKind: 'json',
+    modelId: 'rollout-strategy',
     defaultPersona: 'campaign-director',
     endpoint: '/api/promo/generate',
     estimatedRuntimeSec: 18,
@@ -340,6 +350,7 @@ export const STUDIOS: StudioDef[] = [
     icon: Scissors,
     accentColor: '#FF4D00',
     outputKind: 'json',
+    modelId: 'hook-detection',
     endpoint: '/api/assets/hook',
     estimatedRuntimeSec: 10,
     pipeable: true,

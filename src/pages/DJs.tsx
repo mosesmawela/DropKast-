@@ -22,6 +22,8 @@ import { cn } from '../lib/utils';
 import ScrollReveal from '../components/animations/ScrollReveal';
 import AnimatedBeam from '../components/animations/AnimatedBeam';
 import { useNotify } from '../context/NotificationContext';
+import { useReleases } from '../context/ReleaseContext';
+import { useNavigate } from 'react-router-dom';
 
 const djNodes = [
   { id: 1, name: 'DJ Matrix', region: 'Ibiza / EU', followers: '120K', style: 'House', status: 'ACTIVE', rating: 4.9 },
@@ -33,6 +35,8 @@ const djNodes = [
 
 export default function DJs() {
   const { notify } = useNotify();
+  const { releases } = useReleases();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'BUILD' | 'SEND' | 'VAULT'>('BUILD');
   const [searchQuery, setSearchQuery] = useState('');
   const [regionFilter, setRegionFilter] = useState('ALL');
@@ -48,13 +52,22 @@ export default function DJs() {
     });
   }, [searchQuery, regionFilter]);
 
-  const handleUpload = () => {
-    setIsUploading(true);
-    notify('ai', 'PROCESSING_STEMS', 'Analyzing track segments for optimal DJ drop points...');
-    setTimeout(() => {
-      notify('success', 'PACK_COMPLETED', 'Clean, Instrumental, and 8-Bar Intro edits finalized.');
-      setIsUploading(false);
-    }, 3000);
+  const handleUpload = (fileType: string) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'audio/*,.wav,.mp3,.aiff,.flac';
+    input.onchange = (e: any) => {
+      const file = e.target?.files?.[0];
+      if (file) {
+        notify('ai', 'PROCESSING_STEMS', `Analyzing ${fileType}: ${file.name}...`);
+        setIsUploading(true);
+        setTimeout(() => {
+          notify('success', 'PACK_COMPLETED', `${fileType} finalized and added to DJ pack.`);
+          setIsUploading(false);
+        }, 2000);
+      }
+    };
+    input.click();
   };
 
   const toggleSelect = (id: number, name: string) => {
@@ -87,7 +100,7 @@ export default function DJs() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            releaseId: 'demo-release',
+            releaseId: releases[0]?.id || 'unknown',
             type: 'click',
             platform: 'DJ_TERMINAL',
             value: 1000
@@ -160,12 +173,12 @@ export default function DJs() {
                       </div>
                       <h3 className="text-xl font-bold font-mono italic uppercase text-white">{file.label}</h3>
                       <button 
-                        onClick={handleUpload}
-                        className="w-full py-3 border border-white/10 text-[10px] font-bold font-mono tracking-widest uppercase hover:bg-white hover:text-black transition-all flex items-center justify-center gap-2"
-                      >
-                        <Upload className="w-3 h-3" />
-                        {file.status === 'READY' ? 'Re-Upload' : 'Upload File'}
-                      </button>
+                         onClick={() => handleUpload(file.label)}
+                         className="w-full py-3 border border-white/10 text-[10px] font-bold font-mono tracking-widest uppercase hover:bg-white hover:text-black transition-all flex items-center justify-center gap-2"
+                       >
+                         <Upload className="w-3 h-3" />
+                         {file.status === 'READY' ? 'Re-Upload' : 'Upload File'}
+                       </button>
                    </div>
                  ))}
                </div>
@@ -182,13 +195,13 @@ export default function DJs() {
                     </p>
                     <AnimatedBeam containerClassName="w-fit">
                       <button 
-                        onClick={handleUpload}
-                        disabled={isUploading}
-                        className="primary-button h-16 px-12 flex items-center gap-3"
-                      >
-                        {isUploading ? <Cpu className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5" />}
-                        {isUploading ? 'Synthesizing...' : 'Build Full DJ Pack'}
-                      </button>
+                         onClick={() => handleUpload('Full Pack')}
+                         disabled={isUploading}
+                         className="primary-button h-16 px-12 flex items-center gap-3"
+                       >
+                         {isUploading ? <Cpu className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5" />}
+                         {isUploading ? 'Synthesizing...' : 'Build Full DJ Pack'}
+                       </button>
                     </AnimatedBeam>
                   </div>
                </div>
@@ -296,7 +309,7 @@ export default function DJs() {
                                 selectedDJs.includes(dj.id) ? "bg-primary text-white" : "border border-white/10 text-white hover:bg-white hover:text-black"
                               )}
                             >
-                              {selectedDJs.includes(dj.id) ? 'DESIGIN_SIGNAL' : 'QUEUE_SIGNAL'}
+                              {selectedDJs.includes(dj.id) ? 'DESIGNATE_SIGNAL' : 'QUEUE_SIGNAL'}
                             </button>
                          </div>
                       </div>
@@ -311,18 +324,18 @@ export default function DJs() {
                   { title: 'Trending Pool', desc: 'See which global DJ sets are currently playing your previous packs.', icon: TrendingUp },
                 ].map((cta, i) => (
                   <button 
-                    key={i}
-                    onClick={() => notify('info', 'UNAVAILABLE', 'Node maintenance in progress. Access granted in 12h.')}
-                    className="p-10 border border-white/5 bg-white/[0.01] hover:border-primary/40 transition-all text-left flex items-start gap-8 group"
-                  >
-                    <div className="w-14 h-14 border border-white/10 flex items-center justify-center bg-white/5 group-hover:bg-primary/10 transition-colors">
-                      <cta.icon className="w-6 h-6 text-primary" />
-                    </div>
-                    <div className="space-y-2">
-                       <h4 className="text-2xl font-black italic font-mono uppercase tracking-tight text-white">{cta.title}</h4>
-                       <p className="text-sm text-white/30 italic font-medium leading-relaxed max-w-sm">{cta.desc}</p>
-                    </div>
-                  </button>
+                     key={i}
+                     onClick={() => navigate(cta.title === 'DJ Early Access' ? '/settings' : '/analytics')}
+                     className="p-10 border border-white/5 bg-white/[0.01] hover:border-primary/40 transition-all text-left flex items-start gap-8 group"
+                   >
+                     <div className="w-14 h-14 border border-white/10 flex items-center justify-center bg-white/5 group-hover:bg-primary/10 transition-colors">
+                       <cta.icon className="w-6 h-6 text-primary" />
+                     </div>
+                     <div className="space-y-2">
+                        <h4 className="text-2xl font-black italic font-mono uppercase tracking-tight text-white">{cta.title}</h4>
+                        <p className="text-sm text-white/30 italic font-medium leading-relaxed max-w-sm">{cta.desc}</p>
+                     </div>
+                   </button>
                 ))}
              </div>
           </motion.div>

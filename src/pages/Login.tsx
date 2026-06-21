@@ -61,16 +61,29 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [form, setForm] = useState({ email: '', password: '' });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const selectedPortal = PORTALS.find((p) => p.id === role) ?? PORTALS[0];
 
+  const validate = () => {
+    const errs: Record<string, string> = {};
+    if (!form.email) errs.email = 'Email is required';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = 'Invalid email format';
+    if (!form.password) errs.password = 'Password is required';
+    else if (form.password.length < 6) errs.password = 'Password must be at least 6 characters';
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validate()) return;
     setIsLoading(true);
     try {
       await login(form.email, form.email.split('@')[0]);
       navigate(selectedPortal.landing);
     } catch (error) {
+      setErrors({ form: 'Sign in failed. Please check your credentials.' });
       console.error(error);
     } finally {
       setIsLoading(false);
@@ -239,11 +252,17 @@ export default function Login() {
                       type="email"
                       required
                       value={form.email}
-                      onChange={(e) => setForm({ ...form, email: e.target.value })}
+                      onChange={(e) => { setForm({ ...form, email: e.target.value }); setErrors(prev => ({ ...prev, email: '' })); }}
                       placeholder="you@email.com"
-                      className="w-full bg-transparent border-b border-white/10 py-5 pl-8 pr-4 text-white placeholder:text-white/5 focus:outline-none focus:border-primary transition-all text-sm font-black uppercase italic"
+                      className={cn(
+                        "w-full bg-transparent border-b py-5 pl-8 pr-4 text-white placeholder:text-white/5 focus:outline-none transition-all text-sm font-black uppercase italic",
+                        errors.email ? "border-red-500/50 focus:border-red-500" : "border-white/10 focus:border-primary"
+                      )}
                     />
                   </div>
+                  {errors.email && (
+                    <span className="text-[9px] font-black text-red-400 uppercase tracking-widest font-mono italic">{errors.email}</span>
+                  )}
                 </div>
 
                 <div className="space-y-3">
@@ -258,9 +277,12 @@ export default function Login() {
                       type={showPassword ? 'text' : 'password'}
                       required
                       value={form.password}
-                      onChange={(e) => setForm({ ...form, password: e.target.value })}
+                      onChange={(e) => { setForm({ ...form, password: e.target.value }); setErrors(prev => ({ ...prev, password: '' })); }}
                       placeholder="********"
-                      className="w-full bg-transparent border-b border-white/10 py-5 pl-8 pr-14 text-white placeholder:text-white/5 focus:outline-none focus:border-primary transition-all text-sm font-black italic"
+                      className={cn(
+                        "w-full bg-transparent border-b py-5 pl-8 pr-14 text-white placeholder:text-white/5 focus:outline-none transition-all text-sm font-black italic",
+                        errors.password ? "border-red-500/50 focus:border-red-500" : "border-white/10 focus:border-primary"
+                      )}
                     />
                     <button
                       type="button"
@@ -270,8 +292,16 @@ export default function Login() {
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
+                  {errors.password && (
+                    <span className="text-[9px] font-black text-red-400 uppercase tracking-widest font-mono italic">{errors.password}</span>
+                  )}
                 </div>
 
+                {errors.form && (
+                  <div className="p-4 bg-red-900/20 border border-red-500/30">
+                    <span className="text-[10px] font-black text-red-400 uppercase tracking-widest font-mono italic">{errors.form}</span>
+                  </div>
+                )}
                 <button
                   disabled={isLoading}
                   className="primary-button w-full h-16 bg-white text-black hover:bg-primary hover:text-white active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-between px-8"

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Share2, 
   CheckCircle2, 
@@ -12,17 +12,34 @@ import {
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { cn } from '../../../lib/utils';
-import { useNotify } from '../../../context/NotificationContext';
+import { toast } from 'sonner';
 
 export default function InfluencerSocials() {
-  const { notify } = useNotify();
-
-  const platforms = [
+  const [platforms, setPlatforms] = useState([
     { id: 'tiktok', name: 'TikTok', icon: Video, connected: true, stats: '2.4M reach', color: 'text-primary' },
     { id: 'ig', name: 'Instagram', icon: Instagram, connected: true, stats: '840K reach', color: 'text-pink-500' },
     { id: 'tw', name: 'Twitter / X', icon: Hexagon, connected: false, stats: 'disconnected', color: 'text-sky-400' },
     { id: 'li', name: 'LinkedIn', icon: Linkedin, connected: false, stats: 'disconnected', color: 'text-blue-600' },
-  ];
+  ]);
+
+  const [loadingId, setLoadingId] = useState<string | null>(null);
+
+  const handleConnect = async (platformId: string) => {
+    setLoadingId(platformId);
+    await new Promise(r => setTimeout(r, 2000));
+    setPlatforms(prev => prev.map(p =>
+      p.id === platformId ? { ...p, connected: true, stats: 'Awaiting sync' } : p
+    ));
+    setLoadingId(null);
+    toast.success(`Connected to ${platforms.find(p => p.id === platformId)?.name}`);
+  };
+
+  const handleRefresh = async (platformId: string) => {
+    setLoadingId(platformId);
+    await new Promise(r => setTimeout(r, 1500));
+    setLoadingId(null);
+    toast.success('Connection refreshed');
+  };
 
   return (
     <div className="space-y-12 pb-20 uppercase tracking-[0.05em] font-sans">
@@ -75,21 +92,33 @@ export default function InfluencerSocials() {
 
             <div className="space-y-4">
                {p.connected ? (
-                 <button 
-                  onClick={() => notify('success', 'NODE_RECALIBRATED', 'Connection parameters refreshed.')}
-                  className="h-14 w-full bg-white/5 border border-white/5 hover:border-white transition-all text-[10px] font-black text-white/40 hover:text-white font-mono uppercase italic tracking-widest flex items-center justify-center gap-4"
-                 >
-                   <span>REFRESH_CONNECTION</span>
-                   <Zap className="w-3 h-3" />
-                 </button>
+                  <button 
+                   onClick={() => handleRefresh(p.id)}
+                   disabled={loadingId === p.id}
+                   className={cn(
+                     "h-14 w-full border transition-all text-[10px] font-black font-mono uppercase italic tracking-widest flex items-center justify-center gap-4",
+                     loadingId === p.id
+                       ? "bg-white/5 border-white/5 text-white/20 cursor-not-allowed"
+                       : "bg-white/5 border-white/5 hover:border-white text-white/40 hover:text-white"
+                   )}
+                  >
+                    <span>{loadingId === p.id ? 'REFRESHING...' : 'REFRESH_CONNECTION'}</span>
+                    <Zap className={cn("w-3 h-3", loadingId === p.id && "animate-spin")} />
+                  </button>
                ) : (
-                 <button 
-                  onClick={() => notify('success', 'SYNC_REQUESTED', `Connecting to ${p.name} API mesh...`)}
-                  className="h-14 w-full bg-white text-black hover:bg-primary hover:text-white transition-all text-[10px] font-black font-mono uppercase italic tracking-widest flex items-center justify-center gap-4"
-                 >
-                   <span>INITIALIZE_AUTH_FLOW</span>
-                   <Plus className="w-4 h-4" />
-                 </button>
+                  <button 
+                   onClick={() => handleConnect(p.id)}
+                   disabled={loadingId === p.id}
+                   className={cn(
+                     "h-14 w-full transition-all text-[10px] font-black font-mono uppercase italic tracking-widest flex items-center justify-center gap-4",
+                     loadingId === p.id
+                       ? "bg-white/30 text-black/50 cursor-not-allowed"
+                       : "bg-white text-black hover:bg-primary hover:text-white"
+                   )}
+                  >
+                    <span>{loadingId === p.id ? 'CONNECTING...' : 'INITIALIZE_AUTH_FLOW'}</span>
+                    <Plus className={cn("w-4 h-4", loadingId === p.id && "animate-spin")} />
+                  </button>
                )}
             </div>
           </div>

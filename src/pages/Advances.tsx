@@ -23,6 +23,7 @@ import {
   X as XIcon,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { UpgradeBanner, useTierGate } from '../components/UpgradePrompt';
 import { cn } from '../lib/utils';
 import {
   offerFromLedger,
@@ -56,6 +57,8 @@ export default function Advances() {
   const [offer, setOffer] = useState<AdvanceOffer | null>(null);
   const [accepted, setAccepted] = useState<AcceptedAdvance[]>(() => listAccepted());
   const [confirming, setConfirming] = useState(false);
+  const gate = useTierGate();
+  const advancesUnlocked = gate.has('advances');
 
   useEffect(() => {
     setOffer(offerFromLedger(ledger));
@@ -63,6 +66,10 @@ export default function Advances() {
 
   const handleAccept = () => {
     if (!offer || !offer.eligible) return;
+    if (!advancesUnlocked) {
+      toast.error('Advances are an Indie+ feature', { description: 'Upgrade to accept this offer.' });
+      return;
+    }
     const adv = recordAccept(offer);
     setAccepted([adv, ...accepted]);
     setConfirming(false);
@@ -82,6 +89,14 @@ export default function Advances() {
           <h1 className="text-6xl md:text-7xl font-black text-white italic uppercase tracking-tighter leading-none">
             Cash up <span className="text-primary">front</span>
           </h1>
+          {!advancesUnlocked && (
+            <UpgradeBanner
+              feature="Royalty Advances"
+              requiredTier="indie"
+              description="Advances are bundled into Indie tier and above. Recoup from forward statements, keep your masters."
+              className="mt-3"
+            />
+          )}
           <p className="text-white/40 text-base font-medium leading-relaxed max-w-2xl">
             Get paid future royalties today. We auto-calculate an offer based on your earnings —
             no application, no rights handover, no minimum credit score. Recoup from forward

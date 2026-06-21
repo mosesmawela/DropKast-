@@ -25,6 +25,7 @@ import ScrollReveal from '../components/animations/ScrollReveal';
 import AnimatedBeam from '../components/animations/AnimatedBeam';
 import { cn } from '../lib/utils';
 import { useNotify } from '../context/NotificationContext';
+import { useReleases } from '../context/ReleaseContext';
 
 const SEED_INFLUENCERS = [
   { id: '1', name: 'Alex Wave', platform: 'TikTok', reach: '1.2M', genre: 'Dark Pop', match: '98%', status: 'READY', avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400' },
@@ -37,6 +38,7 @@ const SEED_INFLUENCERS = [
 
 export default function Influencers() {
   const { notify } = useNotify();
+  const { releases } = useReleases();
   const [influencers, setInfluencers] = useState<any[]>(SEED_INFLUENCERS);
   const [selectedInfluencers, setSelectedInfluencers] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -44,6 +46,7 @@ export default function Influencers() {
   const [isSending, setIsSending] = useState(false);
   const [viewMode, setViewMode] = useState<'GRID' | 'LIST'>('GRID');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0); // Added for swipe view
   const [newInfluencer, setNewInfluencer] = useState({
     name: '',
@@ -117,16 +120,13 @@ export default function Influencers() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           influencerIds: selectedInfluencers,
-          timestamp: new Date()
+          timestamp: new Date(),
+          campaignId: localStorage.getItem('dropkast_active_campaign') || 'direct'
         })
       });
-
-      if (!response.ok) throw new Error('Outreach failed');
-
-      notify('success', 'TRANSMISSION_COMPLETE', 'Influencer briefs have been successfully deployed.');
-      setSelectedInfluencers([]);
     } catch (err) {
-      notify('error', 'SIGNAL_INTERRUPTED', 'Failed to transmit outreach packets.');
+      console.error('Outreach failed:', err);
+      notify('error', 'OUTREACH_FAILED', 'Failed to send outreach. Please try again.');
     } finally {
       setIsSending(false);
     }
@@ -142,7 +142,7 @@ export default function Influencers() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          releaseId: 'demo-release',
+          releaseId: releases[0]?.id || 'demo-release',
           type: 'influencer_post',
           platform: currentInf.platform,
           value: parseInt(currentInf.reach?.replace(/[^0-9]/g, '') || '0') || 50000 
@@ -339,11 +339,28 @@ export default function Influencers() {
                  </div>
                </div>
                <button 
-                 onClick={() => notify('info', 'FILTERS_ADVANCED', 'Advanced sector scanning protocols initialized.')}
-                 className="p-2 hover:bg-white/5 transition-colors"
-               >
-                 <Filter className="w-4 h-4 text-white/20" />
-               </button>
+                  onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                  className="p-2 hover:bg-white/5 transition-colors"
+                >
+                  <Filter className="w-4 h-4 text-white/20" />
+                </button>
+                {showAdvancedFilters && (
+                  <div className="absolute right-0 top-full mt-2 w-72 bg-black border border-white/10 p-6 z-50 shadow-2xl">
+                    <div className="text-[10px] font-black font-mono tracking-widest uppercase text-white/20 italic mb-4">Advanced Filters</div>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <label className="text-[9px] font-mono uppercase tracking-widest text-white/30">Min. Reach</label>
+                        <input type="text" placeholder="e.g. 100K" className="w-full bg-white/5 border border-white/10 p-2 text-xs text-white font-mono outline-none focus:border-primary" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[9px] font-mono uppercase tracking-widest text-white/30">Platform</label>
+                        <select className="w-full bg-white/5 border border-white/10 p-2 text-xs text-white font-mono outline-none focus:border-primary">
+                          <option>All</option><option>TikTok</option><option>Instagram</option><option>YouTube</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                )}
              </div>
            )}
 

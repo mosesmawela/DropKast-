@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '../lib/utils';
+import { useTierGate, UpgradeModal } from '../components/UpgradePrompt';
 
 const ROSTER_KEY = 'dropkast.label.roster';
 const ACTIVE_KEY = 'dropkast.label.activeArtistId';
@@ -95,6 +96,8 @@ export default function Roster() {
   const [roster, setRoster] = useState<RosterArtist[]>(() => loadRoster());
   const [activeId, setActiveId] = useState<string>(() => localStorage.getItem(ACTIVE_KEY) ?? '');
   const [search, setSearch] = useState('');
+  const gate = useTierGate();
+  const [upgradeBlocked, setUpgradeBlocked] = useState<string | null>(null);
   const [showAdd, setShowAdd] = useState(false);
   const [newArtist, setNewArtist] = useState({ name: '', email: '', genre: '' });
 
@@ -133,6 +136,12 @@ export default function Roster() {
   const addArtist = () => {
     if (!newArtist.name.trim()) {
       toast.error('Artist name is required');
+      return;
+    }
+    // Tier cap check — Free=1 artist, Indie=1, Pro=3, Label=10+
+    const capCheck = gate.check('artist', roster.length);
+    if (!capCheck.allowed) {
+      setUpgradeBlocked(capCheck.reason || 'Seat cap reached.');
       return;
     }
     const a: RosterArtist = {
@@ -413,6 +422,14 @@ export default function Roster() {
           </motion.div>
         </div>
       )}
+
+      <UpgradeModal
+        open={!!upgradeBlocked}
+        feature="More artist seats"
+        requiredTier="label"
+        reason={upgradeBlocked || undefined}
+        onClose={() => setUpgradeBlocked(null)}
+      />
     </div>
   );
 }

@@ -1,14 +1,12 @@
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   TrendingUp, 
-  Disc,
   Wallet,
   Globe2,
   Terminal,
-  Activity,
   Sparkles,
   Zap,
-  ChevronRight,
   ShieldCheck,
   Cpu,
   BarChart3,
@@ -22,36 +20,19 @@ import {
   Star,
   Link
 } from 'lucide-react';
-import { motion } from 'motion/react';
 import { cn } from '../lib/utils';
 import ClaimArtistProfile from '../components/ClaimArtistProfile';
-import { 
-  Tooltip, 
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-  CartesianGrid,
-  XAxis,
-  YAxis
-} from 'recharts';
 import { useAuth } from '../context/AuthContext';
 import { useReleases } from '../context/ReleaseContext';
 import { useCampaigns } from '../context/CampaignContext';
 import { useNotify } from '../context/NotificationContext';
 import { useTheme } from '../context/ThemeContext';
+import { StatSkeleton } from '../components/Skeleton';
 import ScrollReveal from '../components/animations/ScrollReveal';
 import AnimatedBeam from '../components/animations/AnimatedBeam';
 import CircularPulse from '../components/animations/CircularPulse';
 
-const mockChartData = [
-  { name: '01', value: 4000 },
-  { name: '02', value: 3000 },
-  { name: '03', value: 5000 },
-  { name: '04', value: 2780 },
-  { name: '05', value: 1890 },
-  { name: '06', value: 10390 },
-  { name: '07', value: 8490 },
-];
+const DashboardChart = lazy(() => import('../components/DashboardChart'));
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -60,8 +41,26 @@ export default function Dashboard() {
   const { campaigns } = useCampaigns();
   const { notify } = useNotify();
   const { role } = useTheme();
+  const [overview, setOverview] = useState<{ counts: any; revenue: any } | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [signalFeed, setSignalFeed] = useState([
+    { msg: 'Ad Set ADS-001 rebalancing budget to IG Stories node.', time: '2m ago', icon: Cpu },
+    { msg: 'Luna Beats accepted DJ Pack transmission.', time: '14m ago', icon: Radio },
+    { msg: 'A&R Review AI-204 protocol completed.', time: '1h ago', icon: ShieldCheck },
+  ]);
+
+  useEffect(() => {
+    fetch('/api/admin/overview')
+      .then(r => r.json())
+      .then(d => { setOverview(d); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, []);
 
   const activeCampaignsCount = campaigns.filter(c => c.status === 'ACTIVE').length;
+  const preReleaseCount = releases.filter(r => !['live', 'released', 'delivering', 'taken_down'].includes((r.status || '').toLowerCase())).length;
+  const releaseCount = overview?.counts?.releases ?? releases.length;
+  const influencerCount = overview?.counts?.influencers ?? 0;
+  const revenueCents = overview?.revenue?.totalRoyaltyLineCents ?? 0;
 
   const handleQuickCommand = (proto: string) => {
     notify('ai', 'PROTO_ACTIVE', `Initializing ${proto} emergency directive...`);
@@ -76,8 +75,8 @@ export default function Dashboard() {
           metrics: [
             { label: 'Total Engagement', value: '450K', trend: '+8.2% Velo', color: 'text-primary', icon: Users },
             { label: 'Pending Missions', value: '03', trend: 'High Priority', color: 'text-emerald-400', icon: Target },
-            { label: 'Active Campaigns', value: '12', trend: 'Protocols Ready', color: 'text-white', icon: Layers },
-            { label: 'Est. Earnings', value: '$2.4K', trend: 'Global Reach', color: 'text-white/40', icon: Wallet },
+            { label: 'Active Campaigns', value: activeCampaignsCount.toString().padStart(2, '0'), trend: 'Protocols Ready', color: 'text-white', icon: Layers },
+            { label: 'Est. Earnings', value: `$${(revenueCents / 100).toFixed(1)}K`, trend: 'Global Reach', color: 'text-white/40', icon: Wallet },
           ],
           actions: [
             { title: 'Find Missions', icon: Target, path: '/influencer/missions', desc: 'Browse and accept new campaign directives.' },
@@ -112,10 +111,10 @@ export default function Dashboard() {
           title: 'DROPKAST_CORE',
           greeting: `HELLO, ${user?.artistName?.split(' ')[0] || 'ARTIST'}`,
           metrics: [
-            { label: 'Total Catalog Streams', value: '12.5M', trend: '+12.5% Velo', color: 'text-primary', icon: TrendingUp },
-            { label: 'Pre-Release Signals', value: '04', trend: 'Activated', color: 'text-emerald-400', icon: Zap },
+            { label: 'Total Releases', value: String(releaseCount), trend: 'Catalog', color: 'text-primary', icon: TrendingUp },
+            { label: 'Pre-Release Signals', value: String(preReleaseCount).padStart(2, '0'), trend: preReleaseCount > 0 ? 'Activated' : 'None pending', color: 'text-emerald-400', icon: Zap },
             { label: 'Active Campaigns', value: activeCampaignsCount.toString().padStart(2, '0'), trend: 'Protocols Ready', color: 'text-white', icon: Layers },
-            { label: 'Node Network', value: '840+', trend: 'Global Reach', color: 'text-white/40', icon: Globe2 },
+            { label: 'Node Network', value: `${influencerCount || 0}+`, trend: 'Global Reach', color: 'text-white/40', icon: Globe2 },
           ],
           actions: [
             { title: 'Pre-Release Plan', icon: Zap, path: '/pre-release', desc: 'Build hype before drop day with hook teasers and creator briefs.' },
@@ -133,7 +132,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-12 max-w-7xl mx-auto py-8">
-      <ClaimArtistProfile artistName={user?.label || 'your project'} />
+      <ClaimArtistProfile artistName={user?.artistName || 'your project'} />
       <ScrollReveal direction="down" variant="blur">
         <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-[var(--border-main)] pb-10 relative">
           <div className="flex items-start gap-8">
@@ -201,11 +200,33 @@ export default function Dashboard() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 border border-[var(--border-main)] bg-[var(--card-bg)]">
-        {config.metrics.map((stat, i) => (
+        {loading ? (
+          Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="p-10 border-r last:border-r-0 border-[var(--border-main)]">
+              <StatSkeleton />
+            </div>
+          ))
+        ) : (
+          config.metrics.map((stat, i) => (
           <div key={i}>
             <ScrollReveal delay={i * 0.1} direction="up" variant="blur">
               <div 
-                onClick={() => notify('info', 'SURVEILLANCE_NODE', `${stat.label} synchronized.`)}
+                onClick={() => {
+    const routeMap: Record<string, string> = {
+      'Total Releases': '/releases',
+      'Pre-Release Signals': '/pre-release',
+      'Active Campaigns': '/campaigns',
+      'Node Network': '/influencers',
+      'Total Engagement': '/analytics',
+      'Pending Missions': '/influencer/missions',
+      'Est. Earnings': '/earnings',
+      'Pack Downloads': '/analytics',
+      'Direct Feedbacks': '/dj/feedback',
+      'Promo Loops': '/dj/packs',
+      'Elite Rank': '/analytics',
+    };
+    navigate(routeMap[stat.label] || '/analytics');
+  }}
                 className="p-10 relative group border-r last:border-r-0 border-[var(--border-main)] hover:bg-[var(--text-main)]/[0.04] transition-all hover-parallax cursor-pointer h-full"
               >
                 <div className="text-[var(--text-main)]/20 text-[10px] font-bold uppercase tracking-[0.2em] mb-8 font-mono flex items-center gap-2">
@@ -220,49 +241,15 @@ export default function Dashboard() {
               </div>
             </ScrollReveal>
           </div>
-        ))}
+          ))
+        )}
       </div>
 
       <div className="grid grid-cols-12 gap-8">
-        <div className="col-span-12 lg:col-span-8 space-y-8">
-           {/* Chart Node */}
-           <ScrollReveal direction="up" delay={0.4}>
-              <div className="manifest-card p-12 relative overflow-hidden group">
-                 <div className="flex items-start justify-between mb-12">
-                   <div className="space-y-4">
-                      <div className="flex items-center gap-3 text-primary">
-                        <Activity className="w-4 h-4 animate-pulse" />
-                        <span className="text-[11px] font-black tracking-[0.3em] font-mono uppercase italic">{config.chartLabel}</span>
-                      </div>
-                      <p className="text-xs text-white/40 italic font-medium leading-relaxed max-w-sm">Global ingestion analysis across DSP nodes.</p>
-                   </div>
-                   <div className="text-right">
-                      <div className="text-4xl font-black text-white italic font-mono tracking-tighter uppercase leading-none">+2.4kh</div>
-                      <div className="text-[9px] font-bold text-white/20 uppercase tracking-[0.4em] font-mono mt-2 italic">{config.chartUnit}</div>
-                   </div>
-                 </div>
-                 <div className="h-[300px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={mockChartData}>
-                        <defs>
-                          <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#FF4D00" stopOpacity={0.2}/>
-                            <stop offset="95%" stopColor="#FF4D00" stopOpacity={0}/>
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ffffff08" />
-                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#ffffff10', fontSize: 10, fontStyle: 'italic' }} />
-                        <YAxis hide />
-                        <Tooltip 
-                          contentStyle={{ backgroundColor: '#000', border: '1px solid #ffffff10', fontSize: '11px', fontFamily: 'monospace' }}
-                          itemStyle={{ color: '#FF4D00' }}
-                        />
-                        <Area type="monotone" dataKey="value" stroke="#FF4D00" strokeWidth={3} fill="url(#colorValue)" />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                 </div>
-              </div>
-           </ScrollReveal>
+       <div className="col-span-12 lg:col-span-8 space-y-8">
+            <Suspense fallback={<div className="manifest-card p-12 h-[400px] flex items-center justify-center"><div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" /></div>}>
+              <DashboardChart label={config.chartLabel} unit={config.chartUnit} />
+            </Suspense>
 
            {/* Quick Actions / Modules */}
            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -293,11 +280,7 @@ export default function Dashboard() {
                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
               </div>
               <div className="space-y-6">
-                 {[
-                   { msg: 'Ad Set ADS-001 rebalancing budget to IG Stories node.', time: '2m ago', icon: Cpu },
-                   { msg: 'Luna Beats accepted DJ Pack transmission.', time: '14m ago', icon: Radio },
-                   { msg: 'A&R Review AI-204 protocol completed.', time: '1h ago', icon: ShieldCheck },
-                 ].map((log, i) => (
+                  {signalFeed.map((log, i) => (
                    <div key={i} className="flex gap-4 items-start group">
                       <div className="w-8 h-8 flex-shrink-0 border border-white/5 flex items-center justify-center bg-white/5 text-primary">
                         <log.icon className="w-3.5 h-3.5" />
@@ -310,7 +293,7 @@ export default function Dashboard() {
                  ))}
               </div>
               <button 
-                onClick={() => handleQuickCommand('LOG_WIPE')}
+                onClick={() => { setSignalFeed([]); notify('info', 'BUFFER_CLEARED', 'Signal buffer flushed.'); }}
                 className="w-full py-4 border border-white/5 text-[10px] font-black font-mono tracking-widest text-white/20 hover:text-white transition-all uppercase"
               >
                 Clear Signal Buffer
@@ -327,9 +310,9 @@ export default function Dashboard() {
                  <p className="text-xs text-white/40 italic font-medium leading-relaxed font-sans mb-8">
                    Metadata sync required for 'Night Drive' before EU jurisdiction rollout in 4h.
                  </p>
-                 <button 
-                   onClick={() => handleQuickCommand('METADATA_SYNC')}
-                   className="primary-button w-full h-14 flex items-center justify-center gap-3 bg-primary text-white border-none"
+                  <button 
+                    onClick={() => navigate('/releases')}
+                    className="primary-button w-full h-14 flex items-center justify-center gap-3 bg-primary text-white border-none"
                  >
                    <ArrowUpRight className="w-4 h-4" />
                    SYNC_PROTCOLS

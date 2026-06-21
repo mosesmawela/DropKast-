@@ -224,10 +224,10 @@ export default function Sidebar({ open = false, onClose }: SidebarProps) {
         </Link>
         <button
           onClick={onClose}
-          className="md:hidden p-2 -mr-2 text-white/40 hover:text-white transition-colors"
+          className="md:hidden p-4 -mr-4 text-white/40 hover:text-white transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
           aria-label="Close menu"
         >
-          <X className="w-4 h-4" />
+          <X className="w-5 h-5" />
         </button>
       </div>
 

@@ -15,7 +15,7 @@ import {
   Sparkles,
   Trash2
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import ScrollReveal from '../components/animations/ScrollReveal';
 import AnimatedBeam from '../components/animations/AnimatedBeam';
@@ -25,6 +25,7 @@ import { useNotify } from '../context/NotificationContext';
 export default function Campaigns() {
   const { campaigns, deleteCampaign } = useCampaigns();
   const { notify } = useNotify();
+  const navigate = useNavigate();
   const [filter, setFilter] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -116,11 +117,11 @@ export default function Campaigns() {
           </div>
         </div>
         <button 
-          onClick={() => notify('info', 'FILTERS_ACTIVE', 'Advanced filtering protocols engaged.')}
-          className="flex items-center gap-2 text-[10px] font-bold font-mono tracking-widest text-white/40 hover:text-white transition-colors"
+          onClick={() => navigate('/campaigns/new')}
+          className="flex items-center gap-2 text-[10px] font-bold font-mono tracking-widest text-white/40 hover:text-primary transition-colors"
         >
           <Filter className="w-3.5 h-3.5" />
-          ADVANCED_FILTERS
+          NEW_CAMPAIGN
         </button>
       </div>
     </div>

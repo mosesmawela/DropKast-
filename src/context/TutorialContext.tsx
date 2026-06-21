@@ -256,10 +256,21 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
     if (!enabled) return;
     if (localStorage.getItem(SEEN_KEY) === 'true') return;
     if (active) return;
-    setStep(0);
-    // Small delay so React commits + layout settles before targeting elements.
-    setTimeout(() => setActive(true), 600);
-  }, [enabled, active]);
+    try {
+      // Verify at least the first step target exists before starting
+      const firstTarget = steps[0]?.target;
+      if (firstTarget && !firstTarget.startsWith('data-tour')) {
+        // CSS selector - check if element exists
+        const el = document.querySelector(firstTarget);
+        if (!el) return; // Don't start if target doesn't exist
+      }
+      setStep(0);
+      // Small delay so React commits + layout settles before targeting elements.
+      setTimeout(() => setActive(true), 600);
+    } catch {
+      // Silently fail if tutorial can't start
+    }
+  }, [enabled, active, steps]);
 
   return (
     <TutorialContext.Provider value={{ active, step, steps, start, next, prev, skip, enabled, setEnabled, maybeAutoStart }}>

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Bell, X, CheckCheck, Trash2, CheckCircle2, AlertCircle, Info, Zap } from 'lucide-react';
 import { useNotify } from '../context/NotificationContext';
+import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '../lib/utils';
 
@@ -21,7 +22,8 @@ function formatTime(ts: number): string {
 }
 
 export default function NotificationsDropdown() {
-  const { inbox, unreadCount, markAllRead, markRead, clearAll } = useNotify();
+  const { inbox, unreadCount, markAllRead, markRead, clearAll, refreshInbox } = useNotify();
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -34,6 +36,13 @@ export default function NotificationsDropdown() {
     document.addEventListener('mousedown', handle);
     return () => document.removeEventListener('mousedown', handle);
   }, [open]);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    refreshInbox(user.id); // initial fetch
+    const poll = setInterval(() => refreshInbox(user.id), 30000);
+    return () => clearInterval(poll);
+  }, [user?.id, refreshInbox]);
 
   return (
     <div ref={ref} className="relative">

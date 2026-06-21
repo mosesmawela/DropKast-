@@ -90,18 +90,28 @@ export default function AIAssistant() {
     toggleAutoOptimizeAds,
   } = useAI();
 
-  const [history, setHistory] = useState<Message[]>([
-    {
-      role: 'ai',
+  const [history, setHistory] = useState<Message[]>(() => {
+    try {
+      const saved = localStorage.getItem('dropkast_ai_history');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return [{
+      role: 'ai' as const,
       text: "Hey — I'm your DropKast strategist. I can see your releases, analytics, campaigns, and creator roster in real time. Try asking: \"how is my latest release doing?\", \"what should I post about [your song] this week?\", or \"who should I send my new track to?\"",
-    },
-  ]);
+    }];
+  });
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
+  }, [history]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('dropkast_ai_history', JSON.stringify(history.slice(-50)));
+    } catch {}
   }, [history]);
 
   const handleSend = async () => {
@@ -226,7 +236,7 @@ export default function AIAssistant() {
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="fixed sm:relative bottom-20 right-4 left-4 sm:bottom-auto sm:right-0 sm:left-auto sm:w-96 h-[min(560px,calc(100vh-7rem))] mb-4 sm:mb-6 bg-black border border-white/10 shadow-[0_20px_80px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden"
+            className="fixed sm:relative bottom-20 right-4 left-4 sm:bottom-auto sm:right-0 sm:left-auto sm:w-96 h-[min(560px,calc(100vh-7rem))] mb-4 sm:mb-6 bg-black border border-white/10 shadow-[0_20px_80px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden pb-[env(safe-area-inset-bottom,0px)]"
           >
             {/* Header */}
             <div className="p-4 border-b border-[var(--border-main)] flex items-center justify-between bg-[var(--card-bg)]">
@@ -254,9 +264,24 @@ export default function AIAssistant() {
                   {activeTab === 'CHAT' ? 'Strategist' : 'Settings'}
                 </span>
               </div>
-              <button onClick={() => setIsOpen(false)} className="text-white/20 hover:text-white transition-colors">
-                <X className="w-4 h-4" />
-              </button>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => {
+                    setHistory([{
+                      role: 'ai' as const,
+                      text: "Conversation cleared. How can I help?",
+                    }]);
+                    localStorage.removeItem('dropkast_ai_history');
+                  }}
+                  className="text-white/20 hover:text-white transition-colors p-1"
+                  title="Clear conversation"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                </button>
+                <button onClick={() => setIsOpen(false)} className="text-white/20 hover:text-white transition-colors">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
             </div>
 
             {/* Body */}
@@ -301,6 +326,17 @@ export default function AIAssistant() {
                           {msg.streaming && (
                             <span className="inline-block ml-1 w-1.5 h-3 bg-primary animate-pulse align-middle" />
                           )}
+                        {msg.role === 'ai' && !msg.streaming && msg.text && (
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(msg.text);
+                              toast.success('Copied to clipboard');
+                            }}
+                            className="text-[8px] font-mono font-black uppercase tracking-widest text-white/20 hover:text-primary transition-colors mt-1"
+                          >
+                            Copy
+                          </button>
+                        )}
                         </div>
                       </div>
                     ))}
@@ -355,9 +391,9 @@ export default function AIAssistant() {
 
             {/* Input */}
             {activeTab === 'CHAT' && (
-              <div className="p-3 border-t border-[var(--border-main)] bg-[var(--card-bg)] space-y-2">
+              <div className="p-4 sm:p-3 border-t border-[var(--border-main)] bg-[var(--card-bg)] space-y-3 sm:space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[9px] font-mono font-black uppercase tracking-widest text-white/30 italic">Model</span>
+                  <span className="text-[10px] sm:text-[9px] font-mono font-black uppercase tracking-widest text-white/30 italic">Model</span>
                   <ModelPicker recommendation={RECOMMENDATIONS.chat} value={chosenModel} onChange={setChosenModel} />
                 </div>
                 <div className="relative">
@@ -367,7 +403,7 @@ export default function AIAssistant() {
                     onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                     disabled={isSending}
                     placeholder={isSending ? 'Thinking...' : 'Ask about your releases, analytics, campaigns...'}
-                    className="w-full bg-[var(--bg-main)] border border-[var(--border-main)] h-12 px-4 pr-12 text-[10px] font-medium text-white placeholder:text-white/20 focus:border-primary outline-none transition-all font-mono disabled:opacity-50"
+                    className="w-full bg-[var(--bg-main)] border border-[var(--border-main)] h-14 sm:h-12 px-4 sm:px-4 pr-14 sm:pr-12 text-xs sm:text-[10px] font-medium text-white placeholder:text-white/20 focus:border-primary outline-none transition-all font-mono disabled:opacity-50"
                   />
                   <button
                     onClick={handleSend}

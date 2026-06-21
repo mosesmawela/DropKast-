@@ -31,13 +31,28 @@ import {
   RefreshCw,
   ImageIcon,
   Eye,
+  Upload,
+  GitBranch,
+  ArrowRight,
+  ListChecks,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useStudioJobs } from '../../lib/studios/useStudioJobs';
 import { useStudioOutputs } from '../../lib/studios/useStudioOutputs';
 import { useAI } from '../../context/AIContext';
-import type { StudioDef, StudioJob, StudioOutput, StudioInputField } from '../../lib/studios/types';
+import { useTierGate, UpgradeModal } from '../UpgradePrompt';
+import { uploadWithProgress, type UploadProgress } from '../../lib/studios/uploadWithProgress';
+import { runWorkflow, BUILTIN_WORKFLOWS } from '../../lib/studios/workflow';
+import PipelinePanel from './PipelinePanel';
+import type {
+  StudioDef,
+  StudioJob,
+  StudioOutput,
+  StudioInputField,
+  WorkflowRun,
+  WorkflowDef,
+} from '../../lib/studios/types';
 import { cn } from '../../lib/utils';
 
 interface Props {
@@ -60,6 +75,25 @@ export default function StudioShell({ studio }: Props) {
 
   const [input, setInput] = useState<Record<string, any>>(initialInput);
   const [previewOutput, setPreviewOutput] = useState<StudioOutput | null>(null);
+  const gate = useTierGate();
+  const [upgradeBlocked, setUpgradeBlocked] = useState<string | null>(null);
+
+  // Count this month's completed studio jobs across all studios (tier cap)
+  const monthRunCount = useMemo(() => {
+    try {
+      const raw = JSON.parse(localStorage.getItem('dropkast.studios.jobs') || '[]');
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1); startOfMonth.setHours(0, 0, 0, 0);
+      return raw.filter((j: any) => j.status === 'done' && new Date(j.createdAt) >= startOfMonth).length;
+    } catch { return 0; }
+  }, [jobs.length]);
+
+  // Pipeline mode
+  const [pipelineMode, setPipelineMode] = useState(false);
+  const [selectedWorkflow, setSelectedWorkflow] = useState<WorkflowDef | null>(null);
+  const [wfInitialInput, setWfInitialInput] = useState<Record<string, any>>({});
+  const [wfRun, setWfRun] = useState<WorkflowRun | null>(null);
+  const [wfRunning, setWfRunning] = useState(false);
 
   const updateInput = (key: string, value: any) => setInput((prev) => ({ ...prev, [key]: value }));
 
@@ -75,6 +109,12 @@ export default function StudioShell({ studio }: Props) {
   const handleRun = async () => {
     if (!canRun) {
       toast.error('Fill in the required fields first');
+      return;
+    }
+    // Tier cap check — Free=3 runs/mo, Indie=50/mo, Pro/Label=uncapped
+    const capCheck = gate.check('ai-run', monthRunCount);
+    if (!capCheck.allowed) {
+      setUpgradeBlocked(capCheck.reason || 'You\'ve hit your monthly AI run cap.');
       return;
     }
     await runStudio({
@@ -122,7 +162,19 @@ export default function StudioShell({ studio }: Props) {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-3 shrink-0">
+          <button
+            onClick={() => { setPipelineMode(!pipelineMode); setWfRun(null); setSelectedWorkflow(null); }}
+            className={cn(
+              'flex items-center gap-2 px-4 py-2 text-[9px] font-black uppercase tracking-widest italic transition-all border',
+              pipelineMode
+                ? 'bg-primary text-black border-primary'
+                : 'bg-transparent text-white/50 border-white/10 hover:border-white/30',
+            )}
+          >
+            <GitBranch className="w-3.5 h-3.5" />
+            Pipeline
+          </button>
           {studio.estimatedCostCents !== undefined && (
             <div className="hidden md:block text-right">
               <div className="text-[9px] font-black text-white/40 uppercase tracking-widest italic">Est cost</div>
@@ -135,88 +187,123 @@ export default function StudioShell({ studio }: Props) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* INPUT PANEL */}
-        <div className="lg:col-span-5 space-y-4">
-          <div className="manifest-card p-6 bg-dark border border-white/10 space-y-5">
-            <div className="flex items-center gap-2 text-[10px] font-black text-primary uppercase tracking-[0.3em] italic">
-              <Sparkles className="w-3 h-3" /> Inputs
-            </div>
+        {/* INPUT PANEL — single studio mode */}
+        {!pipelineMode && (
+          <div className="lg:col-span-5 space-y-4">
+            <div className="manifest-card p-6 bg-dark border border-white/10 space-y-5">
+              <div className="flex items-center gap-2 text-[10px] font-black text-primary uppercase tracking-[0.3em] italic">
+                <Sparkles className="w-3 h-3" /> Inputs
+              </div>
 
-            {studio.inputs.map((field) => (
-              <FieldRenderer
-                key={field.key}
-                field={field}
-                value={input[field.key]}
-                onChange={(v) => updateInput(field.key, v)}
-              />
-            ))}
+              {studio.inputs.map((field) => (
+                <FieldRenderer
+                  key={field.key}
+                  field={field}
+                  value={input[field.key]}
+                  onChange={(v) => updateInput(field.key, v)}
+                />
+              ))}
 
-            <div className="flex items-center gap-2 pt-2 text-[10px] text-white/40 italic">
-              <span>Brain:</span>
-              <span className="font-black text-white uppercase tracking-widest">{provider || 'anthropic'}</span>
-              <span>·</span>
-              <Link to="/ai-providers" className="text-primary hover:underline">change</Link>
-              {studio.defaultPersona && (
-                <>
-                  <span>·</span>
-                  <span className="font-black text-white uppercase tracking-widest">{studio.defaultPersona}</span>
-                </>
+              <div className="flex items-center gap-2 pt-2 text-[10px] text-white/40 italic">
+                <span>Brain:</span>
+                <span className="font-black text-white uppercase tracking-widest">{provider || 'anthropic'}</span>
+                <span>·</span>
+                <Link to="/ai-providers" className="text-primary hover:underline">change</Link>
+                {studio.defaultPersona && (
+                  <>
+                    <span>·</span>
+                    <span className="font-black text-white uppercase tracking-widest">{studio.defaultPersona}</span>
+                  </>
+                )}
+              </div>
+
+              <button
+                onClick={handleRun}
+                disabled={!canRun || runningCount > 0}
+                className={cn(
+                  'w-full h-14 flex items-center justify-center gap-3 text-[11px] font-black uppercase italic tracking-widest transition-all',
+                  canRun && runningCount === 0
+                    ? 'bg-white text-black hover:bg-primary hover:text-white'
+                    : 'bg-white/10 text-white/30 cursor-not-allowed',
+                )}
+              >
+                {runningCount > 0 ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Running ({runningCount})...
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-4 h-4" />
+                    Generate
+                  </>
+                )}
+              </button>
+
+              {studio.estimatedRuntimeSec && (
+                <div className="text-center text-[10px] text-white/30 italic">
+                  <Clock className="w-3 h-3 inline mr-1" />
+                  Typically ~{studio.estimatedRuntimeSec}s
+                </div>
               )}
             </div>
 
-            <button
-              onClick={handleRun}
-              disabled={!canRun || runningCount > 0}
-              className={cn(
-                'w-full h-14 flex items-center justify-center gap-3 text-[11px] font-black uppercase italic tracking-widest transition-all',
-                canRun && runningCount === 0
-                  ? 'bg-white text-black hover:bg-primary hover:text-white'
-                  : 'bg-white/10 text-white/30 cursor-not-allowed',
-              )}
-            >
-              {runningCount > 0 ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Running ({runningCount})...
-                </>
-              ) : (
-                <>
-                  <Play className="w-4 h-4" />
-                  Generate
-                </>
-              )}
-            </button>
-
-            {studio.estimatedRuntimeSec && (
-              <div className="text-center text-[10px] text-white/30 italic">
-                <Clock className="w-3 h-3 inline mr-1" />
-                Typically ~{studio.estimatedRuntimeSec}s
+            {/* Job Queue */}
+            {jobs.length > 0 && (
+              <div className="manifest-card p-4 bg-black border border-white/10">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="text-[9px] font-black text-white/40 uppercase tracking-[0.3em] italic">
+                    Queue ({jobs.length})
+                  </div>
+                  <button
+                    onClick={clearCompleted}
+                    className="text-[9px] font-black text-white/30 hover:text-white uppercase tracking-widest italic"
+                  >
+                    Clear done
+                  </button>
+                </div>
+                <div className="space-y-1.5 max-h-48 overflow-y-auto custom-scrollbar">
+                  {jobs.slice(0, 8).map((j) => (
+                    <JobRow key={j.id} job={j} onCancel={() => cancelJob(j.id)} />
+                  ))}
+                </div>
               </div>
             )}
           </div>
+        )}
 
-          {/* Job Queue */}
-          {jobs.length > 0 && (
-            <div className="manifest-card p-4 bg-black border border-white/10">
-              <div className="flex items-center justify-between mb-3">
-                <div className="text-[9px] font-black text-white/40 uppercase tracking-[0.3em] italic">
-                  Queue ({jobs.length})
-                </div>
-                <button
-                  onClick={clearCompleted}
-                  className="text-[9px] font-black text-white/30 hover:text-white uppercase tracking-widest italic"
-                >
-                  Clear done
-                </button>
-              </div>
-              <div className="space-y-1.5 max-h-48 overflow-y-auto custom-scrollbar">
-                {jobs.slice(0, 8).map((j) => (
-                  <JobRow key={j.id} job={j} onCancel={() => cancelJob(j.id)} />
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+        {/* PIPELINE PANEL */}
+        {pipelineMode && (
+          <PipelinePanel
+            studio={studio}
+            wfRun={wfRun}
+            wfRunning={wfRunning}
+            selectedWorkflow={selectedWorkflow}
+            wfInitialInput={wfInitialInput}
+            onSelectWorkflow={(wf) => { setSelectedWorkflow(wf); setWfRun(null); }}
+            onUpdateInitial={(key, val) => setWfInitialInput((prev) => ({ ...prev, [key]: val }))}
+            onRun={async () => {
+              if (!selectedWorkflow) return;
+              setWfRunning(true);
+              setWfRun(null);
+              try {
+                const run = await runWorkflow(selectedWorkflow, wfInitialInput, {
+                  onStepComplete: (step, idx, total) => {
+                    toast.message(`${step.label || step.studioId}: ${step.status}`);
+                  },
+                });
+                setWfRun(run);
+                if (run.status === 'done') {
+                  toast.success('Pipeline complete');
+                }
+              } catch (err: any) {
+                toast.error('Pipeline failed', { description: err.message });
+              } finally {
+                setWfRunning(false);
+              }
+            }}
+          />
+        )}
 
         {/* OUTPUT GALLERY */}
         <div className="lg:col-span-7">
@@ -260,6 +347,15 @@ export default function StudioShell({ studio }: Props) {
       <AnimatePresence>
         {previewOutput && <PreviewModal output={previewOutput} onClose={() => setPreviewOutput(null)} />}
       </AnimatePresence>
+
+      {/* Tier-cap modal */}
+      <UpgradeModal
+        open={!!upgradeBlocked}
+        feature="AI Studios"
+        requiredTier={gate.tier.id === 'free' ? 'indie' : 'pro'}
+        reason={upgradeBlocked || undefined}
+        onClose={() => setUpgradeBlocked(null)}
+      />
     </div>
   );
 }
@@ -391,22 +487,72 @@ function ReferenceImagesField({ value, onChange }: { value: string[] | undefined
 
 function FileField({ field, value, onChange }: { field: StudioInputField; value: any; onChange: (v: any) => void }) {
   const accept = field.type === 'audio-file' ? 'audio/*' : 'image/*,video/*';
+  const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState<UploadProgress | null>(null);
+
+  const handleFile = async (file: File) => {
+    // Store local metadata immediately
+    const local = { name: file.name, size: file.size, type: file.type, url: URL.createObjectURL(file), uploaded: false };
+    onChange(local);
+
+    // Auto-upload to the server
+    const formData = new FormData();
+    formData.append('file', file);
+
+    setUploading(true);
+    setProgress(null);
+    try {
+      const result = await uploadWithProgress('/api/assets/upload', formData, {
+        onProgress: setProgress,
+      });
+      onChange({ ...local, url: result.data.url || result.data.path || result.data, uploaded: true });
+      toast.success(`${file.name} uploaded`);
+    } catch (err: any) {
+      if (err.name !== 'AbortError') {
+        toast.error('Upload failed', { description: err.message });
+      }
+    } finally {
+      setUploading(false);
+      setProgress(null);
+    }
+  };
+
   return (
     <div>
       <input
         type="file"
         accept={accept}
+        disabled={uploading}
         onChange={(e) => {
           const file = e.target.files?.[0];
           if (!file) return;
-          // Store as object URL for preview / send to server later
-          onChange({ name: file.name, size: file.size, type: file.type, url: URL.createObjectURL(file) });
+          handleFile(file);
         }}
-        className="block w-full text-xs text-white/60 file:mr-3 file:py-2 file:px-4 file:border-0 file:bg-white file:text-black file:font-black file:uppercase file:text-[10px] file:tracking-widest file:italic hover:file:bg-primary hover:file:text-white file:cursor-pointer"
+        className="block w-full text-xs text-white/60 file:mr-3 file:py-2 file:px-4 file:border-0 file:bg-white file:text-black file:font-black file:uppercase file:text-[10px] file:tracking-widest file:italic hover:file:bg-primary hover:file:text-white file:cursor-pointer disabled:opacity-40"
       />
-      {value?.name && (
-        <div className="mt-2 text-[11px] text-white/60 italic truncate">
-          ✓ {value.name} ({Math.round((value.size || 0) / 1024)} KB)
+      {uploading && progress && (
+        <div className="mt-2 space-y-1">
+          <div className="flex items-center gap-2 text-[11px] text-primary italic">
+            <Upload className="w-3 h-3 animate-pulse" />
+            Uploading... {progress.percent}%
+          </div>
+          <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-primary transition-all duration-200 rounded-full"
+              style={{ width: `${progress.percent}%` }}
+            />
+          </div>
+        </div>
+      )}
+      {value?.name && !uploading && (
+        <div className="mt-2 flex items-center gap-2 text-[11px] text-white/60 italic truncate">
+          {value.uploaded ? (
+            <CheckCircle2 className="w-3 h-3 text-green-400 shrink-0" />
+          ) : (
+            <Upload className="w-3 h-3 text-yellow-400 shrink-0" />
+          )}
+          <span>{value.name} ({Math.round((value.size || 0) / 1024)} KB)</span>
+          {value.uploaded && <span className="text-green-400/60">· uploaded</span>}
         </div>
       )}
     </div>

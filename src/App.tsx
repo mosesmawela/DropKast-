@@ -78,6 +78,7 @@ const Subscription = lazy(() => import('./pages/Subscription'));
 const CommandCenter = lazy(() => import('./pages/CommandCenter'));
 
 import WelcomeScreen from './components/layout/WelcomeScreen';
+import PortalPage from './pages/PortalPage';
 
 export default function App() {
   const [showWelcome, setShowWelcome] = useState(() => {
@@ -142,6 +143,11 @@ export default function App() {
               <Route path="/pricing" element={<Pricing />} />
               {/* Hidden Command Center — page handles its own admin gate. */}
               <Route path="/command" element={<CommandCenter />} />
+              {/* Admin portal — routes to Command Center */}
+              <Route path="/admin" element={<CommandCenter />} />
+
+              {/* Branded artist portals — /@slug sets role + redirects to dashboard */}
+              <Route path="/@:slug" element={<PortalPage />} />
 
               {/* Protected Routes */}
               <Route element={<ProtectedRoute />}>

@@ -2,8 +2,9 @@ export interface User {
   id: string;
   email: string;
   artistName: string;
+  label?: string;
   avatar?: string;
-  role: 'admin' | 'artist' | 'manager';
+  role: 'admin' | 'artist' | 'manager' | 'ARTIST' | 'INFLUENCER' | 'DJ' | 'LABEL';
 }
 
 export interface Release {

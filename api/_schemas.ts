@@ -30,6 +30,12 @@ export const influencerSendSchema = z.object({
   influencerIds: z.array(z.string()),
 });
 
+export const djSendSchema = z.object({
+  djIds: z.array(z.union([z.string(), z.number()])).optional(),
+  djId: z.union([z.string(), z.number()]).optional(),
+  artistName: z.string().optional(),
+}).passthrough();
+
 export const splitCreateSchema = z.object({
   releaseId: z.string(),
   payeeEmail: z.string().email(),

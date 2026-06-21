@@ -19,12 +19,16 @@ import {
   ugcGenerateSchema,
   automationSchema,
   analyticsTrackSchema,
+  djSendSchema,
   preReleaseCreateSchema,
   aiChatSchema,
   validate,
 } from "./_schemas.js";
 import { handleAiChat } from "./_ai-chat.js";
 import { listAvailableTextProviders } from "./_text-providers.js";
+import { notifySignup, notifyAnrSubmission, notifyReleaseLive, notifyDjPackDelivered, notifyMissionAccepted } from "./_email.js";
+import { generateScheduleSheet, generateEarningsReport } from "./_sheets.js";
+import { listPlans, getPlan, addPlan, updatePlan, deletePlan, PLAN_TYPES, PLAN_STATUSES, type PlanInput } from "./_planner.js";
 import { generateIsrc, generateUpc, isPlaceholderRegistrant } from "./_codes.js";
 import { validateAudio, validateCoverArt } from "./_audio-validate.js";
 import { assertTransition, isScheduledForLater, ReleaseTransitionError, type ReleaseStatus } from "./_release-lifecycle.js";
@@ -217,6 +221,10 @@ export function createApiApp() {
     };
     await store.insertAnrSubmission(submission);
 
+    const artistName = req.body.artistName || req.body.trackTitle || 'Unknown';
+    const contactEmail = req.body.contactEmail || req.body.email || '';
+    if (contactEmail) notifyAnrSubmission(contactEmail, artistName, req.body.trackTitle, req.body.notes);
+
     // Kick off critique asynchronously
     (async () => {
       try {
@@ -234,6 +242,19 @@ export function createApiApp() {
     })();
 
     res.json({ success: true, submission });
+  });
+
+  // Export scheduling form as XLSX
+  app.post("/api/anr/schedule-sheet", async (req, res) => {
+    try {
+      const buf = await generateScheduleSheet(req.body ?? {});
+      const filename = `scheduling-form-${Date.now()}.xlsx`;
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.send(Buffer.from(buf));
+    } catch (err) {
+      res.status(500).json({ error: 'Failed to generate sheet' });
+    }
   });
 
   app.get("/api/anr", async (_req, res) => {
@@ -277,228 +298,42 @@ export function createApiApp() {
     res.json({ ideas });
   });
 
-  app.post("/api/pre-release/:id/invasion", async (req, res) => {
-    const { id } = req.params;
-    const activation = await store.getPreRelease(id);
-    if (activation) await store.patchPreRelease(id, { status: 'invading' });
-    console.log(`[INVASION_MODE] Coordinated signal broadcast initiated for ${id}.`);
-    res.json({ status: "success", strategy: "coordinated_burst" });
+  // --- Release Planner API ---
+  app.get('/api/planner/types', (_req, res) => res.json(PLAN_TYPES));
+  app.get('/api/planner/statuses', (_req, res) => res.json(PLAN_STATUSES));
+
+  app.get('/api/planner', (req, res) => {
+    const userId = (req.query.userId as string) || (req.headers['x-user-id'] as string) || '';
+    const plans = listPlans(userId || undefined);
+    res.json(plans);
   });
 
-  // --- Analytics APIs ---
-  app.post("/api/analytics/track", validate(analyticsTrackSchema), async (req, res) => {
-    const event = {
-      id: `EVT-${Date.now()}`,
-      userId: req.body.userId || 'anonymous',
-      releaseId: req.body.releaseId,
-      type: req.body.type,
-      platform: req.body.platform,
-      value: req.body.value || 1,
-      timestamp: new Date(),
-    };
-    await store.insertAnalyticsEvent(event);
-    res.json({ ok: true, event });
+  app.get('/api/planner/:id', (req, res) => {
+    const plan = getPlan(req.params.id);
+    if (!plan) return res.status(404).json({ error: 'Plan not found' });
+    res.json(plan);
   });
 
-  app.get("/api/analytics/:releaseId", async (req, res) => {
-    const events = await store.listAnalyticsEvents(req.params.releaseId);
-    res.json({
-      plays: events.filter((e: any) => e.type === 'play').length,
-      clicks: events.filter((e: any) => e.type === 'click').length,
-      influencerPosts: events.filter((e: any) => e.type === 'influencer_post').length,
-      totalReach: events.reduce((acc: number, e: any) => acc + (e.value || 0), 0),
-    });
+  app.post('/api/planner', (req, res) => {
+    const input = req.body as PlanInput;
+    if (!input.title?.trim()) return res.status(400).json({ error: 'title required' });
+    if (!input.date) return res.status(400).json({ error: 'date required' });
+    if (!input.type) return res.status(400).json({ error: 'type required' });
+    input.userId = input.userId || (req.headers['x-user-id'] as string) || 'user-1';
+    const plan = addPlan(input);
+    res.status(201).json(plan);
   });
 
-  // Delivery is handled by the pluggable DSP adapter (see api/_dsp-delivery.ts).
-  // Default is the simulator; flips to RouteNote when ROUTENOTE_API_KEY is set.
-  const dspAdapter = getDeliveryAdapter();
-  // Payouts are pluggable (see api/_payouts.ts). Stripe when configured, simulator otherwise.
-  const payoutAdapter = getPayoutAdapter();
-
-  // In-memory stores for the new Phase 3/4 entities until Drizzle DB is live.
-  const memCreatorAccounts: Record<string, any> = {};
-  const memPayouts: Record<string, any> = {};
-  const memDjFeedback: any[] = [];
-  const memVerifiedPosts: any[] = [];
-
-  app.post("/api/releases", upload.fields([
-    { name: "audio", maxCount: 1 },
-    { name: "artwork", maxCount: 1 },
-  ]), async (req: any, res) => {
-    const { platforms, releaseDate, ...metadata } = req.body;
-    const files = req.files as { [fieldname: string]: Express.Multer.File[] };
-    const audioFile = files?.['audio']?.[0];
-    const artworkFile = files?.['artwork']?.[0];
-
-    // ---- Phase 1: validate audio + cover before accepting the release.
-    const errors: string[] = [];
-    const warnings: string[] = [];
-    let audioMeta: any = undefined;
-
-    if (audioFile?.buffer) {
-      const v = await validateAudio({ buffer: audioFile.buffer, mimeType: audioFile.mimetype });
-      errors.push(...v.errors);
-      warnings.push(...v.warnings);
-      audioMeta = v.meta;
-    } else if (audioFile?.path && !audioFile.path.startsWith('http')) {
-      const v = await validateAudio({ path: audioFile.path, mimeType: audioFile.mimetype });
-      errors.push(...v.errors);
-      warnings.push(...v.warnings);
-      audioMeta = v.meta;
-    }
-
-    if (artworkFile?.buffer) {
-      const v = await validateCoverArt({ buffer: artworkFile.buffer, mimeType: artworkFile.mimetype });
-      errors.push(...v.errors);
-      warnings.push(...v.warnings);
-    }
-
-    if (errors.length > 0) {
-      return res.status(422).json({
-        error: 'Release validation failed',
-        errors,
-        warnings,
-      });
-    }
-
-    const audioUrl = audioFile?.path || "https://example.com/mock-audio.wav";
-    const artworkUrl = artworkFile?.path || "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=3270";
-
-    // ---- Phase 1: ISRC + UPC at create time.
-    const isrc = generateIsrc();
-    const upc = generateUpc();
-    if (isPlaceholderRegistrant()) {
-      warnings.push('ISRC/UPC use placeholder registrant codes. Configure ISRC_REGISTRANT and UPC_COMPANY_PREFIX before real distribution.');
-    }
-
-    // ---- Phase 1: scheduling + lifecycle.
-    const parsedReleaseDate = releaseDate ? new Date(releaseDate) : null;
-    const scheduled = isScheduledForLater(parsedReleaseDate);
-    const initialStatus: ReleaseStatus = scheduled ? 'approved' : 'submitted';
-
-    const release = {
-      id: `REL-${Math.floor(Math.random() * 100000)}`,
-      title: metadata.title || metadata.project_name || "Untitled Release",
-      artist: metadata.artist || metadata.artist_name || "Unknown Artist",
-      genre: metadata.genre || "Unknown Genre",
-      audioUrl,
-      artworkUrl,
-      isrc,
-      upc,
-      releaseDate: parsedReleaseDate,
-      metadata: { ...metadata, audioMeta, validationWarnings: warnings },
-      platforms: (Array.isArray(platforms) ? platforms : [platforms || 'spotify']).map((p: any) => ({
-        id: typeof p === 'string' ? p : p.id,
-        name: typeof p === 'string' ? p.charAt(0).toUpperCase() + p.slice(1) : p.name,
-        status: 'pending',
-      })),
-      status: initialStatus,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    await store.insertRelease(release);
-
-    // Only kick off DSP delivery if not scheduled for later.
-    if (!scheduled) {
-      const job = await dspAdapter.deliver(release);
-      logger.info({ releaseId: release.id, jobId: job.jobId, provider: dspAdapter.id }, 'release delivery started');
-    }
-
-    res.status(201).json({ ...release, warnings });
-  });
-
-  // ---- Phase 1: metadata edit on live releases (DDEX update message) ----
-  app.patch("/api/releases/:id/metadata", async (req, res) => {
-    const release = await store.getRelease(req.params.id);
-    if (!release) return res.status(404).json({ error: 'Release not found' });
-
-    const allowedFields = ['title', 'artist', 'genre', 'releaseDate', 'metadata'] as const;
-    const changes: Record<string, unknown> = {};
-    for (const k of allowedFields) {
-      if (req.body[k] !== undefined) changes[k] = req.body[k];
-    }
-    if (Object.keys(changes).length === 0) {
-      return res.status(400).json({ error: 'no editable fields provided' });
-    }
-
-    // Only live / approved releases need a DDEX update message; drafts edit freely
-    if (['live', 'delivering', 'approved'].includes(release.status)) {
-      const result = await dspAdapter.updateMetadata(release, changes);
-      if (!result.ok) {
-        return res.status(502).json({ error: 'dsp_update_failed', note: 'DSP rejected the metadata update' });
-      }
-    }
-
-    const updated = await store.patchRelease(req.params.id, changes);
-    logAudit(req, {
-      actorId: String(req.body?.actorId ?? release.userId ?? 'unknown'),
-      action: 'release.metadata.edit',
-      resource: release.id,
-      metadata: { fields: Object.keys(changes) },
-    });
+  app.patch('/api/planner/:id', (req, res) => {
+    const updated = updatePlan(req.params.id, req.body);
+    if (!updated) return res.status(404).json({ error: 'Plan not found' });
     res.json(updated);
   });
 
-  /**
-   * Explicit lifecycle transitions. Validates via the state machine and
-   * surfaces a clean 409 on illegal transitions.
-   */
-  app.post("/api/releases/:id/transition", async (req, res) => {
-    const release = await store.getRelease(req.params.id);
-    if (!release) return res.status(404).json({ error: 'Release not found' });
-    const target = (req.body?.status ?? '') as ReleaseStatus;
-    try {
-      assertTransition(release.status as ReleaseStatus, target);
-    } catch (err) {
-      if (err instanceof ReleaseTransitionError) {
-        return res.status(409).json({ error: err.message, from: err.from, to: err.to });
-      }
-      throw err;
-    }
-    const updated = await store.patchRelease(req.params.id, { status: target });
-    res.json(updated);
-  });
-
-  /**
-   * Takedown — convenience wrapper for live → taken_down.
-   */
-  app.post("/api/releases/:id/takedown", async (req, res) => {
-    const release = await store.getRelease(req.params.id);
-    if (!release) return res.status(404).json({ error: 'Release not found' });
-    try {
-      assertTransition(release.status as ReleaseStatus, 'taken_down');
-    } catch (err) {
-      if (err instanceof ReleaseTransitionError) {
-        return res.status(409).json({ error: err.message });
-      }
-      throw err;
-    }
-    const reason = req.body?.reason || 'unspecified';
-    // Notify the DSP adapter so the DDEX takedown message goes out
-    await dspAdapter.takedown(release, reason);
-    const updated = await store.patchRelease(req.params.id, {
-      status: 'taken_down',
-      metadata: { ...(release.metadata || {}), takedownReason: reason, takedownAt: new Date().toISOString() },
-    });
-    logAudit(req, {
-      actorId: String(req.body?.actorId ?? release.userId ?? 'unknown'),
-      action: 'release.takedown',
-      resource: release.id,
-      metadata: { reason },
-    });
-    res.json(updated);
-  });
-
-  app.get("/api/releases", async (_req, res) => {
-    res.json(await store.listReleases());
-  });
-
-  app.get("/api/releases/:id", async (req, res) => {
-    const r = await store.getRelease(req.params.id);
-    if (r) res.json(r);
-    else res.status(404).json({ error: "Release not found" });
+  app.delete('/api/planner/:id', (req, res) => {
+    const ok = deletePlan(req.params.id);
+    if (!ok) return res.status(404).json({ error: 'Plan not found' });
+    res.json({ ok: true });
   });
 
   app.patch("/api/releases/:id", validate(releasePatchSchema), async (req, res) => {
@@ -550,6 +385,33 @@ export function createApiApp() {
     res.json(c);
   });
 
+  // --- Influencer mission accept ---
+  app.post("/api/influencer/missions/accept", async (req, res) => {
+    const { campaignId, influencerId, influencerEmail, influencerName, campaignName } = req.body ?? {};
+    if (!campaignId || !influencerId) {
+      return res.status(400).json({ error: 'campaignId and influencerId required' });
+    }
+    const record = {
+      id: Date.now().toString() + Math.random(),
+      campaignId,
+      influencerId,
+      status: 'accepted',
+      timestamp: new Date(),
+    };
+    await store.insertInfluencerCampaign(record);
+    pushEvent({
+      receiverId: influencerId,
+      type: 'success',
+      title: 'MISSION_ACCEPTED',
+      message: `You accepted ${campaignName || campaignId}. Check your influencer portal for details.`,
+      href: '/influencer/missions',
+    });
+    if (influencerEmail) {
+      notifyMissionAccepted(influencerEmail, influencerName || 'Creator', campaignName || campaignId);
+    }
+    res.json({ success: true, mission: record });
+  });
+
   // --- Influencer & DJ APIs ---
   app.get("/api/influencers", async (_req, res) => {
     res.json(await store.listInfluencers());
@@ -591,19 +453,41 @@ export function createApiApp() {
     res.json({ success: true, sends });
   });
 
-  app.post("/api/djs/send", async (req, res) => {
-    const log = { id: Date.now().toString(), ...req.body, status: 'sent', timestamp: new Date() };
-    await store.insertDjSend(log);
-    if (req.body?.djId) {
+  app.post("/api/djs/send", validate(djSendSchema), async (req, res) => {
+    const djIdList: string[] = [];
+    if (Array.isArray(req.body?.djIds)) {
+      for (const id of req.body.djIds) {
+        djIdList.push(String(id));
+      }
+    } else if (req.body?.djId) {
+      djIdList.push(String(req.body.djId));
+    }
+
+    const sends = [];
+    const djEmailMap: Record<string, string> = {};
+    if (Array.isArray(req.body?.djEmails)) {
+      for (const entry of req.body.djEmails) {
+        if (entry.djId) djEmailMap[String(entry.djId)] = entry.email;
+      }
+    }
+    for (const djId of djIdList) {
+      const log = { id: Date.now().toString() + Math.random(), djId, status: 'sent', timestamp: new Date() };
+      await store.insertDjSend(log);
       pushEvent({
-        receiverId: String(req.body.djId),
+        receiverId: djId,
         type: 'info',
         title: 'PACK_RECEIVED',
         message: `New DJ pack from ${req.body.artistName ?? 'an artist'} ready for review.`,
         href: '/dj/packs',
       });
+      const djEmail = djEmailMap[djId];
+      if (djEmail) {
+        notifyDjPackDelivered(djEmail, req.body.djName || 'DJ', req.body.artistName || 'an artist', req.body.packTitle || 'Promo Pack');
+      }
+      sends.push(log);
     }
-    res.json({ success: true, message: "Pack transmitted to DJ terminals", log });
+
+    res.json({ success: true, message: "Pack transmitted to DJ terminals", sends, count: sends.length });
   });
 
   // --- Cross-portal inbox APIs ---
@@ -802,6 +686,7 @@ export function createApiApp() {
         updatedAt: new Date(),
       };
       logAudit(req, { actorId: payeeEmail, action: 'connect.onboard', metadata: { role, provider: payoutAdapter.id } });
+      notifySignup(payeeEmail, payeeName || payeeEmail, role);
       res.json({ ok: true, ...result, provider: payoutAdapter.id });
     } catch (err) {
       logger.error({ err, payeeEmail }, 'connect onboard failed');
@@ -845,6 +730,50 @@ export function createApiApp() {
     }
     const summary = aggregateEarnings(lines);
     res.json({ summary, lineCount: lines.length });
+  });
+
+  // Export earnings as XLSX
+  app.get('/api/earnings/export', async (req, res) => {
+    try {
+      const lines = getLedger();
+      const rows = lines.map((l: any) => ({
+        releaseTitle: l.releaseTitle || l.releaseId || 'Unknown',
+        platform: l.source || 'All',
+        period: l.period || l.month || 'Unknown',
+        plays: l.units || l.plays || 0,
+        revenueCents: l.amountCents || 0,
+        payee: l.payeeEmail || l.payeeName || 'Artist',
+      }));
+      const buf = await generateEarningsReport(rows);
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', `attachment; filename="earnings-${Date.now()}.xlsx"`);
+      res.send(Buffer.from(buf));
+    } catch (err) {
+      res.status(500).json({ error: 'Failed to generate report' });
+    }
+  });
+
+  // Simple payout request — creates a payout intent for the user's balance.
+  app.post('/api/earnings/payout-request', async (req, res) => {
+    const userId = req.headers['x-user-id'] as string || 'anon';
+    const userEmail = (req.headers['x-user-email'] as string) || req.body?.email || `${userId}@dropkast.local`;
+    const lines = getLedger();
+    const summary = aggregateEarnings(lines);
+    if (summary.totalCents < 100) {
+      return res.status(400).json({ error: 'Minimum payout is $1.00', balanceCents: summary.totalCents });
+    }
+    const payoutRecord = {
+      id: `PAYOUT-${Date.now()}`,
+      userId,
+      userEmail,
+      amountCents: summary.totalCents,
+      currency: 'USD',
+      status: 'pending',
+      createdAt: new Date(),
+    };
+    memPayouts[payoutRecord.id] = payoutRecord;
+    logAudit(req, { actorId: userId, action: 'payout.requested', resource: payoutRecord.id, metadata: { amountCents: summary.totalCents } });
+    res.json({ ok: true, payout: payoutRecord, message: 'Payout request submitted. Funds will arrive within 3-5 business days.' });
   });
 
   // Pay out a specific split row.

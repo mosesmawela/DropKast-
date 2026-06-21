@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { 
+import {
   Users, 
   TrendingUp, 
   Video, 
@@ -8,7 +8,8 @@ import {
   Upload,
   ArrowRight,
   Clock,
-  ExternalLink
+  ExternalLink,
+  Loader2
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { cn } from '../../../lib/utils';
@@ -17,6 +18,26 @@ import { useNotify } from '../../../context/NotificationContext';
 export default function InfluencerCampaigns() {
   const { notify } = useNotify();
   const [activeTab, setActiveTab] = useState<'available' | 'active' | 'completed'>('available');
+  const [accepted, setAccepted] = useState<Set<number>>(new Set());
+  const [accepting, setAccepting] = useState<Set<number>>(new Set());
+
+  const handleAccept = async (id: number) => {
+    setAccepting(prev => new Set(prev).add(id));
+    try {
+      const res = await fetch('/api/influencer/missions/accept', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ campaignId: id, status: 'accepted' })
+      });
+      if (!res.ok) throw new Error('Failed');
+      setAccepted(prev => new Set(prev).add(id));
+      notify('success', 'MISSION_ACCEPTED', 'You have accepted this mission. Check your missions tab for details.');
+    } catch {
+      notify('error', 'ACCEPT_FAILED', 'Could not accept mission. Please try again.');
+    } finally {
+      setAccepting(prev => { const next = new Set(prev); next.delete(id); return next; });
+    }
+  };
 
   const campaigns = [
     { 
@@ -108,13 +129,25 @@ export default function InfluencerCampaigns() {
                   ))}
                 </div>
                 
-                <button 
-                  onClick={() => notify('success', 'MISSION_ACCEPTED', 'Synchronization complete. Deploy when ready.')}
-                  className="h-16 w-full bg-white text-black hover:bg-primary hover:text-white transition-all font-mono font-black italic text-[11px] tracking-widest flex items-center justify-center gap-4"
-                >
-                  <span>ACCEPT_MISSION</span>
-                  <Zap className="w-4 h-4" />
-                </button>
+                {accepted.has(c.id) ? (
+                  <div className="h-16 w-full bg-green-600/20 text-green-400 border border-green-500/30 font-mono font-black italic text-[11px] tracking-widest flex items-center justify-center gap-4">
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>MISSION_ACCEPTED</span>
+                  </div>
+                ) : (
+                  <button 
+                    onClick={() => handleAccept(c.id)}
+                    disabled={accepting.has(c.id)}
+                    className="h-16 w-full bg-white text-black hover:bg-primary hover:text-white transition-all font-mono font-black italic text-[11px] tracking-widest flex items-center justify-center gap-4 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {accepting.has(c.id) ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Zap className="w-4 h-4" />
+                    )}
+                    <span>{accepting.has(c.id) ? 'ACCEPTING...' : 'ACCEPT_MISSION'}</span>
+                  </button>
+                )}
                 
                 <button className="h-12 w-full border border-white/5 hover:border-white transition-all font-mono text-[9px] font-black text-white/20 hover:text-white uppercase tracking-widest flex items-center justify-center gap-3">
                   <span>VIEW_ASSET_PACK</span>

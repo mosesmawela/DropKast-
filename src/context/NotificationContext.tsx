@@ -22,6 +22,7 @@ interface NotificationContextType {
   markAllRead: () => void;
   markRead: (id: string) => void;
   clearAll: () => void;
+  refreshInbox: (userId: string) => Promise<void>;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -83,10 +84,29 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
 
   const clearAll = useCallback(() => setInbox([]), []);
 
+  const refreshInbox = useCallback(async (userId: string) => {
+    try {
+      const res = await fetch(`/api/inbox/${userId}`);
+      if (res.ok) {
+        const data = await res.json();
+        const mapped: Notification[] = data.map((e: any) => ({
+          id: e.id,
+          type: e.type,
+          title: e.title,
+          message: e.message,
+          timestamp: new Date(e.createdAt).getTime(),
+          read: e.read,
+          href: e.href,
+        }));
+        setInbox(mapped);
+      }
+    } catch {}
+  }, []);
+
   const unreadCount = inbox.filter((n) => !n.read).length;
 
   return (
-    <NotificationContext.Provider value={{ notify, inbox, unreadCount, markAllRead, markRead, clearAll }}>
+    <NotificationContext.Provider value={{ notify, inbox, unreadCount, markAllRead, markRead, clearAll, refreshInbox }}>
       {children}
       <div className="fixed bottom-8 right-8 z-[9999] flex flex-col gap-3 pointer-events-none">
         <AnimatePresence>

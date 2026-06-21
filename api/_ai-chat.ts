@@ -19,7 +19,7 @@ import type { Request, Response } from 'express';
 import Anthropic from '@anthropic-ai/sdk';
 import { store } from './_store.js';
 import { isOverBudget, recordUsage } from './_ai-budget.js';
-import { streamOpenAICompatible, type TextProviderId } from './_text-providers.js';
+import { streamOpenAICompatible, PROVIDER_TIMEOUT_MS, FALLBACK_ORDER, listAvailableTextProviders, type TextProviderId } from './_text-providers.js';
 import { getPersona, type PersonaId } from '../src/lib/ai-personas.js';
 
 const SONNET = 'claude-sonnet-4-6';
@@ -144,26 +144,64 @@ export async function handleAiChat(req: Request, res: Response): Promise<void> {
   // These don't support tool use through this adapter, so the assistant
   // can't call your data — it's a plain chatbot until you switch back to
   // Anthropic. Useful for free fallback when Claude budget is hit.
+  //
+  // Automatic rotation: if the chosen provider fails (timeout / auth / rate
+  // limit), we fall through FALLBACK_ORDER to find a configured provider
+  // that responds. The done event reports which provider served the reply.
   if (chosenProvider !== 'anthropic') {
     initSSE();
-    try {
-      const messages: { role: 'system' | 'user' | 'assistant'; content: string }[] = [
-        { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: message },
-      ];
-      for await (const chunk of streamOpenAICompatible(chosenProvider, messages)) {
-        if (chunk.error) send('error', { message: chunk.error });
-        else if (chunk.token) send('token', { text: chunk.token });
-        else if (chunk.done) {
-          send('done', { ok: true, provider: chosenProvider });
-          break;
+    const messages: { role: 'system' | 'user' | 'assistant'; content: string }[] = [
+      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'user', content: message },
+    ];
+
+    // Build the probe order: chosen provider first, then remaining fallbacks.
+    const probeOrder = [chosenProvider, ...FALLBACK_ORDER.filter((p) => p !== chosenProvider && p !== 'anthropic')];
+    const errors: string[] = [];
+    let servedBy: TextProviderId | null = null;
+
+    for (const pid of probeOrder) {
+      const cfg = listAvailableTextProviders().find((p: { id: TextProviderId }) => p.id === pid);
+      if (!cfg?.configured) {
+        errors.push(`${pid}: skipped (no key)`);
+        continue;
+      }
+      try {
+        let hasContent = false;
+        for await (const chunk of streamOpenAICompatible(pid, messages, { signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS) })) {
+          if (chunk.error) {
+            errors.push(`${pid}: ${chunk.error}`);
+            hasContent = false;
+            break;
+          }
+          hasContent = true;
+          if (chunk.token) send('token', { text: chunk.token });
+          if (chunk.done) {
+            servedBy = chunk.provider ?? pid;
+            break;
+          }
+        }
+        if (servedBy) {
+          send('done', { ok: true, provider: servedBy, fallbacks: errors });
+          res.end();
+          return;
+        }
+      } catch (err: any) {
+        if (err.name === 'TimeoutError' || err.name === 'AbortError') {
+          errors.push(`${pid}: timed out after ${PROVIDER_TIMEOUT_MS}ms`);
+        } else {
+          errors.push(`${pid}: ${err.message ?? err}`);
         }
       }
-    } catch (err) {
-      send('error', { message: err instanceof Error ? err.message : 'unknown error' });
-    } finally {
-      res.end();
     }
+
+    // All providers failed
+    send('error', {
+      message: 'All AI providers failed. Check your API keys.',
+      details: errors,
+    });
+    send('done', { ok: false, errors });
+    res.end();
     return;
   }
 

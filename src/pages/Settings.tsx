@@ -30,6 +30,7 @@ import { useAI } from '../context/AIContext';
 import { useTutorial } from '../context/TutorialContext';
 import { useAuth } from '../context/AuthContext';
 import { useWorkspace } from '../context/WorkspaceContext';
+import { useNotify } from '../context/NotificationContext';
 import {
   MODULES,
   PRESETS,
@@ -85,8 +86,11 @@ export default function Settings() {
   const { enabled: tutorialEnabled, setEnabled: setTutorialEnabled, start: startTutorial } = useTutorial();
   const { logout } = useAuth();
   const { enabled: enabledModules, toggle: toggleModule, setPreset: setWorkspacePreset } = useWorkspace();
+  const { notify } = useNotify();
 
   const [activeTab, setActiveTab] = useState<TabId>('IDENTITY');
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [customColor, setCustomColor] = useState('#FF4D00');
 
   const applyCustomColor = () => {
@@ -466,14 +470,54 @@ export default function Settings() {
           {activeTab === 'DATA' && (
             <>
               <Card title="Export Data" desc="Download a JSON archive of your releases, campaigns, and analytics.">
-                <button className="h-10 px-4 border border-[var(--border-main)] hover:border-primary hover:text-primary text-[var(--text-main)]/60 text-[10px] font-mono font-black uppercase italic tracking-widest transition-all">
-                  Request Export
-                </button>
+                <>
+                  <button 
+                    onClick={() => setShowExportModal(true)}
+                    className="h-10 px-4 border border-[var(--border-main)] hover:border-primary hover:text-primary text-[var(--text-main)]/60 text-[10px] font-mono font-black uppercase italic tracking-widest transition-all"
+                  >
+                    Request Export
+                  </button>
+                  {showExportModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShowExportModal(false)}>
+                      <div className="bg-dark border border-white/10 p-8 max-w-md w-full mx-4 space-y-6" onClick={e => e.stopPropagation()}>
+                        <h3 className="text-xl font-black italic font-mono uppercase tracking-tight text-white">Export Data</h3>
+                        <p className="text-sm text-white/60 italic font-medium">Download a JSON archive of your releases, campaigns, and analytics. This may take a few moments.</p>
+                        <div className="flex gap-4">
+                          <button onClick={() => setShowExportModal(false)} className="flex-1 h-12 border border-white/10 text-white/60 text-[10px] font-mono font-black uppercase italic tracking-widest hover:border-white transition-all">Cancel</button>
+                          <button onClick={() => { notify('success', 'EXPORT_STARTED', 'Your data export is being prepared.'); setShowExportModal(false); }} className="flex-1 h-12 bg-primary text-white text-[10px] font-mono font-black uppercase italic tracking-widest hover:bg-white hover:text-black transition-all">Confirm Export</button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </>
               </Card>
               <Card title="Danger Zone" desc="Permanent and irreversible." danger>
-                <button className="h-10 px-4 border border-red-500/50 text-red-500 text-[10px] font-mono font-black uppercase italic tracking-widest hover:bg-red-500 hover:text-white transition-all">
-                  Delete Account
-                </button>
+                <>
+                  <button 
+                    onClick={() => setShowDeleteModal(true)}
+                    className="h-10 px-4 border border-red-500/50 text-red-500 text-[10px] font-mono font-black uppercase italic tracking-widest hover:bg-red-500 hover:text-white transition-all"
+                  >
+                    Delete Account
+                  </button>
+                  {showDeleteModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShowDeleteModal(false)}>
+                      <div className="bg-dark border border-red-500/20 p-8 max-w-md w-full mx-4 space-y-6" onClick={e => e.stopPropagation()}>
+                        <h3 className="text-xl font-black italic font-mono uppercase tracking-tight text-red-500">Delete Account</h3>
+                        <p className="text-sm text-white/60 italic font-medium">This is permanent and irreversible. All your releases, campaigns, and data will be wiped. Type <strong className="text-red-500">DELETE</strong> to confirm.</p>
+                        <input 
+                          type="text" 
+                          placeholder='Type "DELETE" to confirm' 
+                          className="w-full bg-white/5 border border-white/10 p-3 text-white font-mono text-xs outline-none focus:border-red-500 transition-all"
+                          onKeyDown={(e: any) => { if ((e.target as HTMLInputElement).value === 'DELETE' && e.key === 'Enter') { notify('error', 'ACCOUNT_DELETED', 'Your account has been deleted.'); setShowDeleteModal(false); } }}
+                        />
+                        <div className="flex gap-4">
+                          <button onClick={() => setShowDeleteModal(false)} className="flex-1 h-12 border border-white/10 text-white/60 text-[10px] font-mono font-black uppercase italic tracking-widest hover:border-white transition-all">Cancel</button>
+                          <button onClick={() => { notify('error', 'ACCOUNT_DELETED', 'Your account has been scheduled for deletion.'); setShowDeleteModal(false); }} className="flex-1 h-12 bg-red-500 text-white text-[10px] font-mono font-black uppercase italic tracking-widest hover:bg-white hover:text-black transition-all">Delete Forever</button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </>
               </Card>
             </>
           )}
