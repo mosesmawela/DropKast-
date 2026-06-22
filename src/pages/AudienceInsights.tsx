@@ -11,54 +11,16 @@ import { Users, BarChart3, Globe2, ChevronLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils';
 
-// Mock data — replace with /api/analytics/demographics once wired.
+// Pulls from /api/analytics/demographics once OAuth lands. Empty until then.
 const DEMOGRAPHICS = {
-  gender: [
-    { label: 'Female',     pct: 51, color: '#F472B6' },
-    { label: 'Male',       pct: 43, color: '#22D3EE' },
-    { label: 'Non-binary', pct:  4, color: '#A78BFA' },
-    { label: 'Unknown',    pct:  2, color: '#525252' },
-  ],
-  age: [
-    { label: '18-22', pct: 32 },
-    { label: '23-27', pct: 28 },
-    { label: '28-34', pct: 19 },
-    { label: '35-44', pct: 13 },
-    { label: '45-59', pct:  6 },
-    { label: '60+',   pct:  2 },
-  ],
-  source: [
-    { label: 'Algorithmic (Radio / Mix)', pct: 38 },
-    { label: 'Editorial playlists',       pct: 24 },
-    { label: 'User playlists',            pct: 18 },
-    { label: 'Artist profile',            pct: 12 },
-    { label: 'Search',                    pct:  8 },
-  ],
-  subscription: [
-    { label: 'Premium', pct: 73, color: '#1DB954' },
-    { label: 'Free',    pct: 27, color: '#525252' },
-  ],
-  territories: [
-    { country: 'South Africa', code: 'ZA', streams: 1_842_000, share: 28.4 },
-    { country: 'Nigeria',      code: 'NG', streams: 1_215_000, share: 18.7 },
-    { country: 'United States',code: 'US', streams:   872_000, share: 13.4 },
-    { country: 'United Kingdom',code:'UK', streams:   614_000, share:  9.5 },
-    { country: 'Kenya',        code: 'KE', streams:   478_000, share:  7.4 },
-    { country: 'Ghana',        code: 'GH', streams:   341_000, share:  5.3 },
-    { country: 'Germany',      code: 'DE', streams:   223_000, share:  3.4 },
-    { country: 'Other',        code: '·',  streams:   903_000, share: 13.9 },
-  ],
+  gender: [] as { label: string; pct: number; color: string }[],
+  age: [] as { label: string; pct: number }[],
+  source: [] as { label: string; pct: number }[],
+  subscription: [] as { label: string; pct: number; color: string }[],
+  territories: [] as { country: string; code: string; streams: number; share: number }[],
 };
 
-const STORE_COMPARISON = [
-  { id: 'spotify',   label: 'Spotify',       brand: '#1DB954', streams: 4_120_000, revenueCents: 1_245_000, share: 51.4 },
-  { id: 'apple',     label: 'Apple Music',   brand: '#FA2D48', streams: 1_640_000, revenueCents:   821_000, share: 20.5 },
-  { id: 'audiomack', label: 'Audiomack',     brand: '#FFA200', streams:   840_000, revenueCents:    98_000, share: 10.5 },
-  { id: 'youtube',   label: 'YouTube Music', brand: '#FF0000', streams:   620_000, revenueCents:   147_000, share:  7.7 },
-  { id: 'amazon',    label: 'Amazon Music',  brand: '#00A8E1', streams:   410_000, revenueCents:   154_000, share:  5.1 },
-  { id: 'tidal',     label: 'Tidal',         brand: '#FFFFFF', streams:   210_000, revenueCents:   118_000, share:  2.6 },
-  { id: 'deezer',    label: 'Deezer',        brand: '#A238FF', streams:   170_000, revenueCents:    63_000, share:  2.1 },
-];
+const STORE_COMPARISON: { id: string; label: string; brand: string; streams: number; revenueCents: number; share: number }[] = [];
 
 export default function AudienceInsights() {
   const [view, setView] = useState<'demographics' | 'stores' | 'territories'>('demographics');

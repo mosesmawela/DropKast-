@@ -90,7 +90,6 @@ const artistNavGroups: NavGroup[] = [
       { icon: BarChart,  label: 'Analytics',    path: '/analytics', moduleId: 'analytics' },
       { icon: Wallet,    label: 'Earnings',     path: '/earnings',  moduleId: 'earnings' },
       { icon: Sparkles,  label: 'Advances',     path: '/advances',  moduleId: 'advances' },
-      { icon: Building2, label: 'Label OS',     path: '/label',     moduleId: 'label-view' },
       { icon: FileText,  label: 'Split Sheets', path: '/splits',    moduleId: 'splits' },
     ],
   },
@@ -98,8 +97,9 @@ const artistNavGroups: NavGroup[] = [
   {
     label: 'Setup',
     items: [
-      { icon: Cpu,   label: 'AI Models', path: '/ai-providers', moduleId: 'ai-providers' },
-      { icon: Cpu,   label: 'Settings',  path: '/settings',     moduleId: 'settings' },
+      { icon: Cpu,        label: 'AI Models', path: '/ai-providers', moduleId: 'ai-providers' },
+      { icon: Building2,  label: 'Admin',     path: '/admin',        moduleId: 'admin' },
+      { icon: Cpu,        label: 'Settings',  path: '/settings',     moduleId: 'settings' },
     ],
   },
 ];

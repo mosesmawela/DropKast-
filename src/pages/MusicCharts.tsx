@@ -40,29 +40,9 @@ const TERRITORIES: { id: Territory; label: string }[] = [
   { id: 'ke',     label: 'Kenya' },
 ];
 
-// Mock chart data — deterministic so it doesn't jiggle on re-render
-const MOCK_CHART: Record<string, ChartEntry[]> = {
-  'spotify:za': [
-    { trackTitle: 'Sky Pressure', artist: 'Buddy Kay',     position: 3,  change: 2,  peakPosition: 2,  daysOnChart: 14 },
-    { trackTitle: 'Late Light',   artist: 'Aqua Pearl',    position: 8,  change: -1, peakPosition: 6,  daysOnChart: 21 },
-    { trackTitle: "Isaka III",    artist: 'CIZA',          position: 12, change: 5,  peakPosition: 12, daysOnChart: 4 },
-    { trackTitle: 'Velvet',       artist: 'Night Pulse',   position: 17, change: 0,  peakPosition: 15, daysOnChart: 8 },
-    { trackTitle: 'No Brakes',    artist: 'Lyric Storm',   position: 24, change: -3, peakPosition: 19, daysOnChart: 11 },
-    { trackTitle: 'Xapo World',   artist: 'Al Xapo',       position: 28, change: 4,  peakPosition: 28, daysOnChart: 3 },
-    { trackTitle: 'Glass City',   artist: 'Solomon Cyan',  position: 41, change: 1,  peakPosition: 40, daysOnChart: 16 },
-    { trackTitle: 'Half Light',   artist: 'Night Pulse',   position: 47, change: 0,  peakPosition: 47, daysOnChart: 5 },
-  ],
-};
-
-function chartFor(dsp: DSP, territory: Territory): ChartEntry[] {
-  const key = `${dsp}:${territory}`;
-  if (MOCK_CHART[key]) return MOCK_CHART[key];
-  // Synthesise something for the demo when the exact pair isn't seeded
-  return (MOCK_CHART['spotify:za'] || []).map((e, i) => ({
-    ...e,
-    position: e.position + (dsp === 'spotify' ? 0 : i + (territory === 'global' ? 5 : 10)),
-    change: e.change + (i % 3 === 0 ? -1 : 1),
-  }));
+function chartFor(_dsp: DSP, _territory: Territory): ChartEntry[] {
+  // Once Spotify/Apple For-Artists OAuth lands, replace this with a real fetch.
+  return [];
 }
 
 export default function MusicCharts() {
@@ -188,8 +168,17 @@ export default function MusicCharts() {
             </tr>
           </thead>
           <tbody>
+            {entries.length === 0 && (
+              <tr>
+                <td colSpan={6} className="px-5 py-12 text-center">
+                  <p className="text-[11px] text-white/30 italic">
+                    No chart data yet. Connect Spotify For Artists or Apple Music For Artists from your dashboard to start tracking positions here.
+                  </p>
+                </td>
+              </tr>
+            )}
             {entries.map((e, idx) => {
-              const isYours = /buddy kay|aqua pearl|ciza|night pulse|lyric storm|al xapo|solomon cyan/i.test(e.artist);
+              const isYours = false;
               return (
                 <motion.tr
                   key={`${e.trackTitle}-${idx}`}

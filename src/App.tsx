@@ -77,7 +77,7 @@ const Pricing = lazy(() => import('./pages/Pricing'));
 const Subscription = lazy(() => import('./pages/Subscription'));
 const CommandCenter = lazy(() => import('./pages/CommandCenter'));
 const Trending = lazy(() => import('./pages/Trending'));
-const LabelView = lazy(() => import('./pages/LabelView'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const MusicCharts = lazy(() => import('./pages/MusicCharts'));
 const AudienceInsights = lazy(() => import('./pages/AudienceInsights'));
 
@@ -208,7 +208,7 @@ export default function App() {
                   <Route path="/studio/:id" element={<ModuleGuard moduleId="studios"><Studio /></ModuleGuard>} />
                   <Route path="/subscription" element={<Subscription />} />
                   <Route path="/trending" element={<Trending />} />
-                  <Route path="/label" element={<LabelView />} />
+                  <Route path="/admin" element={<AdminDashboard />} />
                   <Route path="/analytics/charts" element={<ModuleGuard moduleId="analytics"><MusicCharts /></ModuleGuard>} />
                   <Route path="/analytics/audience" element={<ModuleGuard moduleId="analytics"><AudienceInsights /></ModuleGuard>} />
                 </Route>
