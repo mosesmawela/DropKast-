@@ -281,6 +281,57 @@ export const STUDIOS: StudioDef[] = [
     ],
   },
 
+  {
+    id: 'promo-art',
+    name: 'Promo Art Studio',
+    tagline: 'One prompt → 5 platform sizes',
+    category: 'visual',
+    icon: Layers,
+    accentColor: '#FF4D00',
+    outputKind: 'image',
+    modelId: 'cover-gen',
+    endpoint: '/api/assets/cover',
+    estimatedCostCents: 40,
+    estimatedRuntimeSec: 45,
+    pipeable: true,
+    description:
+      'Generate the full social pack from one prompt: 1:1 (feed), 9:16 (IG story + TikTok cover), 16:9 (YouTube banner), and 16:9 thumb. DSP-compliant out of the box, no text in the wrong spots.',
+    inputs: [
+      {
+        key: 'prompt',
+        label: 'Describe the campaign visual',
+        type: 'textarea',
+        placeholder: 'Late-night neon city palette, single figure silhouette, deep teal + magenta, editorial.',
+        required: true,
+        hint: 'One direction — the studio generates all 5 sizes consistent with this prompt.',
+      },
+      {
+        key: 'references',
+        label: 'Reference images',
+        type: 'reference-images',
+        hint: 'Drop up to 5 references to lock the visual language across all 5 outputs.',
+      },
+      {
+        key: 'sizes',
+        label: 'Sizes to generate',
+        type: 'select',
+        defaultValue: 'all',
+        options: [
+          { value: 'all', label: 'All 5 (square + 2× 9:16 + 2× 16:9)' },
+          { value: 'square', label: '1:1 only (DSP cover)' },
+          { value: 'vertical', label: 'Vertical only (9:16 — Stories/TikTok)' },
+          { value: 'horizontal', label: 'Horizontal only (16:9 — YouTube banner)' },
+        ],
+      },
+      {
+        key: 'title',
+        label: 'Track title to overlay (optional)',
+        type: 'text',
+        placeholder: 'Skyline',
+      },
+    ],
+  },
+
   /* =====================================================================
    * STRATEGY
    * ===================================================================== */

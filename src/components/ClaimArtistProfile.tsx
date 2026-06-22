@@ -29,15 +29,18 @@ interface Props {
   compact?: boolean;
 }
 
-function loadClaimed(): { spotify: boolean; apple: boolean } {
+interface ClaimedState { spotify: boolean; apple: boolean; audiomack: boolean }
+
+function loadClaimed(): ClaimedState {
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"spotify":false,"apple":false}');
+    const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    return { spotify: !!raw.spotify, apple: !!raw.apple, audiomack: !!raw.audiomack };
   } catch {
-    return { spotify: false, apple: false };
+    return { spotify: false, apple: false, audiomack: false };
   }
 }
 
-function saveClaimed(c: { spotify: boolean; apple: boolean }) {
+function saveClaimed(c: ClaimedState) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(c));
   } catch {/* ignore */}
@@ -54,11 +57,15 @@ export default function ClaimArtistProfile({ artistName, spotifyArtistId, appleA
     ? `https://artists.apple.com/ui/artist/${appleArtistId}`
     : 'https://artists.apple.com/';
 
-  const markClaimed = (which: 'spotify' | 'apple') => {
+  const audiomackUrl = 'https://artists.audiomack.com/';
+
+  const markClaimed = (which: keyof ClaimedState) => {
     const next = { ...claimed, [which]: true };
     setClaimed(next);
     saveClaimed(next);
-    toast.success(`Marked ${which === 'spotify' ? 'Spotify' : 'Apple Music'} For Artists as claimed`, {
+    const label =
+      which === 'spotify' ? 'Spotify' : which === 'apple' ? 'Apple Music' : 'Audiomack';
+    toast.success(`Marked ${label} For Artists as claimed`, {
       description: 'You can change this later if needed.',
     });
   };
@@ -83,7 +90,7 @@ export default function ClaimArtistProfile({ artistName, spotifyArtistId, appleA
     );
   }
 
-  const allClaimed = claimed.spotify && claimed.apple;
+  const allClaimed = claimed.spotify && claimed.apple && claimed.audiomack;
 
   return (
     <div
@@ -117,7 +124,7 @@ export default function ClaimArtistProfile({ artistName, spotifyArtistId, appleA
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {/* Spotify card */}
         <div
           className={cn(
@@ -201,6 +208,52 @@ export default function ClaimArtistProfile({ artistName, spotifyArtistId, appleA
               </a>
               <button
                 onClick={() => markClaimed('apple')}
+                className="h-10 px-3 border border-white/10 text-white/50 text-[10px] font-black uppercase italic tracking-widest hover:border-white hover:text-white transition-all"
+                title="Already claimed elsewhere"
+              >
+                Already done
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Audiomack card */}
+        <div
+          className={cn(
+            'border p-4 transition-all',
+            claimed.audiomack ? 'border-green-500/30 bg-green-500/5' : 'border-white/10 bg-black/40',
+          )}
+        >
+          <div className="flex items-center gap-3 mb-3">
+            <Music className="w-5 h-5" style={{ color: '#FFA200' }} />
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-black italic text-white">Audiomack For Artists</div>
+              <div className="text-[10px] text-white/40 italic">Big in Africa + hip-hop</div>
+            </div>
+            {claimed.audiomack && <Check className="w-4 h-4 text-green-400" />}
+          </div>
+          {claimed.audiomack ? (
+            <a
+              href={audiomackUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full h-10 border border-green-500/30 text-green-400 text-[10px] font-black uppercase italic tracking-widest hover:bg-green-500 hover:text-black transition-all flex items-center justify-center gap-2"
+            >
+              Open dashboard <ExternalLink className="w-3 h-3" />
+            </a>
+          ) : (
+            <div className="flex gap-2">
+              <a
+                href={audiomackUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setTimeout(() => markClaimed('audiomack'), 1000)}
+                className="flex-1 h-10 bg-white text-black text-[10px] font-black uppercase italic tracking-widest hover:bg-[#FFA200] hover:text-black transition-all flex items-center justify-center gap-2"
+              >
+                Claim now <ExternalLink className="w-3 h-3" />
+              </a>
+              <button
+                onClick={() => markClaimed('audiomack')}
                 className="h-10 px-3 border border-white/10 text-white/50 text-[10px] font-black uppercase italic tracking-widest hover:border-white hover:text-white transition-all"
                 title="Already claimed elsewhere"
               >

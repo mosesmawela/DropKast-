@@ -1,5 +1,5 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { 
   TrendingUp, 
   Wallet,
@@ -132,6 +132,8 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-12 max-w-7xl mx-auto py-8">
+      {/* Balance + payout strip — front-and-center money view */}
+      <BalanceStrip />
       <ClaimArtistProfile artistName={user?.artistName || 'your project'} />
       <ScrollReveal direction="down" variant="blur">
         <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-[var(--border-main)] pb-10 relative">
@@ -347,5 +349,64 @@ export default function Dashboard() {
         </div>
       </ScrollReveal>
     </div>
+  );
+}
+
+/* =========================================================================
+ * BalanceStrip — withdrawable balance + quick payout button on Dashboard
+ * ========================================================================= */
+function BalanceStrip() {
+  const [data, setData] = useState<{ balanceCents: number; lifetimeCents: number; nextPayoutDate?: string } | null>(null);
+
+  useEffect(() => {
+    fetch('/api/earnings')
+      .then((r) => r.json())
+      .then((d) => {
+        const totalCents = d?.summary?.totalCents ?? 0;
+        const lifetimeCents = d?.summary?.totalCents ?? totalCents;
+        setData({ balanceCents: totalCents, lifetimeCents });
+      })
+      .catch(() => setData({ balanceCents: 0, lifetimeCents: 0 }));
+  }, []);
+
+  const balance = (data?.balanceCents || 0) / 100;
+  const lifetime = (data?.lifetimeCents || 0) / 100;
+
+  return (
+    <Link
+      to="/earnings"
+      className="manifest-card flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-gradient-to-r from-primary/[0.08] via-dark to-dark border border-primary/30 p-6 hover:border-primary transition-all group"
+    >
+      <div className="flex items-center gap-6">
+        <Wallet className="w-7 h-7 text-primary" />
+        <div>
+          <div className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic mb-1">
+            Available balance
+          </div>
+          <div className="text-4xl md:text-5xl font-black italic text-white tabular-nums">
+            ${balance.toFixed(2)}
+          </div>
+          <div className="text-[10px] text-white/40 italic mt-1">
+            Lifetime · ${lifetime.toLocaleString()} · USD
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <div className="text-right hidden md:block">
+          <div className="text-[9px] font-black text-white/40 uppercase tracking-widest italic">Next payout</div>
+          <div className="text-sm font-black italic text-white">
+            {data?.nextPayoutDate || 'On demand'}
+          </div>
+        </div>
+        <button
+          onClick={(e) => { e.preventDefault(); window.location.href = '/earnings?action=withdraw'; }}
+          className="h-12 px-6 bg-white text-black hover:bg-primary hover:text-white text-[10px] font-black uppercase italic tracking-widest transition-all flex items-center gap-2"
+        >
+          Withdraw
+          <ArrowUpRight className="w-3.5 h-3.5" />
+        </button>
+      </div>
+    </Link>
   );
 }

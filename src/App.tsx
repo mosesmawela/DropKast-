@@ -77,6 +77,8 @@ const Pricing = lazy(() => import('./pages/Pricing'));
 const Subscription = lazy(() => import('./pages/Subscription'));
 const CommandCenter = lazy(() => import('./pages/CommandCenter'));
 const Trending = lazy(() => import('./pages/Trending'));
+const MusicCharts = lazy(() => import('./pages/MusicCharts'));
+const AudienceInsights = lazy(() => import('./pages/AudienceInsights'));
 
 import WelcomeScreen from './components/layout/WelcomeScreen';
 import PortalPage from './pages/PortalPage';
@@ -205,6 +207,8 @@ export default function App() {
                   <Route path="/studio/:id" element={<ModuleGuard moduleId="studios"><Studio /></ModuleGuard>} />
                   <Route path="/subscription" element={<Subscription />} />
                   <Route path="/trending" element={<Trending />} />
+                  <Route path="/analytics/charts" element={<ModuleGuard moduleId="analytics"><MusicCharts /></ModuleGuard>} />
+                  <Route path="/analytics/audience" element={<ModuleGuard moduleId="analytics"><AudienceInsights /></ModuleGuard>} />
                 </Route>
               </Route>
 

@@ -25,7 +25,8 @@ export type StudioId =
   | 'lyrics'
   | 'strategy'
   | 'hook'
-  | 'lipsync';
+  | 'lipsync'
+  | 'promo-art';
 
 /** Model provider types */
 export type ModelProvider = 'anthropic' | 'openai' | 'internal' | 'external-api';
