@@ -25,6 +25,7 @@ import {
   Mail,
   Building2,
   Link2,
+  Flame,
   X,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
@@ -59,6 +60,7 @@ const artistNavGroups: NavGroup[] = [
       { icon: LayoutDashboard, label: 'Home',        path: '/dashboard', moduleId: 'home' },
       { icon: Mail,            label: 'Messages',    path: '/messages',  moduleId: 'messages' },
       { icon: Sparkles,        label: 'Studios',     path: '/studios',   moduleId: 'studios' },
+      { icon: Flame,           label: "What's Trending", path: '/trending', moduleId: 'trending' },
     ],
   },
   // Catalogue — releases + artwork-style assets

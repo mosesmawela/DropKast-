@@ -76,6 +76,7 @@ const Studio = lazy(() => import('./pages/Studio'));
 const Pricing = lazy(() => import('./pages/Pricing'));
 const Subscription = lazy(() => import('./pages/Subscription'));
 const CommandCenter = lazy(() => import('./pages/CommandCenter'));
+const Trending = lazy(() => import('./pages/Trending'));
 
 import WelcomeScreen from './components/layout/WelcomeScreen';
 import PortalPage from './pages/PortalPage';
@@ -203,6 +204,7 @@ export default function App() {
                   <Route path="/studios" element={<ModuleGuard moduleId="studios"><Studios /></ModuleGuard>} />
                   <Route path="/studio/:id" element={<ModuleGuard moduleId="studios"><Studio /></ModuleGuard>} />
                   <Route path="/subscription" element={<Subscription />} />
+                  <Route path="/trending" element={<Trending />} />
                 </Route>
               </Route>
 

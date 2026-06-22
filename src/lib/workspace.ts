@@ -30,6 +30,7 @@ export type ModuleId =
   | 'smart-links'
   | 'advances'
   | 'studios'
+  | 'trending'
   | 'settings';
 
 export type ModuleCategory = 'core' | 'ai-tools' | 'creators' | 'business';
@@ -63,6 +64,7 @@ export const MODULES: ModuleDef[] = [
 
   // AI TOOLS — opt-in for artists who want them
   { id: 'studios',      label: 'Studios',      path: '/studios',       category: 'ai-tools', description: 'All AI gen tools — covers, video, captions, A&R critique, EPKs. Unified gallery.', defaultOn: true },
+  { id: 'trending',     label: "What's Trending", path: '/trending',   category: 'ai-tools', description: 'Emerging sub-genres + community signals to pick your next lane.', defaultOn: true },
   { id: 'ai-providers', label: 'AI Models',    path: '/ai-providers',  category: 'ai-tools', description: 'Pick which AI brain runs your assistant.', defaultOn: true },
   { id: 'pre-release',  label: 'Pre-Release',  path: '/pre-release',   category: 'ai-tools', description: 'TikTok/Reels seeding before drop day.', defaultOn: true },
   { id: 'academy',      label: 'Academy',      path: '/academy',       category: 'ai-tools', description: 'Tutorials and walkthroughs.' },

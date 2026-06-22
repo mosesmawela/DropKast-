@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 
 export type Theme = 'dark' | 'light';
 export type VisualStyle = 'default' | 'neumorphism' | 'material' | 'brutalism' | 'skeuomorphism' | 'minimalist' | 'glassmorphism';
-export type Vibe = 'LVRN_GREEN' | 'TECHNICAL_ORANGE' | 'NEON_PINK' | 'CYBER_BLUE' | 'MONO_WHITE';
+export type Vibe = 'LVRN_GREEN' | 'TECHNICAL_ORANGE' | 'NEON_PINK' | 'CYBER_BLUE' | 'MONO_WHITE' | 'CUSTOM';
 export type UserRole = 'ARTIST' | 'INFLUENCER' | 'DJ' | 'LABEL';
 
 const VIBE_COLORS: Record<Vibe, { hex: string; rgb: string }> = {

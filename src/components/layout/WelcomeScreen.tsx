@@ -493,40 +493,8 @@ const AppearanceSlide: React.FC<{
       </div>
 
       {/* Color */}
-      <div className="space-y-2">
-        <div className="text-[9px] font-mono font-black uppercase tracking-[0.3em] text-white/40 italic">
-          Color · {colors.find((c) => c.id === vibe)?.name}
-        </div>
-        <div className="grid grid-cols-5 gap-2">
-          {colors.map((c) => {
-            const active = vibe === c.id;
-            return (
-              <button
-                key={c.id}
-                onClick={() => onVibe(c.id)}
-                className={cn(
-                  'aspect-square relative border transition-all',
-                  active ? 'scale-105 border-2' : 'border border-white/10 hover:border-white/30',
-                )}
-                style={{
-                  background: `linear-gradient(135deg, ${c.hex}, ${c.hex}88)`,
-                  borderColor: active ? c.hex : undefined,
-                  boxShadow: active ? `0 0 0 2px ${c.hex}66` : undefined,
-                }}
-                aria-label={c.name}
-                title={c.name}
-              >
-                {active && (
-                  <CheckCircle2
-                    className="absolute inset-0 m-auto w-3.5 h-3.5"
-                    style={{ color: '#000', filter: 'drop-shadow(0 0 2px rgba(255,255,255,0.5))' }}
-                  />
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      <CustomColorPicker vibe={vibe} onVibe={onVibe} colors={colors} />
+
 
       {/* Theme */}
       <div className="space-y-2">
@@ -669,5 +637,155 @@ const PortalSlide: React.FC<{
     </p>
   </div>
 );
+
+/* =========================================================================
+ * CustomColorPicker — preset swatches + free-form hex input
+ * ========================================================================= */
+const CUSTOM_KEY = 'CUSTOM' as Vibe; // sentinel — not in COLORS array
+
+const CustomColorPicker: React.FC<{
+  vibe: Vibe;
+  onVibe: (v: Vibe) => void;
+  colors: typeof COLORS;
+}> = ({ vibe, onVibe, colors }) => {
+  // Read custom-color override from localStorage if previously saved
+  const [customHex, setCustomHex] = React.useState<string>(() => {
+    if (typeof window === 'undefined') return '#FF4D00';
+    try {
+      return localStorage.getItem('campaign-os-custom-color') || '#FF4D00';
+    } catch {
+      return '#FF4D00';
+    }
+  });
+  const [showPicker, setShowPicker] = React.useState(false);
+  const isCustom = vibe === CUSTOM_KEY;
+
+  const applyCustom = (hex: string) => {
+    setCustomHex(hex);
+    try {
+      localStorage.setItem('campaign-os-custom-color', hex);
+      // Push the live CSS variable so the rest of the app picks it up immediately
+      document.documentElement.style.setProperty('--color-primary', hex);
+      const rgb = hexToRgb(hex);
+      if (rgb) document.documentElement.style.setProperty('--primary-raw', `${rgb.r}, ${rgb.g}, ${rgb.b}`);
+    } catch {/* ignore */}
+    onVibe(CUSTOM_KEY);
+  };
+
+  const activeName = isCustom ? `Custom · ${customHex}` : (colors.find((c) => c.id === vibe)?.name ?? '—');
+
+  return (
+    <div className="space-y-2">
+      <div className="text-[9px] font-mono font-black uppercase tracking-[0.3em] text-white/40 italic">
+        Color · {activeName}
+      </div>
+      <div className="grid grid-cols-6 gap-2">
+        {colors.map((c) => {
+          const active = vibe === c.id;
+          return (
+            <button
+              key={c.id}
+              onClick={() => onVibe(c.id)}
+              className={cn(
+                'aspect-square relative border transition-all',
+                active ? 'scale-105 border-2' : 'border border-white/10 hover:border-white/30',
+              )}
+              style={{
+                background: `linear-gradient(135deg, ${c.hex}, ${c.hex}88)`,
+                borderColor: active ? c.hex : undefined,
+                boxShadow: active ? `0 0 0 2px ${c.hex}66` : undefined,
+              }}
+              aria-label={c.name}
+              title={c.name}
+            >
+              {active && (
+                <CheckCircle2
+                  className="absolute inset-0 m-auto w-3.5 h-3.5"
+                  style={{ color: '#000', filter: 'drop-shadow(0 0 2px rgba(255,255,255,0.5))' }}
+                />
+              )}
+            </button>
+          );
+        })}
+
+        {/* Custom color tile */}
+        <button
+          onClick={() => setShowPicker((s) => !s)}
+          className={cn(
+            'aspect-square relative border transition-all flex items-center justify-center',
+            isCustom ? 'scale-105 border-2' : 'border border-white/10 hover:border-white/30',
+          )}
+          style={{
+            background: isCustom
+              ? `linear-gradient(135deg, ${customHex}, ${customHex}88)`
+              : 'conic-gradient(from 0deg, #FF4D00, #F472B6, #A78BFA, #22D3EE, #84CC16, #FBBF24, #FF4D00)',
+            borderColor: isCustom ? customHex : undefined,
+            boxShadow: isCustom ? `0 0 0 2px ${customHex}66` : undefined,
+          }}
+          aria-label="Custom color"
+          title="Pick your own colour"
+        >
+          {isCustom ? (
+            <CheckCircle2
+              className="w-3.5 h-3.5"
+              style={{ color: '#000', filter: 'drop-shadow(0 0 2px rgba(255,255,255,0.5))' }}
+            />
+          ) : (
+            <span className="text-[10px] font-mono font-black text-black/80">＋</span>
+          )}
+        </button>
+      </div>
+
+      {/* Picker panel — opens when user clicks the custom tile */}
+      {showPicker && (
+        <div className="mt-2 p-3 border border-white/10 bg-black/40 space-y-2">
+          <div className="flex items-center gap-2">
+            <input
+              type="color"
+              value={customHex}
+              onChange={(e) => applyCustom(e.target.value)}
+              className="w-12 h-9 bg-transparent border border-white/10 cursor-pointer"
+              aria-label="Pick custom color"
+            />
+            <input
+              type="text"
+              value={customHex}
+              onChange={(e) => {
+                const v = e.target.value;
+                if (/^#?[0-9a-fA-F]{0,6}$/.test(v.replace('#', ''))) {
+                  const hex = v.startsWith('#') ? v : `#${v}`;
+                  setCustomHex(hex);
+                  if (/^#[0-9a-fA-F]{6}$/.test(hex)) applyCustom(hex);
+                }
+              }}
+              placeholder="#FF4D00"
+              className="flex-1 bg-black border border-white/10 py-1.5 px-3 text-[11px] font-mono text-white focus:outline-none focus:border-primary"
+            />
+          </div>
+          <div className="flex gap-1.5">
+            {['#FF4D00', '#F472B6', '#A78BFA', '#22D3EE', '#84CC16', '#FBBF24', '#FFFFFF'].map((h) => (
+              <button
+                key={h}
+                onClick={() => applyCustom(h)}
+                className="w-6 h-6 border border-white/10 hover:border-white/40 transition-all"
+                style={{ background: h }}
+                aria-label={`Use ${h}`}
+              />
+            ))}
+          </div>
+          <p className="text-[9px] font-mono uppercase tracking-widest italic text-white/30">
+            Live preview — every page picks this up via --color-primary
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  if (!m) return null;
+  return { r: parseInt(m[1], 16), g: parseInt(m[2], 16), b: parseInt(m[3], 16) };
+}
 
 export default WelcomeScreen;
