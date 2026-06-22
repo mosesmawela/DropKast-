@@ -90,6 +90,7 @@ const artistNavGroups: NavGroup[] = [
       { icon: BarChart,  label: 'Analytics',    path: '/analytics', moduleId: 'analytics' },
       { icon: Wallet,    label: 'Earnings',     path: '/earnings',  moduleId: 'earnings' },
       { icon: Sparkles,  label: 'Advances',     path: '/advances',  moduleId: 'advances' },
+      { icon: Building2, label: 'Label OS',     path: '/label',     moduleId: 'label-view' },
       { icon: FileText,  label: 'Split Sheets', path: '/splits',    moduleId: 'splits' },
     ],
   },

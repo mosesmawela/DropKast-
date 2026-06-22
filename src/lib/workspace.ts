@@ -31,6 +31,7 @@ export type ModuleId =
   | 'advances'
   | 'studios'
   | 'trending'
+  | 'label-view'
   | 'settings';
 
 export type ModuleCategory = 'core' | 'ai-tools' | 'creators' | 'business';
@@ -77,6 +78,7 @@ export const MODULES: ModuleDef[] = [
   { id: 'social-ads',   label: 'Social Ads',   path: '/social',        category: 'creators', description: 'Spotify/Meta/TikTok ad campaigns.' },
 
   // BUSINESS — back-office for serious users
+  { id: 'label-view',   label: 'Label OS',     path: '/label',         category: 'business', description: 'Label-tier shell: inbox + pipeline + calendar + roster + splits + submit-on-behalf.', defaultOn: true },
   { id: 'splits',       label: 'Split Sheets', path: '/splits',        category: 'business', description: 'Co-writer and producer splits.', defaultOn: true },
   { id: 'compliance',   label: 'Compliance',   path: '/compliance',    category: 'business', description: 'GDPR exports, DMCA, audit log.' },
 ];
