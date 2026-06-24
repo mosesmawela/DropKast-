@@ -79,6 +79,17 @@ export interface StudioDef {
   /** References a model definition from models.ts. When set, input fields,
    *  endpoint, async config, and capabilities are inherited from the model. */
   modelId?: string;
+  /** Operational status. 'coming-soon' tools render a badge and a disabled
+   *  run button — used for studios whose real provider isn't wired yet, so we
+   *  never ship a button that pretends to work. Defaults to 'live'. */
+  status?: 'live' | 'coming-soon';
+  /** One-line reason shown on the coming-soon badge tooltip. */
+  comingSoonNote?: string;
+  /** Honesty badge: how the output is produced.
+   *  'ai-draft'  → AI generates, user edits (they're the author)
+   *  'ai-insight'→ AI analysis/suggestion, shown with confidence, not a verdict
+   *  'human'     → a real person (LVRN A&R) produces/approves the result */
+  trust?: 'ai-draft' | 'ai-insight' | 'human';
 }
 
 export type JobStatus = 'queued' | 'running' | 'done' | 'failed';

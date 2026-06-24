@@ -106,7 +106,13 @@ export default function StudioShell({ studio }: Props) {
       });
   }, [input, studio.inputs]);
 
+  const comingSoon = studio.status === 'coming-soon';
+
   const handleRun = async () => {
+    if (comingSoon) {
+      toast('This studio is coming soon — the provider isn\'t wired yet.', { icon: '🔧' });
+      return;
+    }
     if (!canRun) {
       toast.error('Fill in the required fields first');
       return;
@@ -195,6 +201,17 @@ export default function StudioShell({ studio }: Props) {
                 <Sparkles className="w-3 h-3" /> Inputs
               </div>
 
+              {comingSoon && (
+                <div className="border border-yellow-500/30 bg-yellow-500/5 p-4">
+                  <div className="text-[10px] font-black text-yellow-400 uppercase tracking-widest italic mb-1">
+                    Coming soon
+                  </div>
+                  <p className="text-[11px] text-white/50 italic leading-relaxed">
+                    {studio.comingSoonNote || 'This studio isn\'t wired to a live provider yet.'} You can preview the inputs, but Generate is disabled until it\'s live.
+                  </p>
+                </div>
+              )}
+
               {studio.inputs.map((field) => (
                 <FieldRenderer
                   key={field.key}
@@ -219,15 +236,20 @@ export default function StudioShell({ studio }: Props) {
 
               <button
                 onClick={handleRun}
-                disabled={!canRun || runningCount > 0}
+                disabled={comingSoon || !canRun || runningCount > 0}
                 className={cn(
                   'w-full h-14 flex items-center justify-center gap-3 text-[11px] font-black uppercase italic tracking-widest transition-all',
-                  canRun && runningCount === 0
+                  !comingSoon && canRun && runningCount === 0
                     ? 'bg-white text-black hover:bg-primary hover:text-white'
                     : 'bg-white/10 text-white/30 cursor-not-allowed',
                 )}
               >
-                {runningCount > 0 ? (
+                {comingSoon ? (
+                  <>
+                    <Clock className="w-4 h-4" />
+                    Coming soon
+                  </>
+                ) : runningCount > 0 ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
                     Running ({runningCount})...

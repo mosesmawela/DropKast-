@@ -11,8 +11,16 @@ import { Sparkles, Play, ArrowRight, Layers, Activity } from 'lucide-react';
 import { STUDIOS, CATEGORY_LABEL } from '../lib/studios/registry';
 import { useStudioOutputs } from '../lib/studios/useStudioOutputs';
 import type { StudioCategory } from '../lib/studios/types';
+import { cn } from '../lib/utils';
 
 const CATEGORY_ORDER: StudioCategory[] = ['visual', 'video', 'copy', 'audio', 'strategy'];
+
+/** Honesty badges — how each studio's output is produced. */
+export const TRUST_BADGE: Record<string, { label: string; color: string; tip: string }> = {
+  'ai-draft':   { label: 'AI draft · you edit', color: '#FF8A4C', tip: 'AI generates a starting point. You review and edit — you are the author.' },
+  'ai-insight': { label: 'AI insight',           color: '#3B82F6', tip: 'AI analysis and suggestions shown with confidence — not a final verdict.' },
+  'human':      { label: 'Human-reviewed',       color: '#22C55E', tip: 'A real LVRN A&R reviews this — not an algorithm.' },
+};
 
 export default function Studios() {
   const { outputs } = useStudioOutputs();
@@ -69,6 +77,8 @@ export default function Studios() {
               {inCat.map((s, idx) => {
                 const Icon = s.icon;
                 const count = counts.get(s.id) || 0;
+                const comingSoon = s.status === 'coming-soon';
+                const trust = TRUST_BADGE[s.trust || 'ai-draft'];
                 return (
                   <motion.div
                     key={s.id}
@@ -78,7 +88,10 @@ export default function Studios() {
                   >
                     <Link
                       to={`/studio/${s.id}`}
-                      className="manifest-card p-6 bg-dark border border-white/5 hover:border-primary/40 transition-all flex flex-col gap-4 h-full group"
+                      className={cn(
+                        'manifest-card p-6 bg-dark border border-white/5 transition-all flex flex-col gap-4 h-full group relative',
+                        comingSoon ? 'opacity-70 hover:border-white/20' : 'hover:border-primary/40',
+                      )}
                     >
                       <div className="flex items-start justify-between">
                         <div
@@ -87,26 +100,41 @@ export default function Studios() {
                         >
                           <Icon className="w-5 h-5" />
                         </div>
-                        {count > 0 && (
+                        {comingSoon ? (
+                          <span className="text-[8px] font-black uppercase tracking-widest italic px-2 py-1 border border-yellow-500/40 text-yellow-400 bg-yellow-500/5">
+                            Coming soon
+                          </span>
+                        ) : count > 0 ? (
                           <div className="text-right">
                             <div className="text-[8px] font-black text-white/30 uppercase tracking-widest italic">
                               In gallery
                             </div>
                             <div className="text-base font-black italic text-white">{count}</div>
                           </div>
-                        )}
+                        ) : null}
                       </div>
 
                       <div>
-                        <h3 className="text-xl font-black italic text-white tracking-tight mb-1 group-hover:text-primary transition-colors">
-                          {s.name}
-                        </h3>
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="text-xl font-black italic text-white tracking-tight group-hover:text-primary transition-colors">
+                            {s.name}
+                          </h3>
+                        </div>
                         <p className="text-[12px] text-white/50 italic leading-relaxed">{s.tagline}</p>
                       </div>
 
                       <div className="text-[11px] text-white/40 italic leading-relaxed flex-1">
                         {s.description}
                       </div>
+
+                      {/* Honesty badge — how the output is produced */}
+                      <span
+                        className="self-start text-[8px] font-black uppercase tracking-widest italic px-2 py-1 border"
+                        style={{ borderColor: `${trust.color}40`, color: trust.color, background: `${trust.color}10` }}
+                        title={trust.tip}
+                      >
+                        {trust.label}
+                      </span>
 
                       <div className="flex items-center justify-between pt-3 border-t border-white/5">
                         <div className="flex items-center gap-2 text-[10px] text-white/30 italic">
@@ -118,10 +146,17 @@ export default function Studios() {
                             </>
                           )}
                         </div>
-                        <div className="flex items-center gap-1.5 text-[10px] font-black text-primary uppercase tracking-widest italic">
-                          <Play className="w-3 h-3" /> Open
-                          <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
-                        </div>
+                        {comingSoon ? (
+                          <div className="flex items-center gap-1.5 text-[10px] font-black text-white/30 uppercase tracking-widest italic">
+                            Preview
+                            <ArrowRight className="w-3 h-3" />
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1.5 text-[10px] font-black text-primary uppercase tracking-widest italic">
+                            <Play className="w-3 h-3" /> Open
+                            <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                          </div>
+                        )}
                       </div>
                     </Link>
                   </motion.div>
