@@ -1,4 +1,4 @@
-import { motion } from 'motion/react';
+import { motion, Variants } from 'motion/react';
 import { ReactNode } from 'react';
 import { cn } from '../../lib/utils';
 
@@ -10,6 +10,27 @@ interface MarqueeProps {
   className?: string;
   fadeEdges?: boolean;
 }
+
+// ⚡ Bolt: Hoist marquee variants and transition to avoid redundant object allocations
+// Using the 'custom' prop to pass dynamic speed into the transition.
+const MARQUEE_VARIANTS: Variants = {
+  animate: (speed: number) => ({
+    x: ['0%', '-50%'],
+    transition: {
+      duration: speed,
+      repeat: Infinity,
+      ease: "linear",
+    }
+  }),
+  animateReverse: (speed: number) => ({
+    x: ['-50%', '0%'],
+    transition: {
+      duration: speed,
+      repeat: Infinity,
+      ease: "linear",
+    }
+  })
+};
 
 export default function Marquee({
   children,
@@ -31,14 +52,9 @@ export default function Marquee({
       )}
 
       <motion.div
-        animate={{
-          x: isLeft ? ['0%', '-50%'] : ['-50%', '0%'],
-        }}
-        transition={{
-          duration: speed,
-          repeat: Infinity,
-          ease: "linear",
-        }}
+        variants={MARQUEE_VARIANTS}
+        custom={speed}
+        animate={isLeft ? "animate" : "animateReverse"}
         className={cn(
           "flex min-w-full shrink-0 items-center justify-around gap-8 py-4",
           pauseOnHover && "group-hover:[animation-play-state:paused]"

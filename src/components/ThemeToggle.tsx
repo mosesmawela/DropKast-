@@ -1,7 +1,7 @@
 import { useTheme, VisualStyle } from '../context/ThemeContext';
 import { Sun, Moon, Palette, Cpu, Smartphone, Box, Zap, Minus, GlassWater } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { cn } from '../lib/utils';
 
 const styles: { id: VisualStyle; label: string; icon: any }[] = [
@@ -14,7 +14,29 @@ const styles: { id: VisualStyle; label: string; icon: any }[] = [
   { id: 'glassmorphism', label: 'Glassmorphism', icon: GlassWater },
 ];
 
-export default function ThemeToggle() {
+// ⚡ Bolt: Hoist static motion variants and wrap in React.memo to prevent unnecessary re-renders.
+// This component is in the Navbar and doesn't need to re-render when other Navbar elements (like search) change.
+const ICON_VARIANTS = {
+  initial: { rotate: -90, opacity: 0 },
+  animate: { rotate: 0, opacity: 1 },
+  exit: { rotate: 90, opacity: 0 },
+};
+
+const DROPDOWN_VARIANTS = {
+  initial: { y: 10, opacity: 0, scale: 0.95 },
+  animate: { y: 0, opacity: 1, scale: 1 },
+  exit: { y: 10, opacity: 0, scale: 0.95 },
+};
+
+const FADE_VARIANTS = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit: { opacity: 0 },
+};
+
+const TRANSITION_ICON = { duration: 0.2 };
+
+function ThemeToggle() {
   const { theme, visualStyle, toggleTheme, setVisualStyle } = useTheme();
   const [showDropdown, setShowDropdown] = useState(false);
 
@@ -43,20 +65,22 @@ export default function ThemeToggle() {
             {theme === 'dark' ? (
               <motion.div
                 key="moon"
-                initial={{ rotate: -90, opacity: 0 }}
-                animate={{ rotate: 0, opacity: 1 }}
-                exit={{ rotate: 90, opacity: 0 }}
-                transition={{ duration: 0.2 }}
+                variants={ICON_VARIANTS}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                transition={TRANSITION_ICON}
               >
                 <Moon className="w-4 h-4 text-white/40 group-hover:text-white transition-colors" />
               </motion.div>
             ) : (
               <motion.div
                 key="sun"
-                initial={{ rotate: -90, opacity: 0 }}
-                animate={{ rotate: 0, opacity: 1 }}
-                exit={{ rotate: 90, opacity: 0 }}
-                transition={{ duration: 0.2 }}
+                variants={ICON_VARIANTS}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                transition={TRANSITION_ICON}
               >
                 <Sun className="w-4 h-4 text-primary" />
               </motion.div>
@@ -70,16 +94,18 @@ export default function ThemeToggle() {
         {showDropdown && (
           <>
             <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              variants={FADE_VARIANTS}
+              initial="initial"
+              animate="animate"
+              exit="exit"
               onClick={() => setShowDropdown(false)}
               className="fixed inset-0 z-40"
             />
             <motion.div
-              initial={{ y: 10, opacity: 0, scale: 0.95 }}
-              animate={{ y: 0, opacity: 1, scale: 1 }}
-              exit={{ y: 10, opacity: 0, scale: 0.95 }}
+              variants={DROPDOWN_VARIANTS}
+              initial="initial"
+              animate="animate"
+              exit="exit"
               className="absolute bottom-full right-0 mb-4 w-48 bg-surface-low border border-white/10 shadow-2xl z-50 overflow-hidden"
             >
               <div className="p-2 border-b border-white/5 bg-white/5">
@@ -116,3 +142,5 @@ export default function ThemeToggle() {
     </div>
   );
 }
+
+export default React.memo(ThemeToggle);
