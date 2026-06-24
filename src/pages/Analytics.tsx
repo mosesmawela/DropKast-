@@ -26,21 +26,17 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
+import { useReleases } from '../context/ReleaseContext';
 import ScrollReveal from '../components/animations/ScrollReveal';
 import AnimatedBeam from '../components/animations/AnimatedBeam';
 import CircularPulse from '../components/animations/CircularPulse';
 
-const streamData = [
-  { name: 'Jan', value: 1200000 },
-  { name: 'Feb', value: 1500000 },
-  { name: 'Mar', value: 1800000 },
-  { name: 'Apr', value: 2400000 },
-  { name: 'May', value: 3100000 },
-  { name: 'Jun', value: 2800000 },
-];
+// Populated from real analytics once a release is collecting streams.
+const streamData: { name: string; value: number }[] = [];
 
 export default function Analytics() {
   const navigate = useNavigate();
+  const { allReleases } = useReleases();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -172,6 +168,12 @@ export default function Analytics() {
               <div className="barcode-sim opacity-10" />
             </div>
             <div className="h-[300px] w-full">
+              {streamData.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center border border-dashed border-white/10 bg-white/[0.01] gap-2">
+                  <span className="text-white/20 font-mono text-[11px] uppercase tracking-widest italic">No stream data yet</span>
+                  <span className="text-white/15 font-mono text-[9px] uppercase tracking-widest italic">Growth charts build once your releases go live</span>
+                </div>
+              ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={streamData}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ffffff0a" />
@@ -209,6 +211,7 @@ export default function Analytics() {
                   />
                 </LineChart>
               </ResponsiveContainer>
+              )}
             </div>
           </div>
 
@@ -228,34 +231,10 @@ export default function Analytics() {
                 </div>
              </div>
 
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 relative z-10">
-                {[
-                  { region: 'N. America', trend: '+14%', hot: false, users: '840K' },
-                  { region: 'W. Europe', trend: '+22%', hot: true, users: '1.2M' },
-                  { region: 'S. America', trend: '+48%', hot: true, users: '2.1M' },
-                  { region: 'Asia Pacific', trend: '+8%', hot: false, users: '520K' },
-                ].map((item, i) => (
-                   <motion.div 
-                    key={i}
-                    whileHover={{ y: -5 }}
-                    className={cn(
-                      "p-6 border flex flex-col gap-4",
-                      item.hot ? "bg-primary/5 border-primary/20" : "bg-white/5 border-white/5"
-                    )}
-                   >
-                      <div className="flex items-center justify-between">
-                         <span className="text-[10px] font-black text-white/30 uppercase tracking-widest italic">{item.region}</span>
-                         {item.hot && <Sparkles className="w-3 h-3 text-primary" />}
-                      </div>
-                      <div>
-                         <div className="text-2xl font-black text-white italic mb-1">{item.trend}</div>
-                         <div className="text-[9px] font-black text-white/20 uppercase tracking-widest">{item.users} Listeners</div>
-                      </div>
-                      <button className="mt-2 py-2 px-4 bg-white/5 hover:bg-primary hover:text-white transition-all text-[8px] font-black uppercase tracking-widest italic font-mono border border-white/5">
-                         Target Market
-                      </button>
-                   </motion.div>
-                ))}
+             <div className="relative z-10 py-12 text-center border border-dashed border-white/10 bg-white/[0.01]">
+                <span className="text-white/20 font-mono text-[11px] uppercase tracking-widest italic">
+                  Territory breakdown appears once your releases collect streams
+                </span>
              </div>
           </div>
 
@@ -266,32 +245,30 @@ export default function Analytics() {
                 <button className="text-[10px] font-bold text-primary uppercase tracking-widest font-mono italic underline decoration-primary/30 underline-offset-4">View All Catalog</button>
              </div>
              <div className="grid grid-cols-1 gap-4">
-                {[
-                  { title: 'Neon Nights', streams: '1.2M', growth: '+24%', status: 'Trending', id: 'REL-001' },
-                  { title: 'Subsonic Echo', streams: '842K', growth: '+12%', status: 'Stable', id: 'REL-002' },
-                  { title: 'Velvet Sky', streams: '2.1M', growth: '+8%', status: 'Peaked', id: 'REL-003' },
-                ].map((node) => (
-                  <motion.div 
+                {allReleases.length === 0 && (
+                  <div className="p-10 border border-dashed border-white/10 bg-white/[0.01] text-center">
+                    <span className="text-white/20 font-mono text-[11px] uppercase tracking-widest italic">No releases yet — your catalogue performance shows here once you drop music</span>
+                  </div>
+                )}
+                {allReleases.map((node) => (
+                  <motion.div
                     key={node.id}
                     whileHover={{ scale: 1.01 }}
-                    onClick={() => {
-                        console.log("Navigating to:", `/analytics/${node.id}`);
-                        navigate(`/analytics/${node.id}`);
-                    }}
+                    onClick={() => navigate(`/releases/${node.id}`)}
                     className="p-6 border border-white/5 bg-dark hover:border-primary/20 transition-all cursor-pointer flex items-center justify-between group"
                   >
                      <div className="flex items-center gap-6">
-                        <div className="w-12 h-12 bg-white/5 border border-white/10 flex items-center justify-center font-mono font-black italic text-primary">
-                          {node.title[0]}
+                        <div className="w-12 h-12 bg-white/5 border border-white/10 flex items-center justify-center font-mono font-black italic text-primary overflow-hidden">
+                          {node.artwork ? <img src={node.artwork} alt="" className="w-full h-full object-cover" /> : (node.title[0] || '?')}
                         </div>
                         <div>
                            <h4 className="text-lg font-black text-white italic uppercase tracking-tight group-hover:text-primary transition-colors">{node.title}</h4>
-                           <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest font-mono">{node.status} _NODE</p>
+                           <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest font-mono">{node.status} · {node.artist}</p>
                         </div>
                      </div>
                      <div className="text-right">
-                        <div className="text-xl font-black text-white italic font-mono">{node.streams}</div>
-                        <div className="text-[10px] font-black text-green-500 uppercase italic tracking-widest">{node.growth}</div>
+                        <div className="text-xl font-black text-white/30 italic font-mono">—</div>
+                        <div className="text-[10px] font-black text-white/20 uppercase italic tracking-widest">No data yet</div>
                      </div>
                   </motion.div>
                 ))}

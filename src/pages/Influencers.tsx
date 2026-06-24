@@ -282,9 +282,9 @@ export default function Influencers() {
       {/* Matching Algorithm Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[
-          { label: 'Smart Matches Available', value: influencers.length > 0 ? influencers.length.toString() : '0', icon: Cpu },
-          { label: 'Avg Acceptance Rate', value: '42%', icon: TrendingUp },
-          { label: 'Network Reach', value: '450M+', icon: Globe2 },
+          { label: 'Creators on roster', value: influencers.length.toString(), icon: Cpu },
+          { label: 'Avg Acceptance Rate', value: '—', icon: TrendingUp },
+          { label: 'Network Reach', value: '—', icon: Globe2 },
         ].map((stat, i) => (
           <ScrollReveal key={i} delay={i * 0.1} direction="up">
             <div className="manifest-card p-10 space-y-4 group">

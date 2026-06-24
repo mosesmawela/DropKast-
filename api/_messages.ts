@@ -84,37 +84,11 @@ function seedThread(a: Participant, b: Participant, msgs: { from: 'a' | 'b'; bod
   }
 }
 
-// Artist-perspective threads (also visible from the other side):
-seedThread(SEED_PARTICIPANTS.artist1, SEED_PARTICIPANTS.inf1, [
-  { from: 'a', body: "Yo Alex — got the new single 'Neon Pulse' dropping next Friday. Sending the pack now.", minAgo: 240 },
-  { from: 'b', body: "Loved the snippet you posted! Send it through. What's the hook timestamp?", minAgo: 200 },
-  { from: 'a', body: '0:48 — beat drops with the line "we run the dark." Posting wave should hit Saturday morning.', minAgo: 180 },
-  { from: 'b', body: 'Locked. Got 3 ideas already. Will queue the post for 8am Saturday TikTok prime time.', minAgo: 30, read: false },
-]);
-
-seedThread(SEED_PARTICIPANTS.artist1, SEED_PARTICIPANTS.dj1, [
-  { from: 'a', body: 'Sending the stems for "Neon Pulse" — would love your spin on it for the Berghain set.', minAgo: 1440 },
-  { from: 'b', body: 'Stems received. The bass is heavy — going to test it in tonight\'s warm-up. Will report back.', minAgo: 720 },
-  { from: 'b', body: 'Crowd ate it up. 110 BPM section especially. Sending you a clip from the set.', minAgo: 60, read: false },
-]);
-
-seedThread(SEED_PARTICIPANTS.artist1, SEED_PARTICIPANTS.inf2, [
-  { from: 'b', body: 'Hey, saw you on the LVRN match list. Genre fits perfectly — what are you working on?', minAgo: 4320 },
-  { from: 'a', body: "EP coming end of the month. Want to collab on a teaser? Can spin you up a paid mission via DropKast.", minAgo: 4200 },
-  { from: 'b', body: 'Yes please. Send the brief.', minAgo: 4100 },
-]);
-
-// Influencer-perspective extra threads:
-seedThread(SEED_PARTICIPANTS.artist2, SEED_PARTICIPANTS.inf1, [
-  { from: 'a', body: 'Hey Alex — quick collab on a soft-launch teaser?', minAgo: 800 },
-  { from: 'b', body: 'Drop the brief. Open the next 2 weeks.', minAgo: 600, read: false },
-]);
-
-// DJ-perspective extra threads:
-seedThread(SEED_PARTICIPANTS.artist2, SEED_PARTICIPANTS.dj2, [
-  { from: 'a', body: 'Sending the new pack — hoping for some honest feedback before mastering.', minAgo: 360 },
-  { from: 'b', body: "Mix is solid. Kick is a touch loud — drop it 1.5 dB. Otherwise this is a peak-hour weapon.", minAgo: 240 },
-]);
+// No seeded threads — conversations start empty and are created when an artist
+// actually messages an influencer/DJ. seedThread/seedMessage/SEED_PARTICIPANTS
+// are retained below for tests + local fixtures but are intentionally unused.
+void seedThread;
+void SEED_PARTICIPANTS;
 
 /* =============== PUBLIC API =============== */
 
