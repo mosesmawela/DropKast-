@@ -71,9 +71,9 @@ export default function Campaigns() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {[
           { label: 'Active Campaigns', value: campaigns.filter(c => c.status === 'ACTIVE').length.toString().padStart(2, '0'), icon: Zap, color: 'text-primary' },
-          { label: 'Total Reach', value: '12.8M', icon: Users, color: 'text-white' },
-          { label: 'Avg Engagement', value: '9.4%', icon: TrendingUp, color: 'text-white' },
-          { label: 'Market ROI', value: '4.2x', icon: BarChart2, color: 'text-primary' },
+          { label: 'Total Reach', value: '—', icon: Users, color: 'text-white' },
+          { label: 'Avg Engagement', value: '—', icon: TrendingUp, color: 'text-white' },
+          { label: 'Market ROI', value: '—', icon: BarChart2, color: 'text-primary' },
         ].map((stat, i) => (
           <ScrollReveal key={i} delay={i * 0.1} direction="up">
             <div className="manifest-card p-8 space-y-4 group">

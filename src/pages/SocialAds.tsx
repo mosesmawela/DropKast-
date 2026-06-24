@@ -132,7 +132,7 @@ export default function SocialAds() {
                  </div>
                  <div>
                     <div className="text-[10px] font-bold text-white/20 uppercase tracking-widest font-mono">Return on Ad Spend</div>
-                    <div className="text-3xl font-black text-white font-mono italic">3.4x — 4.1x</div>
+                    <div className="text-3xl font-black text-white font-mono italic">—</div>
                  </div>
               </div>
               <div className="flex items-center gap-2">
@@ -180,7 +180,7 @@ export default function SocialAds() {
                  SC_CREATIVE_REPORT
               </div>
               <p className="text-white/40 text-sm italic font-medium leading-relaxed">
-                 Top performing creative identified: <span className="text-white">'Night Drive - Cinematic Night Loop'</span>. Increasing budget allocation by 15%.
+                 Creative performance insights appear here once your ad sets have run long enough to gather data.
               </p>
               <button 
                 onClick={() => notify('success', 'VERSION_DEPLOYED', 'Variation B-2 pushed to active ad sets.')}

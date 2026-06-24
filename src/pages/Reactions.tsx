@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { 
   Play, 
   Search, 
@@ -23,19 +23,30 @@ import ScrollReveal from '../components/animations/ScrollReveal';
 import AnimatedBeam from '../components/animations/AnimatedBeam';
 import { useNotify } from '../context/NotificationContext';
 
-const reactors = [
-  { id: 1, channel: 'ReactCentral', genre: 'Hip-Hop', reach: '2.8M', match: '96%', tags: ['TOP_TIER', 'VERIFIED'], avatar: 'RC' },
-  { id: 2, channel: 'VibeCheckTV', genre: 'R&B / Soul', reach: '950K', match: '94%', tags: ['RISING'], avatar: 'VC' },
-  { id: 3, channel: 'The Beat Node', genre: 'Electronic', reach: '1.4M', match: '82%', tags: ['TECHNICAL'], avatar: 'BN' },
-  { id: 4, channel: 'Global Sound', genre: 'Global Pop', reach: '5.1M', match: '91%', tags: ['VIRAL'], avatar: 'GS' },
-];
+interface Reactor {
+  id: number | string;
+  channel: string;
+  genre: string;
+  reach: string;
+  match: string;
+  tags: string[];
+  avatar: string;
+}
 
 export default function Reactions() {
   const { notify } = useNotify();
-  const [selectedReactors, setSelectedReactors] = useState<number[]>([]);
+  const [selectedReactors, setSelectedReactors] = useState<(number | string)[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeGenre, setActiveGenre] = useState('ALL');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [reactors, setReactors] = useState<Reactor[]>([]);
+
+  useEffect(() => {
+    fetch('/api/reactions')
+      .then((r) => r.json())
+      .then((d) => setReactors(Array.isArray(d) ? d : []))
+      .catch(() => setReactors([]));
+  }, []);
 
   const filteredReactors = useMemo(() => {
     return reactors.filter(r => {
@@ -43,9 +54,9 @@ export default function Reactions() {
       const matchesGenre = activeGenre === 'ALL' || r.genre.toUpperCase().includes(activeGenre);
       return matchesSearch && matchesGenre;
     });
-  }, [searchQuery, activeGenre]);
+  }, [searchQuery, activeGenre, reactors]);
 
-  const toggleSelect = (id: number, channel: string) => {
+  const toggleSelect = (id: number | string, channel: string) => {
     setSelectedReactors(prev => {
       if (prev.includes(id)) return prev.filter(i => i !== id);
       notify('info', 'REACTOR_ENGAGED', `${channel} has been queued for submission.`);
