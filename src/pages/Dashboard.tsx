@@ -18,7 +18,7 @@ import {
   Target,
   Download,
   Star,
-  Link
+  Link as LinkIcon
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import ClaimArtistProfile from '../components/ClaimArtistProfile';
@@ -80,7 +80,7 @@ export default function Dashboard() {
           ],
           actions: [
             { title: 'Find Missions', icon: Target, path: '/influencer/missions', desc: 'Browse and accept new campaign directives.' },
-            { title: 'Social Connect', icon: Link, path: '/influencer/socials', desc: 'Sync your social nodes for tracking.' },
+            { title: 'Social Connect', icon: LinkIcon, path: '/influencer/socials', desc: 'Sync your social nodes for tracking.' },
             { title: 'Earnings Hub', icon: Wallet, path: '/influencer/earnings', desc: 'Review finalized payment clearings.' },
             { title: 'Creator Kit', icon: Sparkles, path: '/influencer/missions', desc: 'Access high-res assets for your content.' },
           ],
