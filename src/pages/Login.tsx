@@ -50,14 +50,13 @@ const PORTALS: {
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, updateUser } = useAuth();
   const { role, setRole } = useTheme();
 
-  // Skip the portal step if the user already chose one in WelcomeScreen.
-  // Avoids the "Choose Your Portal" screen showing twice during first-run onboarding.
-  const welcomeAlreadyDone =
-    typeof window !== 'undefined' && localStorage.getItem('dropkast_welcome_seen') === 'true';
-  const [step, setStep] = useState<'portal' | 'creds'>(welcomeAlreadyDone ? 'creds' : 'portal');
+  // Always open on the portal step so the user confirms which side of DropKast
+  // they're signing into. The selected portal is highlighted from their last
+  // choice (persisted in theme), so a returning user just clicks through.
+  const [step, setStep] = useState<'portal' | 'creds'>('portal');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [form, setForm] = useState({ email: '', password: '' });
@@ -81,6 +80,16 @@ export default function Login() {
     setIsLoading(true);
     try {
       await login(form.email, form.email.split('@')[0]);
+      // Apply the chosen portal to the authenticated user so the sidebar and
+      // role-gated routes match what they picked. Theme role is uppercase and
+      // matches the User.role union ('ARTIST' | 'LABEL' | 'INFLUENCER' | 'DJ').
+      updateUser({
+        role: selectedPortal.id as never,
+        ...(selectedPortal.id === 'LABEL' ? { label: form.email.split('@')[0] } : {}),
+      });
+      try {
+        localStorage.setItem('dropkast_welcome_seen', 'true');
+      } catch {/* ignore */}
       navigate(selectedPortal.landing);
     } catch (error) {
       setErrors({ form: 'Sign in failed. Please check your credentials.' });

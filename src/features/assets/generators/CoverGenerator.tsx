@@ -7,23 +7,37 @@ export default function CoverGenerator() {
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState<string[]>([]);
   const [selected, setSelected] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const generate = async () => {
     if (!prompt.trim()) return;
     setLoading(true);
     setSelected(null);
+    setError(null);
+    setImages([]);
 
     try {
-      // Mocking the backend call since we'll implement it or just mock for now
-      // In a real app we'd call fetch("/api/assets/cover", ...)
-      await new Promise(r => setTimeout(r, 2000));
-      
-      const fakeImages = [
-        "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=500",
-        "https://images.unsplash.com/photo-1614850523296-d8c1af93d400?auto=format&fit=crop&q=80&w=500",
-        "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&q=80&w=500",
-      ];
-      setImages(fakeImages);
+      const res = await fetch("/api/assets/cover", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
+      });
+
+      if (res.status === 503) {
+        setError("Image generation isn't configured yet. Add an image provider key to enable cover synthesis.");
+        return;
+      }
+      if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+
+      const data = await res.json();
+      // Accept a few response shapes defensively.
+      const urls: string[] =
+        data.images || data.urls || (data.url ? [data.url] : []) || [];
+      if (urls.length === 0) throw new Error("No images returned.");
+      setImages(urls);
+    } catch (err) {
+      console.error(err);
+      setError("Cover generation failed. Check your image-model connection and try again.");
     } finally {
       setLoading(false);
     }
@@ -82,6 +96,13 @@ export default function CoverGenerator() {
                 )}
               </motion.div>
             ))}
+          </div>
+        ) : error ? (
+          <div className="flex-1 border border-dashed border-red-500/20 bg-red-500/[0.02] flex flex-col items-center justify-center text-center p-12">
+            <div className="w-16 h-16 rounded-full bg-red-500/[0.05] flex items-center justify-center mb-6">
+               <Send className="w-6 h-6 text-red-400/40" />
+            </div>
+            <p className="text-[10px] font-black text-red-400/70 uppercase tracking-[0.3em] font-mono leading-relaxed italic max-w-sm">{error}</p>
           </div>
         ) : (
           <div className="flex-1 border border-dashed border-white/5 bg-white/[0.02] flex flex-col items-center justify-center text-center p-12">

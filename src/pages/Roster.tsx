@@ -44,47 +44,14 @@ interface RosterArtist {
   avatarUrl?: string;
 }
 
-const SEED_ROSTER: RosterArtist[] = [
-  {
-    id: 'art-aqua',
-    name: 'Aqua Pearl',
-    genre: 'Hyperpop',
-    status: 'active',
-    releases: 8,
-    monthlyStreams: 1_240_000,
-    monthlyEarningsCents: 410_000,
-    joinedAt: '2025-08-12',
-  },
-  {
-    id: 'art-buddy',
-    name: 'Buddy Kay',
-    genre: 'Amapiano',
-    status: 'active',
-    releases: 14,
-    monthlyStreams: 3_800_000,
-    monthlyEarningsCents: 1_270_000,
-    joinedAt: '2025-03-04',
-  },
-  {
-    id: 'art-night',
-    name: 'Night Pulse',
-    genre: 'R&B',
-    status: 'paused',
-    releases: 4,
-    monthlyStreams: 92_000,
-    monthlyEarningsCents: 31_000,
-    joinedAt: '2026-01-19',
-  },
-];
-
 function loadRoster(): RosterArtist[] {
   try {
     const raw = localStorage.getItem(ROSTER_KEY);
     if (raw) return JSON.parse(raw);
   } catch {/* ignore */}
-  // Seed and persist on first visit
-  localStorage.setItem(ROSTER_KEY, JSON.stringify(SEED_ROSTER));
-  return SEED_ROSTER;
+  // No artists until the label actually adds them. Real backend fetch
+  // (/api/label/roster) swaps in here once label accounts ship.
+  return [];
 }
 
 function saveRoster(roster: RosterArtist[]) {

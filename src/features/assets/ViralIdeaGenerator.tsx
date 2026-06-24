@@ -1,19 +1,36 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Sparkles, MessageSquare, Image as ImageIcon, Rocket, X, Send, TrendingUp, Lightbulb, CheckCircle2 } from "lucide-react";
+import { Sparkles, MessageSquare, Rocket, X, Send, TrendingUp, Lightbulb, CheckCircle2 } from "lucide-react";
 import { cn } from "../../lib/utils";
 import ModelPicker from "../../components/ModelPicker";
 import { RECOMMENDATIONS } from "../../lib/ai-recommendations";
+import { useCampaigns } from "../../context/CampaignContext";
+import { useReleases } from "../../context/ReleaseContext";
 
 interface ViralIdeaGeneratorProps {
   onClose: () => void;
 }
 
+interface ViralIdea {
+  type: string;
+  title: string;
+  script: string;
+  caption: string;
+  visual: string;
+}
+
 export default function ViralIdeaGenerator({ onClose }: ViralIdeaGeneratorProps) {
+  const { campaigns } = useCampaigns();
+  const { releases } = useReleases();
   const [loading, setLoading] = useState(false);
-  const [ideas, setIdeas] = useState<any[]>([]);
+  const [ideas, setIdeas] = useState<ViralIdea[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const [focus, setFocus] = useState("VIRALITY");
-  const [campaign, setCampaign] = useState("NIGHT_DRIVE_EXT");
+  // Default the context to the first real campaign, else the first release title.
+  const contextOptions = campaigns.length > 0
+    ? campaigns.map((c) => c.title)
+    : releases.map((r) => r.title);
+  const [campaign, setCampaign] = useState<string>(contextOptions[0] || "");
   const [notif, setNotif] = useState<string | null>(null);
 
   const showNotif = (msg: string) => {
@@ -24,33 +41,60 @@ export default function ViralIdeaGenerator({ onClose }: ViralIdeaGeneratorProps)
   const generateIdeas = async () => {
     setLoading(true);
     setIdeas([]);
-    // Mocking Gemini AI Idea Generation with Campaign + Focus context
-    await new Promise(r => setTimeout(r, 2500));
-    const mockIdeas = [
-      {
-        type: focus === "VIRALITY" ? "TikTok Challenge" : "Strategic Ad",
-        title: focus === "VIRALITY" ? "The 'Drop_Check' Transition" : "Direct_Response_Hook",
-        script: `Sync the ${campaign} bass drop with a high-speed outfit change or location swap.`,
-        caption: "Waiting for the node to sync... #DropKast #NewMusic",
-        visual: "Split screen: Studio vs Live performance"
-      },
-      {
-        type: "Twitter Meme",
-        title: "Relatable Studio Struggle",
-        script: "POV: You finally finished the mix but the sample isn't cleared.",
-        caption: "Pain. Just pain. 💀",
-        visual: "Generated image of a tired producer in futuristic gear"
-      },
-      {
-        type: "IG Reel",
-        title: "Lyric Breakdown Visualizer",
-        script: "Floating 3D typography reacting to the hook frequencies.",
-        caption: "Every word was a protocol. ⚡",
-        visual: "Liquid glass text animations"
+    setError(null);
+
+    const subject = campaign || "my upcoming release";
+    const prompt = `You are a viral music-marketing strategist. Generate exactly 3 social content ideas for "${subject}" optimized for ${focus.toLowerCase()}. Return ONLY a JSON array, no prose, where each object has keys: "type" (platform/format like "TikTok Challenge"), "title" (short punchy name), "script" (the concept in 1-2 sentences), "caption" (ready-to-post caption with hashtags), "visual" (visual direction in one line). Output strictly the JSON array.`;
+
+    try {
+      const res = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: prompt }),
+      });
+
+      if (res.status === 503) {
+        setError('AI is not configured yet. Add an API key in AI Models to enable idea generation.');
+        return;
       }
-    ];
-    setIdeas(mockIdeas);
-    setLoading(false);
+      if (!res.ok || !res.body) {
+        throw new Error(`Request failed: ${res.status}`);
+      }
+
+      // Accumulate the SSE text stream into one buffer, then parse JSON.
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let raw = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        for (const line of chunk.split('\n')) {
+          const trimmed = line.trim();
+          if (trimmed.startsWith('data:')) {
+            const payload = trimmed.slice(5).trim();
+            if (payload && payload !== '[DONE]') {
+              try {
+                const parsed = JSON.parse(payload);
+                raw += parsed.text ?? parsed.delta ?? parsed.content ?? '';
+              } catch {
+                raw += payload;
+              }
+            }
+          }
+        }
+      }
+
+      const match = raw.match(/\[[\s\S]*\]/);
+      if (!match) throw new Error('Could not parse ideas from response.');
+      const parsed: ViralIdea[] = JSON.parse(match[0]);
+      setIdeas(parsed);
+    } catch (err) {
+      console.error(err);
+      setError('Idea generation failed. Check your AI model connection and try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -98,15 +142,25 @@ export default function ViralIdeaGenerator({ onClose }: ViralIdeaGeneratorProps)
 
             <div className="space-y-6">
                <div className="space-y-3">
-                  <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.4em] font-mono italic">Campaign_Source</label>
-                  <select 
-                    value={campaign}
-                    onChange={(e) => setCampaign(e.target.value)}
-                    className="w-full h-12 bg-white/5 border border-white/10 px-4 text-[10px] font-mono uppercase italic text-white outline-none focus:border-primary transition-colors"
-                  >
-                     <option>NIGHT_DRIVE_EXT</option>
-                     <option>NEBULA_SYNC</option>
-                  </select>
+                  <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.4em] font-mono italic">Context_Source</label>
+                  {contextOptions.length > 0 ? (
+                    <select
+                      value={campaign}
+                      onChange={(e) => setCampaign(e.target.value)}
+                      className="w-full h-12 bg-white/5 border border-white/10 px-4 text-[10px] font-mono uppercase italic text-white outline-none focus:border-primary transition-colors"
+                    >
+                      {contextOptions.map((opt) => (
+                        <option key={opt} value={opt}>{opt}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      value={campaign}
+                      onChange={(e) => setCampaign(e.target.value)}
+                      placeholder="Release or campaign name"
+                      className="w-full h-12 bg-white/5 border border-white/10 px-4 text-[10px] font-mono uppercase italic text-white outline-none focus:border-primary transition-colors placeholder:text-white/20"
+                    />
+                  )}
                </div>
 
                <div className="space-y-3">
@@ -226,12 +280,20 @@ export default function ViralIdeaGenerator({ onClose }: ViralIdeaGeneratorProps)
                          </div>
                       </motion.div>
                     ))
+                  ) : error ? (
+                    <div className="h-full flex flex-col items-center justify-center text-center italic space-y-6">
+                       <X className="w-16 h-16 text-red-400/40" />
+                       <div className="max-w-xs">
+                          <p className="text-[11px] font-black uppercase tracking-[0.3em] font-mono text-red-400 mb-2">Generation_Failed</p>
+                          <p className="text-[10px] uppercase font-mono tracking-widest text-white/40">{error}</p>
+                       </div>
+                    </div>
                   ) : (
                     <div className="h-full flex flex-col items-center justify-center text-center opacity-20 italic space-y-6">
                        <Send className="w-16 h-16 text-white" />
                        <div className="max-w-xs">
                           <p className="text-[11px] font-black uppercase tracking-[0.3em] font-mono text-white mb-2">Engines_Idling</p>
-                          <p className="text-[10px] uppercase font-mono tracking-widest">Connect a campaign node and generate a viral payload to initiate growth protocols.</p>
+                          <p className="text-[10px] uppercase font-mono tracking-widest">Pick a release or campaign and generate a viral payload to initiate growth protocols.</p>
                        </div>
                     </div>
                   )}
