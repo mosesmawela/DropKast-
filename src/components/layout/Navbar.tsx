@@ -1,7 +1,8 @@
-import { Search, LogOut, Terminal, Users, Disc, Radio, Menu, User as UserIcon, GraduationCap } from 'lucide-react';
+import { Search, LogOut, Terminal, Menu, User as UserIcon, GraduationCap, Music, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useReleases } from '../../context/ReleaseContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import ThemeToggle from '../ThemeToggle';
 import NotificationsDropdown from '../NotificationsDropdown';
 import GrowSongTrigger from '../GrowSongTrigger';
@@ -12,11 +13,22 @@ interface NavbarProps {
   onMenuClick?: () => void;
 }
 
+  // Static page shortcuts — real navigation destinations, always searchable.
+  const PAGE_SHORTCUTS = [
+    { id: 'p-dash', name: 'Dashboard', type: 'page', path: '/dashboard', icon: 'dash' },
+    { id: 'p-rel', name: 'Releases', type: 'page', path: '/releases', icon: 'music' },
+    { id: 'p-camp', name: 'Campaigns', type: 'page', path: '/campaigns', icon: 'target' },
+    { id: 'p-inf', name: 'Influencers', type: 'page', path: '/influencers', icon: 'users' },
+    { id: 'p-dj', name: 'DJ Packs', type: 'page', path: '/djs', icon: 'radio' },
+    { id: 'p-ana', name: 'Analytics', type: 'page', path: '/analytics', icon: 'chart' },
+    { id: 'p-earn', name: 'Earnings', type: 'page', path: '/earnings', icon: 'wallet' },
+  ];
+
 export default function Navbar({ onMenuClick }: NavbarProps) {
   const { user, logout } = useAuth();
+  const { allReleases } = useReleases();
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<any[]>([]);
   const [isFocused, setIsFocused] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
 
@@ -35,22 +47,17 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  useEffect(() => {
-    if (query.length < 2) {
-      setResults([]);
-      return;
-    }
-
-    const searchItems = [
-      { id: '1', name: 'Alex Wave', type: 'influencer', path: '/influencers' },
-      { id: '2', name: 'Sasha Sun', type: 'influencer', path: '/influencers' },
-      { id: '3', name: 'DJ Matrix', type: 'dj', path: '/djs' },
-      { id: '4', name: 'ReactCentral', type: 'reaction', path: '/reactions' },
-    ];
-
-    const filtered = searchItems.filter((i) => i.name.toLowerCase().includes(query.toLowerCase()));
-    setResults(filtered);
-  }, [query]);
+  // Search real releases + page shortcuts. No fake people.
+  const results = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (q.length < 2) return [] as { id: string; name: string; type: string; path: string }[];
+    const releaseHits = allReleases
+      .filter((r) => r.title.toLowerCase().includes(q) || r.artist.toLowerCase().includes(q))
+      .slice(0, 5)
+      .map((r) => ({ id: `rel-${r.id}`, name: r.title, type: 'release', path: `/releases/${r.id}` }));
+    const pageHits = PAGE_SHORTCUTS.filter((p) => p.name.toLowerCase().includes(q));
+    return [...releaseHits, ...pageHits];
+  }, [query, allReleases]);
 
   return (
     <header className="h-14 sm:h-16 bg-[var(--card-bg)] backdrop-blur-xl border-b border-[var(--border-main)] px-4 sm:px-6 md:px-8 flex items-center justify-between gap-3 z-10 technical-grid">
@@ -103,9 +110,8 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
                           }}
                           className="w-full flex items-center gap-4 px-6 py-4 hover:bg-primary/10 transition-all group text-left border-b border-white/5 last:border-0"
                         >
-                          {res.type === 'influencer' && <Users className="w-3.5 h-3.5 text-primary" />}
-                          {res.type === 'dj' && <Radio className="w-3.5 h-3.5 text-primary" />}
-                          {res.type === 'reaction' && <Disc className="w-3.5 h-3.5 text-primary" />}
+                          {res.type === 'release' && <Music className="w-3.5 h-3.5 text-primary" />}
+                          {res.type === 'page' && <LayoutDashboard className="w-3.5 h-3.5 text-primary" />}
                           <div>
                             <p className="text-[10px] font-black text-white uppercase italic tracking-tighter">{res.name}</p>
                             <p className="text-[8px] font-bold text-white/30 uppercase tracking-widest mt-0.5">
