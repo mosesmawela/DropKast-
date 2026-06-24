@@ -81,19 +81,13 @@ const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const MusicCharts = lazy(() => import('./pages/MusicCharts'));
 const AudienceInsights = lazy(() => import('./pages/AudienceInsights'));
 
-import WelcomeScreen from './components/layout/WelcomeScreen';
 import PortalPage from './pages/PortalPage';
 
 export default function App() {
-  const [showWelcome, setShowWelcome] = useState(() => {
-    return !localStorage.getItem('dropkast_welcome_seen');
-  });
-
-  const handleWelcomeComplete = () => {
-    setShowWelcome(false);
-    localStorage.setItem('dropkast_welcome_seen', 'true');
-  };
-
+  // Onboarding lives in the signup flow (credentials → portal picker), so the
+  // app no longer mounts a blocking full-screen welcome overlay. A first-time
+  // visitor lands straight on the marketing page; a new signup goes through the
+  // portal step. Personalization (colors/vibe) lives in Settings → Appearance.
   return (
     <ThemeProvider>
       <TutorialProvider>
@@ -108,9 +102,6 @@ export default function App() {
                   <Tutorial />
                   <CommandCenterHotkey />
                   <AnimatePresence mode="wait">
-                    {showWelcome ? (
-                      <WelcomeScreen key="welcome" onComplete={handleWelcomeComplete} />
-                    ) : (
                       <motion.div
                         key="main"
                         initial={{ opacity: 0 }}
@@ -147,8 +138,8 @@ export default function App() {
               <Route path="/pricing" element={<Pricing />} />
               {/* Hidden Command Center — page handles its own admin gate. */}
               <Route path="/command" element={<CommandCenter />} />
-              {/* Admin portal — routes to Command Center */}
-              <Route path="/admin" element={<CommandCenter />} />
+              {/* NOTE: /admin is the operator oversight console (AdminDashboard),
+                  registered in the protected section below — it self-gates on role. */}
 
               {/* Branded artist portals — /@slug sets role + redirects to dashboard */}
               <Route path="/@:slug" element={<PortalPage />} />
@@ -219,7 +210,6 @@ export default function App() {
             </Routes>
           </Suspense>
          </motion.div>
-        )}
        </AnimatePresence>
       </BrowserRouter>
           </CampaignProvider>
