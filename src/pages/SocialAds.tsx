@@ -36,21 +36,10 @@ import ScrollReveal from '../components/animations/ScrollReveal';
 import AnimatedBeam from '../components/animations/AnimatedBeam';
 import { useNotify } from '../context/NotificationContext';
 
-const adPerformanceStats = [
-  { day: 'Mon', spend: 40, reach: 2400, clicks: 120 },
-  { day: 'Tue', spend: 80, reach: 4500, clicks: 310 },
-  { day: 'Wed', spend: 120, reach: 7200, clicks: 580 },
-  { day: 'Thu', spend: 160, reach: 9800, clicks: 820 },
-  { day: 'Fri', spend: 200, reach: 12400, clicks: 1100 },
-  { day: 'Sat', spend: 240, reach: 15600, clicks: 1450 },
-  { day: 'Sun', spend: 280, reach: 18200, clicks: 1720 },
-];
+// Real ad-performance data populates once campaigns run and report back.
+const adPerformanceStats: { day: string; spend: number; reach: number; clicks: number }[] = [];
 
-const initialAdSets = [
-  { id: 'ADS-001', name: 'Night Drive - IG Stories', platform: 'INSTAGRAM', spend: '$120.45', cpc: '$0.42', status: 'ACTIVE', ctr: '3.4%' },
-  { id: 'ADS-002', name: 'Global Alpha - YouTube Discovery', platform: 'YOUTUBE', spend: '$450.20', cpc: '$1.10', status: 'ACTIVE', ctr: '1.2%' },
-  { id: 'ADS-003', name: 'Neon Void - TikTok Spark', platform: 'TIKTOK', spend: '$85.00', cpc: '$0.25', status: 'PAUSED', ctr: '5.8%' },
-];
+const initialAdSets: { id: string; name: string; platform: string; spend: string; cpc: string; status: string; ctr: string }[] = [];
 
 export default function SocialAds() {
   const { notify } = useNotify();
@@ -231,6 +220,11 @@ export default function SocialAds() {
          </div>
 
          <div className="space-y-4">
+            {filteredAdSets.length === 0 && (
+              <div className="py-20 text-center border-2 border-dashed border-white/5 bg-white/[0.01]">
+                <div className="text-white/20 font-mono text-sm uppercase tracking-widest italic">No ad sets running yet — launch one above</div>
+              </div>
+            )}
             {filteredAdSets.map((ad, i) => (
               <ScrollReveal key={ad.id} delay={i * 0.05} direction="up">
                  <div className="p-8 bg-dark border border-white/5 hover:border-white/20 transition-all group grid grid-cols-1 md:grid-cols-12 gap-8 items-center text-left">

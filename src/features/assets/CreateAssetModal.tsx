@@ -235,9 +235,7 @@ export default function CreateAssetModal({ onClose }: CreateAssetModalProps) {
                   onClick={() => setActiveSelector('genre')}
                   className="flex items-center gap-2 bg-white/5 hover:bg-white/10 rounded-full px-4 py-2 border border-white/5 transition-all group"
                  >
-                    <div className="w-5 h-5 rounded-full overflow-hidden border border-white/20">
-                      <img src={`https://images.unsplash.com/photo-1514525253361-bee8718a3ec0?auto=format&fit=crop&q=80&w=50&genre=${settings.genre}`} className="w-full h-full object-cover" />
-                    </div>
+                    <div className="w-5 h-5 rounded-full overflow-hidden border border-white/20 bg-gradient-to-br from-primary/40 to-zinc-800" />
                     <span className="text-[11px] font-bold text-white/40 group-hover:text-white transition-colors">Genre: <span className="text-white uppercase italic">{settings.genre}</span></span>
                  </button>
 

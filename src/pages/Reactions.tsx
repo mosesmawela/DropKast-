@@ -124,7 +124,7 @@ export default function Reactions() {
                </div>
                <h3 className="text-3xl font-black italic font-mono uppercase tracking-tight text-white">Target High-Velocity Nodes</h3>
                <p className="text-white/40 text-sm italic font-medium max-w-lg leading-relaxed">
-                  Analysis of 'Night Drive' suggests a 74% higher conversion rate on R&B / Soul reaction nodes. Strategy: High-frequency pitching to mid-tier curators.
+                  Pitch your release to reaction channels matched on genre and audience. Strategy recommendations appear here once you've pitched a track and we have response data to learn from.
                </p>
             </div>
             <button 

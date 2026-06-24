@@ -72,10 +72,9 @@ export default function StudioStyleSelector({ currentSettings, onUpdate, onClose
                                "w-36 h-24 rounded-[32px] overflow-hidden border-2 transition-all group-hover:scale-105 relative",
                                isActive ? "border-primary shadow-[0_0_20px_rgba(255,77,0,0.2)]" : "border-white/5 opacity-40 hover:opacity-100"
                              )}>
-                                <img 
-                                  src={`https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=200&style=${i}-${idx}`} 
-                                  className="w-full h-full object-cover"
-                                />
+                                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/25 via-zinc-800 to-black">
+                                  <span className="text-[10px] font-black italic uppercase tracking-widest text-white/70 font-mono px-2 text-center">{String(opt)}</span>
+                                </div>
                                 {isActive && (
                                   <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
                                     <Check className="w-8 h-8 text-white shadow-2xl" />

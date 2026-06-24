@@ -42,12 +42,10 @@ export default function StudioGenreSelector({ activeId, onSelect, onClose }: { a
         <div className="flex h-[500px]">
           {/* Visual Preview Left */}
           <div className="flex-[1.5] relative flex items-center justify-center bg-zinc-900/50">
-             <div className="w-[300px] h-[300px] rounded-full overflow-hidden border-4 border-white/5 shadow-2xl relative">
-                <img 
-                  src={`https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&q=80&w=800&genre=${activeId}`} 
-                  alt={activeGenre.name}
-                  className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
-                />
+             <div className="w-[300px] h-[300px] rounded-full overflow-hidden border-4 border-white/5 shadow-2xl relative flex items-center justify-center bg-gradient-to-br from-primary/30 via-zinc-800 to-black">
+                <span className="text-4xl font-black italic uppercase tracking-tighter text-white/80 font-mono text-center px-6">
+                  {activeGenre.name}
+                </span>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
              </div>
              {/* Decorative lines */}
@@ -66,8 +64,8 @@ export default function StudioGenreSelector({ activeId, onSelect, onClose }: { a
                   )}
                 >
                   <div className="flex items-center gap-4">
-                    <div className={cn("w-12 h-12 rounded-full overflow-hidden border transition-all", activeId === g.id ? "border-primary" : "border-white/10")}>
-                      <img src={`https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&q=80&w=100&genre=${g.id}`} className="w-full h-full object-cover" />
+                    <div className={cn("w-12 h-12 rounded-full overflow-hidden border transition-all flex items-center justify-center bg-gradient-to-br from-primary/30 to-zinc-800", activeId === g.id ? "border-primary" : "border-white/10")}>
+                      <span className="text-sm font-black italic text-white/70 font-mono">{g.name.slice(0, 2).toUpperCase()}</span>
                     </div>
                     <span className={cn("text-lg font-bold transition-all", activeId === g.id ? "text-white" : "text-white/60")}>
                       {g.name}
