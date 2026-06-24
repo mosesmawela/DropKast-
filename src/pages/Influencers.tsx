@@ -45,7 +45,7 @@ export default function Influencers() {
     platform: 'TikTok',
     reach: '0',
     genre: '',
-    avatar: 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=400'
+    avatar: ''
   });
 
   useEffect(() => {

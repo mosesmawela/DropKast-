@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { 
   Radio, 
   Search, 
@@ -25,13 +25,15 @@ import { useNotify } from '../context/NotificationContext';
 import { useReleases } from '../context/ReleaseContext';
 import { useNavigate } from 'react-router-dom';
 
-const djNodes = [
-  { id: 1, name: 'DJ Matrix', region: 'Ibiza / EU', followers: '120K', style: 'House', status: 'ACTIVE', rating: 4.9 },
-  { id: 2, name: 'Urban Sound', region: 'London / UK', followers: '85K', style: 'UK Drill', status: 'ACTIVE', rating: 4.7 },
-  { id: 3, name: 'AfroConnect', region: 'Lagos / NG', followers: '250K', style: 'Afrobeats', status: 'ACTIVE', rating: 4.8 },
-  { id: 4, name: 'Midnight Radio', region: 'NYC / US', followers: '45K', style: 'Indie', status: 'ACTIVE', rating: 4.5 },
-  { id: 5, name: 'Club Alpha', region: 'Tokyo / JP', followers: '300K', style: 'Electronic', status: 'ACTIVE', rating: 4.9 },
-];
+interface DJNode {
+  id: number | string;
+  name: string;
+  region: string;
+  followers: string;
+  style: string;
+  status: string;
+  rating: number;
+}
 
 export default function DJs() {
   const { notify } = useNotify();
@@ -42,7 +44,15 @@ export default function DJs() {
   const [regionFilter, setRegionFilter] = useState('ALL');
   const [isUploading, setIsUploading] = useState(false);
   const [isSending, setIsSending] = useState(false);
-  const [selectedDJs, setSelectedDJs] = useState<number[]>([]);
+  const [selectedDJs, setSelectedDJs] = useState<(number | string)[]>([]);
+  const [djNodes, setDjNodes] = useState<DJNode[]>([]);
+
+  useEffect(() => {
+    fetch('/api/djs')
+      .then((r) => r.json())
+      .then((d) => setDjNodes(Array.isArray(d) ? d : []))
+      .catch(() => setDjNodes([]));
+  }, []);
 
   const filteredDJs = useMemo(() => {
     return djNodes.filter(node => {
@@ -50,7 +60,7 @@ export default function DJs() {
       const matchesRegion = regionFilter === 'ALL' || node.region.includes(regionFilter);
       return matchesSearch && matchesRegion;
     });
-  }, [searchQuery, regionFilter]);
+  }, [searchQuery, regionFilter, djNodes]);
 
   const handleUpload = (fileType: string) => {
     const input = document.createElement('input');

@@ -6,7 +6,7 @@ import { cn } from "../../../lib/utils";
 export default function VideoGenerator() {
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState("visualizer");
-  const [song, setSong] = useState("Night Drive (EXT)");
+  const [song, setSong] = useState("");
 
   const modes = [
     { id: "visualizer", label: "Beat_Sync_Visualizer", desc: "Waveform mapped to audio frequencies" },

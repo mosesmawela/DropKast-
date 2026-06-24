@@ -1,33 +1,41 @@
-import { Eye, Rocket, MoreHorizontal, Share2, Download, Trash2, X, CheckCircle2 } from "lucide-react";
-import { useState } from "react";
+import { Eye, Rocket, Share2, Download, Trash2, X, CheckCircle2 } from "lucide-react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { cn } from "../../lib/utils";
 
 interface AssetGridProps {
   category: string;
   searchQuery?: string;
 }
 
-export default function AssetGrid({ category, searchQuery = "" }: AssetGridProps) {
-  const [assets, setAssets] = useState([
-    { id: 1, type: "cover", url: "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?auto=format&fit=crop&q=80&w=800", title: "NIGHT_DRIVE_EXT", tag: "Cover Art", format: "HQ 4K" },
-    { id: 2, type: "cover", url: "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&q=80&w=800", title: "NEBULA_SYNC_04", tag: "Cover Art", format: "HQ 4K" },
-    { id: 3, type: "video", url: "https://images.unsplash.com/photo-1493225255756-d9584f8606e9?auto=format&fit=crop&q=80&w=800", title: "LIQUID_GRID_MOTION", tag: "TikTok Ready", format: "9:16" },
-    { id: 4, type: "ugc", url: "https://images.unsplash.com/photo-1514525253361-bee8718a3ec0?auto=format&fit=crop&q=80&w=800", title: "FESTIVAL_REACTION", tag: "UGC Viral", format: "9:16" },
-    { id: 5, type: "video", url: "https://images.unsplash.com/photo-1623512351684-183422032482?auto=format&fit=crop&q=80&w=800", title: "CHROME_WAVE_VIS", tag: "Visualizer", format: "16:9" },
-    { id: 6, type: "ugc", url: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=800", title: "LIP_SYNC_BURN", tag: "Lip Sync", format: "9:16" },
-  ]);
+interface Asset {
+  id: number | string;
+  type: string;
+  url: string;
+  title: string;
+  tag: string;
+  format: string;
+}
 
-  const [previewId, setPreviewId] = useState<number | null>(null);
-  const [deployingId, setDeployingId] = useState<number | null>(null);
+export default function AssetGrid({ category, searchQuery = "" }: AssetGridProps) {
+  const [assets, setAssets] = useState<Asset[]>([]);
+
+  useEffect(() => {
+    fetch('/api/assets')
+      .then((r) => r.json())
+      .then((d) => setAssets(Array.isArray(d) ? d : []))
+      .catch(() => setAssets([]));
+  }, []);
+
+  const [previewId, setPreviewId] = useState<number | string | null>(null);
+  const [deployingId, setDeployingId] = useState<number | string | null>(null);
   const [notif, setNotif] = useState<string | null>(null);
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: number | string) => {
     setAssets(prev => prev.filter(a => a.id !== id));
     showNotif("Asset_Deleted_From_Relay");
   };
 
-  const handleDeploy = (id: number) => {
+  const handleDeploy = (id: number | string) => {
     setDeployingId(id);
     setTimeout(() => {
       setDeployingId(null);

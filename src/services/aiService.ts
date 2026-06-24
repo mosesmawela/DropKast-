@@ -83,21 +83,28 @@ Return JSON array of: {"type": "POV"|"Trend"|"Dance"|"Behind-the-scenes", "title
   }
 }
 
-export async function generateImage(prompt: string) {
-  // Placeholder. Real impl would call OpenAI Images / Replicate / Stability.
-  // For demo we proxy curated Unsplash music covers.
-  void prompt;
-  return [
-    `https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=1024&auto=format&fit=crop&sig=${Math.random()}`,
-    `https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1024&auto=format&fit=crop&sig=${Math.random()}`,
-    `https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=1024&auto=format&fit=crop&sig=${Math.random()}`,
-  ];
+export async function generateImage(prompt: string): Promise<string[]> {
+  // Real image generation goes through the server route, which calls the
+  // configured provider (Higgsfield / OpenAI Images / Stability). No fake
+  // stock images — if the route isn't configured the caller surfaces that.
+  const res = await fetch('/api/assets/cover', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt }),
+  });
+  if (!res.ok) throw new Error(`Image generation unavailable (${res.status})`);
+  const data = await res.json();
+  return data.images || data.urls || (data.url ? [data.url] : []);
 }
 
-export async function generateVideo(prompt: string) {
-  // Placeholder. Real impl would call Runway / Veo / Sora.
-  void prompt;
-  return { url: 'https://samplelib.com/lib/preview/mp4/sample-5s.mp4' };
+export async function generateVideo(prompt: string): Promise<{ url: string }> {
+  const res = await fetch('/api/assets/video', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt }),
+  });
+  if (!res.ok) throw new Error(`Video generation unavailable (${res.status})`);
+  return res.json();
 }
 
 export async function generateCampaign(title: string, _artist: string, _goals: string): Promise<CampaignPlan> {

@@ -307,17 +307,17 @@ export default function Dashboard() {
                  <Zap className="w-32 h-32 text-primary" />
               </div>
               <div className="relative z-10">
-                 <div className="text-[10px] text-primary font-bold uppercase tracking-[0.3em] font-mono italic mb-4">Urgent Directive</div>
-                 <h4 className="text-2xl font-black italic font-mono uppercase tracking-tight text-white mb-2 leading-none">Global Launch Buffer Peaking</h4>
+                 <div className="text-[10px] text-primary font-bold uppercase tracking-[0.3em] font-mono italic mb-4">Next Step</div>
+                 <h4 className="text-2xl font-black italic font-mono uppercase tracking-tight text-white mb-2 leading-none">Ship your next release</h4>
                  <p className="text-xs text-white/40 italic font-medium leading-relaxed font-sans mb-8">
-                   Metadata sync required for 'Night Drive' before EU jurisdiction rollout in 4h.
+                   Upload audio + artwork, pick your stores, and schedule a drop date — DropKast handles delivery to every DSP.
                  </p>
-                  <button 
-                    onClick={() => navigate('/releases')}
+                  <button
+                    onClick={() => navigate('/release/new')}
                     className="primary-button w-full h-14 flex items-center justify-center gap-3 bg-primary text-white border-none"
                  >
                    <ArrowUpRight className="w-4 h-4" />
-                   SYNC_PROTCOLS
+                   START_A_RELEASE
                  </button>
               </div>
            </div>

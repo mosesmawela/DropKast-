@@ -61,31 +61,59 @@ export default function Analytics() {
 
   const [chatInput, setChatInput] = useState('');
   const [isAiThinking, setIsAiThinking] = useState(false);
-  const [messages, setMessages] = useState([
-    { role: 'ai', text: "SYST_READY: I've analyzed your June performance. Streams in Brazil are up +24% due to a viral TikTok sound. Should we double down on localized ads there?" }
+  const [messages, setMessages] = useState<{ role: string; text: string }[]>([
+    { role: 'ai', text: "Ask me anything about your performance — once your releases start collecting streams, I'll surface trends, top territories, and budget suggestions here." }
   ]);
 
   const stats = [
-    { label: 'NODE_PLAYS', value: data?.plays ? `${(data.plays / 1000).toFixed(1)}K` : '1.2M', trend: '+12%', color: 'from-primary/20 to-primary/5' },
-    { label: 'CONVERSION_NODES', value: data?.clicks ? data.clicks : '45.2K', trend: '+8%', color: 'from-blue-500/20 to-blue-500/5' },
-    { label: 'INF_POSTS', value: data?.influencerPosts ? data.influencerPosts : '24', trend: '+24%', color: 'from-purple-500/20 to-purple-500/5' },
-    { label: 'TOTAL_REACH', value: data?.totalReach ? (data.totalReach > 1000000 ? `${(data.totalReach/1000000).toFixed(1)}M` : `${(data.totalReach/1000).toFixed(1)}K`) : '782K', trend: '+15%', color: 'from-emerald-500/20 to-emerald-500/5' },
+    { label: 'NODE_PLAYS', value: data?.plays != null ? `${(data.plays / 1000).toFixed(1)}K` : '—', trend: '', color: 'from-primary/20 to-primary/5' },
+    { label: 'CONVERSION_NODES', value: data?.clicks != null ? data.clicks : '—', trend: '', color: 'from-blue-500/20 to-blue-500/5' },
+    { label: 'INF_POSTS', value: data?.influencerPosts != null ? data.influencerPosts : '—', trend: '', color: 'from-purple-500/20 to-purple-500/5' },
+    { label: 'TOTAL_REACH', value: data?.totalReach != null ? (data.totalReach > 1000000 ? `${(data.totalReach/1000000).toFixed(1)}M` : `${(data.totalReach/1000).toFixed(1)}K`) : '—', trend: '', color: 'from-emerald-500/20 to-emerald-500/5' },
   ];
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!chatInput) return;
-    setMessages([...messages, { role: 'user', text: chatInput }]);
+    const userText = chatInput;
+    setMessages((prev) => [...prev, { role: 'user', text: userText }]);
     setChatInput('');
     setIsAiThinking(true);
-    
-    // Simulate AI thinking
-    setTimeout(() => {
-      setMessages(prev => [...prev, { 
-        role: 'ai', 
-        text: "Analyzing trajectory... Based on current trends, your song 'Night Drive' matches the energy of emerging 'Dark Pop' playlists in Berlin. I suggest shifting 15% of your marketing budget to that cluster." 
-      }]);
+
+    try {
+      const res = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: `As my music analytics assistant, answer concisely: ${userText}` }),
+      });
+      if (res.status === 503) {
+        setMessages((prev) => [...prev, { role: 'ai', text: 'AI is not configured yet. Add an API key in AI Models to enable the assistant.' }]);
+        return;
+      }
+      if (!res.ok || !res.body) throw new Error(`Request failed: ${res.status}`);
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let out = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        for (const line of chunk.split('\n')) {
+          const t = line.trim();
+          if (t.startsWith('data:')) {
+            const payload = t.slice(5).trim();
+            if (payload && payload !== '[DONE]') {
+              try { const p = JSON.parse(payload); out += p.text ?? p.delta ?? p.content ?? ''; }
+              catch { out += payload; }
+            }
+          }
+        }
+      }
+      setMessages((prev) => [...prev, { role: 'ai', text: out || 'No response.' }]);
+    } catch {
+      setMessages((prev) => [...prev, { role: 'ai', text: 'Assistant unavailable right now. Check your AI model connection.' }]);
+    } finally {
       setIsAiThinking(false);
-    }, 1500);
+    }
   };
 
   return (

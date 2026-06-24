@@ -25,6 +25,7 @@ import ScrollReveal from '../components/animations/ScrollReveal';
 import AnimatedBeam from '../components/animations/AnimatedBeam';
 import { useCampaigns } from '../context/CampaignContext';
 import { useNotify } from '../context/NotificationContext';
+import { useReleases } from '../context/ReleaseContext';
 
 import { useAI } from '../context/AIContext';
 
@@ -35,16 +36,19 @@ const goals = [
   { id: 'AWARENESS', title: 'Legacy Awareness', desc: 'Build long-term brand equity and press coverage.', icon: Users, color: 'text-purple-500' },
 ];
 
-const releases = [
-  { id: 'R-001', title: 'Midnight City', artist: 'Neon Void', type: 'SINGLE', cover: 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=300&h=300&fit=crop' },
-  { id: 'R-002', title: 'Glass Hearts', artist: 'Neon Void', type: 'EP', cover: 'https://images.unsplash.com/photo-1619983081563-430f63602796?w=300&h=300&fit=crop' },
-  { id: 'R-003', title: 'Static Dreams', artist: 'Neon Void', type: 'SINGLE', cover: 'https://images.unsplash.com/photo-1493225255756-d9584f8606e9?w=300&h=300&fit=crop' },
-];
-
 export default function NewCampaign() {
   const { addCampaign } = useCampaigns();
   const { notify } = useNotify();
+  const { allReleases } = useReleases();
   const { generateCampaign, isLoading: isAiLoading, lastPlan } = useAI();
+  // Real catalogue — map releases into the shape this wizard's picker expects.
+  const releases = allReleases.map((r) => ({
+    id: r.id,
+    title: r.title,
+    artist: r.artist,
+    type: (r.format || 'SINGLE').toUpperCase(),
+    cover: r.artwork,
+  }));
   const [step, setStep] = useState(1);
   const [selectedRelease, setSelectedRelease] = useState<string | null>(null);
   const [selectedGoal, setSelectedGoal] = useState<string | null>(null);
@@ -147,8 +151,20 @@ export default function NewCampaign() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {releases.length === 0 && (
+                <div className="col-span-full py-20 text-center border-2 border-dashed border-white/5 bg-white/[0.01]">
+                  <div className="text-white/20 font-mono text-sm uppercase tracking-widest italic mb-4">No releases yet</div>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/release/new')}
+                    className="text-[10px] font-black text-primary uppercase italic tracking-widest hover:text-white transition-colors"
+                  >
+                    + Create your first release
+                  </button>
+                </div>
+              )}
               {releases.map((rel) => (
-                <button 
+                <button
                   key={rel.id}
                   onClick={() => setSelectedRelease(rel.id)}
                   className={cn(
