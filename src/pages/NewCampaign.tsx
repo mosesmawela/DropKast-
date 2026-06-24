@@ -342,9 +342,9 @@ export default function NewCampaign() {
                 <h3 className="text-sm font-bold text-white tracking-[0.2em] font-mono uppercase italic">Network Allocation</h3>
                 <div className="space-y-6">
                   {[
-                    { label: 'Influencers', value: '45 matched', progress: 100 },
-                    { label: 'DJs', value: '120 active nodes', progress: 100 },
-                    { label: 'Ad Platforms', value: 'YouTube / IG Discovery', progress: 100 },
+                    { label: 'Influencers', value: '—', progress: 0 },
+                    { label: 'DJs', value: '—', progress: 0 },
+                    { label: 'Ad Platforms', value: '—', progress: 0 },
                   ].map(p => (
                     <div key={p.label} className="space-y-2">
                        <div className="flex justify-between text-[11px] font-bold font-mono italic uppercase">

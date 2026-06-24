@@ -13,11 +13,7 @@ import { motion } from 'motion/react';
 import { cn } from '../../../lib/utils';
 
 export default function InfluencerEarnings() {
-  const transactions = [
-    { id: 1, type: 'Payout', amount: '$1,200', date: '2026-04-15', status: 'Completed', mission: 'Afrobeats Spring Push' },
-    { id: 2, type: 'Pending', amount: '$450', date: '2026-04-20', status: 'Verifying', mission: 'New Wave UGC Brief' },
-    { id: 3, type: 'Payout', amount: '$850', date: '2026-04-02', status: 'Completed', mission: 'Midnight Rush Campaign' },
-  ];
+  const transactions: { id: number; type: string; amount: string; date: string; status: string; mission: string }[] = [];
 
   return (
     <div className="space-y-12 pb-20 uppercase tracking-[0.05em] font-sans">
@@ -39,9 +35,9 @@ export default function InfluencerEarnings() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[
-          { label: 'Total earned', value: '$2,500', icon: Wallet, color: 'text-primary' },
-          { label: 'Pending verification', value: '$450', icon: Clock, color: 'text-white/40' },
-          { label: 'Avg per mission', value: '$312.5', icon: TrendingUp, color: 'text-emerald-400' },
+          { label: 'Total earned', value: '$0.00', icon: Wallet, color: 'text-primary' },
+          { label: 'Pending verification', value: '$0.00', icon: Clock, color: 'text-white/40' },
+          { label: 'Avg per mission', value: '—', icon: TrendingUp, color: 'text-emerald-400' },
         ].map((stat, i) => (
           <div key={i} className="manifest-card p-10 bg-black/40 border-white/5 space-y-6">
             <div className="flex items-center gap-4">
@@ -65,6 +61,9 @@ export default function InfluencerEarnings() {
         </div>
 
         <div className="space-y-4">
+          {transactions.length === 0 && (
+            <div className="manifest-card p-12 bg-white/[0.02] border-white/5 text-center text-[11px] font-black text-white/20 uppercase tracking-widest italic font-mono">No transactions yet</div>
+          )}
           {transactions.map((t) => (
             <div key={t.id} className="manifest-card p-8 bg-white/[0.02] border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:border-white/20 transition-all group">
               <div className="flex items-center gap-6">

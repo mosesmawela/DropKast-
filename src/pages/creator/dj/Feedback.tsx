@@ -124,9 +124,9 @@ export default function DJFeedback() {
               
               <div className="space-y-8">
                  {[
-                   { label: 'DANCE_FLOOR_HEAT', value: '84%', icon: TrendingUp, color: 'text-primary' },
-                   { label: 'PEAK_HOUR_POTENTIAL', value: 'HIGH', icon: Disc, color: 'text-white' },
-                   { label: 'SONIC_CLARITY', value: '4.8/5', icon: Zap, color: 'text-emerald-400' },
+                   { label: 'DANCE_FLOOR_HEAT', value: '—', icon: TrendingUp, color: 'text-primary' },
+                   { label: 'PEAK_HOUR_POTENTIAL', value: '—', icon: Disc, color: 'text-white' },
+                   { label: 'SONIC_CLARITY', value: '—', icon: Zap, color: 'text-emerald-400' },
                  ].map((stat, i) => (
                    <div key={i} className="flex items-center justify-between group">
                       <div className="flex items-center gap-4">

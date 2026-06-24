@@ -381,7 +381,7 @@ export default function Influencers() {
                          <span className="text-[9px] font-black tracking-widest uppercase text-white drop-shadow-lg">{inf.platform}</span>
                        </div>
                        <div className="absolute top-4 right-4">
-                          <div className="px-2 py-1 bg-primary text-white text-[8px] font-black font-mono tracking-widest italic">{inf.match || '90%'} MATCH</div>
+                          <div className="px-2 py-1 bg-primary text-white text-[8px] font-black font-mono tracking-widest italic">{inf.match || '—'} MATCH</div>
                        </div>
                        <div className="absolute bottom-6 left-6 right-6">
                          <div className="text-2xl font-black text-white italic font-mono uppercase tracking-tight mb-1">{inf.name}</div>

@@ -405,13 +405,13 @@ export default function PreReleaseCreate() {
                   </p>
                 </div>
 
+                {([] as { id: string; name: string; reach: string; type: string; tags: string[] }[]).length === 0 && (
+                  <div className="manifest-card p-12 border border-white/5 bg-white/[0.02] text-center text-[11px] font-bold text-white/30 uppercase tracking-widest italic font-mono leading-relaxed">
+                    No suggested creators yet — we'll match them once your pre-release is live
+                  </div>
+                )}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {[
-                    { id: '1', name: '@hyper_drive', reach: '2.4M', type: 'Curator', tags: ['Electronic', 'Hyper-Pop'] },
-                    { id: '2', name: 'Bass_Echo', reach: '840K', type: 'Dancer', tags: ['Amapiano', 'Afrobeats'] },
-                    { id: '3', name: 'Sonic_Voyage', reach: '1.2M', type: 'Edit Page', tags: ['Anime', 'Vibe'] },
-                    { id: '4', name: '@vibe_check', reach: '5.6M', type: 'Meme Central', tags: ['General', 'Viral'] },
-                  ].map((invader) => (
+                  {([] as { id: string; name: string; reach: string; type: string; tags: string[] }[]).map((invader) => (
                     <button 
                       key={invader.id}
                       onClick={() => {

@@ -19,23 +19,9 @@ import {
 import { cn } from '../lib/utils';
 import { useReleases } from '../context/ReleaseContext';
 
-const streamData = [
-  { date: '2024-04-01', total: 12000, spotify: 8000, apple: 3000, tidal: 1000 },
-  { date: '2024-04-02', total: 15400, spotify: 10200, apple: 4000, tidal: 1200 },
-  { date: '2024-04-03', total: 18900, spotify: 12500, apple: 5000, tidal: 1400 },
-  { date: '2024-04-04', total: 24000, spotify: 16000, apple: 6500, tidal: 1500 },
-  { date: '2024-04-05', total: 42000, spotify: 28000, apple: 11000, tidal: 3000 },
-  { date: '2024-04-06', total: 68000, spotify: 45000, apple: 18000, tidal: 5000 },
-  { date: '2024-04-07', total: 95400, spotify: 62000, apple: 26000, tidal: 7400 },
-];
+const streamData: { date: string; total: number; spotify: number; apple: number; tidal: number }[] = [];
 
-const countryData = [
-  { name: 'Nigeria', value: 45 },
-  { name: 'United States', value: 25 },
-  { name: 'United Kingdom', value: 15 },
-  { name: 'Ghana', value: 10 },
-  { name: 'Others', value: 5 },
-];
+const countryData: { name: string; value: number }[] = [];
 
 const COLORS = ['#FF4D00', '#FFFFFF', '#333333', '#111111', '#222222'];
 
@@ -70,10 +56,10 @@ export default function ReleaseAnalytics() {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
            {[
-             { label: 'TOTAL_STREAMS', val: '95.4K', icon: Play, trend: '+342%' },
-             { label: 'UNIQUE_LISTENERS', val: '42.1K', icon: Users, trend: '+124%' },
-             { label: 'PLAYLIST_NODES', val: '1,204', icon: BarChart3, trend: '+12%' },
-             { label: 'SAVE_RATIO', val: '24.5%', icon: TrendingUp, trend: '+5%' },
+             { label: 'TOTAL_STREAMS', val: '—', icon: Play, trend: '' },
+             { label: 'UNIQUE_LISTENERS', val: '—', icon: Users, trend: '' },
+             { label: 'PLAYLIST_NODES', val: '—', icon: BarChart3, trend: '' },
+             { label: 'SAVE_RATIO', val: '—', icon: TrendingUp, trend: '' },
            ].map((stat, i) => (
              <div key={i} className="p-6 border border-white/5 bg-dark space-y-4">
                 <div className="flex items-center justify-between">
@@ -103,6 +89,9 @@ export default function ReleaseAnalytics() {
               </div>
            </div>
            
+           {streamData.length === 0 ? (
+             <div className="h-[400px] w-full flex items-center justify-center text-[11px] font-black text-white/20 uppercase tracking-widest italic">No stream data yet</div>
+           ) : (
            <div className="h-[400px] w-full">
              <ResponsiveContainer width="100%" height="100%">
                <AreaChart data={streamData}>
@@ -131,10 +120,15 @@ export default function ReleaseAnalytics() {
                </AreaChart>
              </ResponsiveContainer>
            </div>
+           )}
         </div>
 
         <div className="manifest-card p-10 bg-dark border-white/5 flex flex-col">
            <h3 className="text-[11px] font-black text-white/30 uppercase tracking-[0.4em] italic font-mono mb-10">Regional Node Density</h3>
+           {countryData.length === 0 ? (
+             <div className="flex-1 flex items-center justify-center text-[11px] font-black text-white/20 uppercase tracking-widest italic">No regional data yet</div>
+           ) : (
+           <>
            <div className="flex-1 h-64">
              <ResponsiveContainer width="100%" height="100%">
                <PieChart>
@@ -165,6 +159,8 @@ export default function ReleaseAnalytics() {
                 </div>
               ))}
            </div>
+           </>
+           )}
         </div>
       </div>
 
@@ -172,12 +168,10 @@ export default function ReleaseAnalytics() {
          <div className="manifest-card p-10 bg-dark border-white/5 space-y-8">
             <h3 className="text-[11px] font-black text-white/30 uppercase tracking-[0.4em] italic font-mono">Top Node Locations</h3>
             <div className="space-y-6">
-               {[
-                 { city: 'Lagos', country: 'NG', nodes: '34.2K', growth: '+12%' },
-                 { city: 'London', country: 'UK', nodes: '12.4K', growth: '+45%' },
-                 { city: 'New York', country: 'US', nodes: '8.1K', growth: '+8%' },
-                 { city: 'Accra', country: 'GH', nodes: '5.2K', growth: '+22%' },
-               ].map((loc, i) => (
+               {([] as { city: string; country: string; nodes: string; growth: string }[]).length === 0 && (
+                 <div className="text-[11px] font-black text-white/20 uppercase tracking-widest italic text-center py-8">No location data yet</div>
+               )}
+               {([] as { city: string; country: string; nodes: string; growth: string }[]).map((loc, i) => (
                  <div key={i} className="flex items-center justify-between border-b border-white/5 pb-6 last:border-0 last:pb-0">
                     <div className="flex items-center gap-4">
                        <MapPin className="w-4 h-4 text-primary" />
@@ -201,16 +195,16 @@ export default function ReleaseAnalytics() {
                <div className="space-y-4">
                   <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest italic">
                      <div className="flex items-center gap-3 text-white"><Smartphone className="w-4 h-4" /> HANDHELD</div>
-                     <div className="text-white">82%</div>
+                     <div className="text-white">—</div>
                   </div>
-                  <div className="h-1 bg-white/5 p-0.5"><motion.div initial={{ width: 0 }} animate={{ width: '82%' }} className="h-full bg-primary" /></div>
+                  <div className="h-1 bg-white/5 p-0.5"><motion.div initial={{ width: 0 }} animate={{ width: '0%' }} className="h-full bg-primary" /></div>
                </div>
                <div className="space-y-4">
                   <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest italic">
                      <div className="flex items-center gap-3 text-white/40"><Monitor className="w-4 h-4" /> CROSS_TERMINAL</div>
-                     <div className="text-white/40">18%</div>
+                     <div className="text-white/40">—</div>
                   </div>
-                  <div className="h-1 bg-white/5 p-0.5"><motion.div initial={{ width: 0 }} animate={{ width: '18%' }} className="h-full bg-white/10" /></div>
+                  <div className="h-1 bg-white/5 p-0.5"><motion.div initial={{ width: 0 }} animate={{ width: '0%' }} className="h-full bg-white/10" /></div>
                </div>
             </div>
          </div>

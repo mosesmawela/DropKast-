@@ -43,11 +43,7 @@ export default function Dashboard() {
   const { role } = useTheme();
   const [overview, setOverview] = useState<{ counts: any; revenue: any } | null>(null);
   const [loading, setLoading] = useState(true);
-  const [signalFeed, setSignalFeed] = useState([
-    { msg: 'Ad Set ADS-001 rebalancing budget to IG Stories node.', time: '2m ago', icon: Cpu },
-    { msg: 'Luna Beats accepted DJ Pack transmission.', time: '14m ago', icon: Radio },
-    { msg: 'A&R Review AI-204 protocol completed.', time: '1h ago', icon: ShieldCheck },
-  ]);
+  const [signalFeed, setSignalFeed] = useState<{ msg: string; time: string; icon: typeof Cpu }[]>([]);
 
   useEffect(() => {
     fetch('/api/admin/overview')
@@ -73,8 +69,8 @@ export default function Dashboard() {
           title: 'Influencer dashboard',
           greeting: `HELLO, ${user?.artistName?.split(' ')[0] || 'CREATOR'}`,
           metrics: [
-            { label: 'Total Engagement', value: '450K', trend: '+8.2% Velo', color: 'text-primary', icon: Users },
-            { label: 'Pending Missions', value: '03', trend: 'High Priority', color: 'text-emerald-400', icon: Target },
+            { label: 'Total Engagement', value: '—', trend: '', color: 'text-primary', icon: Users },
+            { label: 'Pending Missions', value: '—', trend: '', color: 'text-emerald-400', icon: Target },
             { label: 'Active Campaigns', value: activeCampaignsCount.toString().padStart(2, '0'), trend: 'Protocols Ready', color: 'text-white', icon: Layers },
             { label: 'Est. Earnings', value: `$${(revenueCents / 100).toFixed(1)}K`, trend: 'Global Reach', color: 'text-white/40', icon: Wallet },
           ],
@@ -92,10 +88,10 @@ export default function Dashboard() {
           title: 'VIBE_DISTRIBUTOR',
           greeting: `HELLO, ${user?.artistName?.split(' ')[0] || 'SELECTA'}`,
           metrics: [
-            { label: 'Pack Downloads', value: '1.2K', trend: '+15.5% Velo', color: 'text-primary', icon: Download },
-            { label: 'Direct Feedbacks', value: '42', trend: 'Awaiting', color: 'text-emerald-400', icon: MessageSquare },
-            { label: 'Promo Loops', value: '08', trend: 'Active Sync', color: 'text-white', icon: Radio },
-            { label: 'Elite Rank', value: '#12', trend: 'Station Master', color: 'text-white/40', icon: Star },
+            { label: 'Pack Downloads', value: '—', trend: '', color: 'text-primary', icon: Download },
+            { label: 'Direct Feedbacks', value: '—', trend: '', color: 'text-emerald-400', icon: MessageSquare },
+            { label: 'Promo Loops', value: '—', trend: '', color: 'text-white', icon: Radio },
+            { label: 'Elite Rank', value: '—', trend: '', color: 'text-white/40', icon: Star },
           ],
           actions: [
             { title: 'Promo Packs', icon: Download, path: '/dj/packs', desc: 'Download exclusive pre-release audio buffers.' },
@@ -282,6 +278,9 @@ export default function Dashboard() {
                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
               </div>
               <div className="space-y-6">
+                  {signalFeed.length === 0 && (
+                    <div className="text-[10px] font-bold text-white/20 uppercase tracking-widest italic font-mono text-center py-6">No signals yet</div>
+                  )}
                   {signalFeed.map((log, i) => (
                    <div key={i} className="flex gap-4 items-start group">
                       <div className="w-8 h-8 flex-shrink-0 border border-white/5 flex items-center justify-center bg-white/5 text-primary">

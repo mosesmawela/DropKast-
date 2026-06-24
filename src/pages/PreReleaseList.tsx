@@ -65,9 +65,9 @@ export default function PreReleaseList() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {[
           { label: 'ACTIVE_SIGNALS', value: activations.length, icon: Zap, color: 'text-primary' },
-          { label: 'UGC_VELOCITY', value: '14.2K', icon: Video, color: 'text-blue-400' },
-          { label: 'INFLUENCER_REACH', value: '2.4M', icon: Users, color: 'text-purple-400' },
-          { label: 'SIGNAL_STRENGTH', value: '92%', icon: TrendingUp, color: 'text-emerald-400' },
+          { label: 'UGC_VELOCITY', value: '—', icon: Video, color: 'text-blue-400' },
+          { label: 'INFLUENCER_REACH', value: '—', icon: Users, color: 'text-purple-400' },
+          { label: 'SIGNAL_STRENGTH', value: '—', icon: TrendingUp, color: 'text-emerald-400' },
         ].map((stat, i) => (
           <div key={i} className="manifest-card p-10 bg-black/40 border-white/5 group hover:border-primary/20 transition-all">
             <div className="flex items-center gap-4 mb-6">

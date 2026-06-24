@@ -166,10 +166,10 @@ export default function PreReleaseDetails() {
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                {[
-                 { label: 'UGC_VELO', value: '4.2K', color: 'text-white' },
-                 { label: 'TREND_NODE', value: 'Active', color: 'text-emerald-400' },
+                 { label: 'UGC_VELO', value: '—', color: 'text-white' },
+                 { label: 'TREND_NODE', value: '—', color: 'text-emerald-400' },
                  { label: 'REL_DATE', value: data.releaseDate, color: 'text-white/40' },
-                 { label: 'HOOK_LEN', value: '22s', color: 'text-primary' },
+                 { label: 'HOOK_LEN', value: '—', color: 'text-primary' },
                ].map((stat, i) => (
                  <div key={i} className="space-y-1">
                    <div className="text-[8px] font-black text-white/20 uppercase tracking-widest font-mono italic">{stat.label}</div>

@@ -24,19 +24,9 @@ import AnimatedBeam from '../components/animations/AnimatedBeam';
 import { toast } from 'sonner';
 import { StatSkeleton, CardSkeleton } from '../components/Skeleton';
 
-const payoutHistory = [
-  { id: 1, date: '2024-04-15', amount: '$4,290.00', method: 'Direct Deposit', status: 'Completed' },
-  { id: 2, date: '2024-03-15', amount: '$3,850.50', method: 'Direct Deposit', status: 'Completed' },
-  { id: 3, date: '2024-02-15', amount: '$5,120.00', method: 'Paypal', status: 'Completed' },
-  { id: 4, date: '2024-01-15', amount: '$2,450.00', method: 'Paypal', status: 'Failed' },
-];
+const payoutHistory: { id: number; date: string; amount: string; method: string; status: string }[] = [];
 
-const platformProjections = [
-  { name: 'Spotify', value: 8400, color: '#1DB954' },
-  { name: 'Apple', value: 3100, color: '#FA243C' },
-  { name: 'YouTube', value: 1200, color: '#FF0000' },
-  { name: 'Tidal', value: 800, color: '#00FFFF' },
-];
+const platformProjections: { name: string; value: number; color: string }[] = [];
 
 export default function Earnings() {
   const [loading, setLoading] = useState(true);
@@ -120,9 +110,9 @@ export default function Earnings() {
           
           <div className="grid grid-cols-3 gap-8 mt-16 pt-8 border-t border-white/5 font-mono">
             {[
-              { label: 'Last Payout', value: '$4,290.00' },
-              { label: 'Next Cycle', value: 'MAY 15' },
-              { label: 'Pending', value: '$842.10' },
+              { label: 'Last Payout', value: '—' },
+              { label: 'Next Cycle', value: '—' },
+              { label: 'Pending', value: '$0.00' },
             ].map((item) => (
               <div key={item.label}>
                 <span className="text-[10px] font-bold text-white/30 block mb-2 tracking-widest uppercase italic">{item.label}</span>
@@ -139,6 +129,10 @@ export default function Earnings() {
                 <h3 className="text-[11px] font-bold text-white/30 uppercase tracking-widest italic">Proj. Earnings</h3>
                 <span className="text-[10px] font-bold text-primary uppercase animate-pulse">High Potential</span>
              </div>
+             {platformProjections.length === 0 ? (
+               <div className="h-[200px] w-full flex items-center justify-center text-[10px] font-bold text-white/20 uppercase tracking-widest italic text-center">No projections yet</div>
+             ) : (
+             <>
              <div className="h-[200px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -168,6 +162,8 @@ export default function Earnings() {
                  </div>
                ))}
              </div>
+             </>
+             )}
           </div>
           
           <div className="manifest-card !bg-white/5 p-8 space-y-5">
@@ -215,12 +211,7 @@ export default function Earnings() {
             <div className="manifest-card p-10 bg-dark border-white/5 space-y-8 shadow-2xl">
                <h3 className="text-[11px] font-black text-white/30 uppercase tracking-[0.4em] italic font-mono">Platform Royalty Density</h3>
                <div className="space-y-6">
-                  {[
-                    { node: 'Spotify', amount: '$6,492', streams: '8.4M', color: '#FF4D00' },
-                    { node: 'Apple Music', amount: '$4,120', streams: '3.1M', color: '#FA243C' },
-                    { node: 'TikTok Nodes', amount: '$1,240', streams: '12.8M', color: '#00FFFF' },
-                    { node: 'Audiomack Africa', amount: '$640', streams: '2.1M', color: '#FFA500' },
-                  ].map((p, i) => (
+                  {([] as { node: string; amount: string; streams: string; color: string }[]).map((p, i) => (
                     <div key={i} className="flex flex-col gap-3">
                        <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest italic">
                           <span className="text-white/60">{p.node}</span>
@@ -229,17 +220,14 @@ export default function Earnings() {
                        <div className="h-1 bg-white/5 p-0.5"><motion.div initial={{ width: 0 }} animate={{ width: `${(parseInt(p.amount.replace('$', '')) / 10000) * 100}%` }} className="h-full" style={{ backgroundColor: p.color }} /></div>
                     </div>
                   ))}
+                  <div className="text-[10px] font-black text-white/20 uppercase tracking-widest italic text-center py-8">No earnings by store yet</div>
                </div>
             </div>
 
             <div className="manifest-card p-10 bg-dark border-white/5 space-y-8 shadow-2xl">
                <h3 className="text-[11px] font-black text-white/30 uppercase tracking-[0.4em] italic font-mono">Release Performance vs Costs</h3>
                <div className="space-y-6">
-                  {[
-                    { release: 'Neon Nights', revenue: '$8,420', cost: '$1,200', margin: '85%' },
-                    { release: 'Subsonic Echo', revenue: '$3,100', cost: '$450', margin: '84%' },
-                    { release: 'Velvet Sky', revenue: '$912', cost: '$120', margin: '86%' },
-                  ].map((r, i) => (
+                  {([] as { release: string; revenue: string; cost: string; margin: string }[]).map((r, i) => (
                     <div key={i} className="flex items-center justify-between p-6 border border-white/5 bg-white/[0.01] hover:bg-white/5 transition-all">
                        <div className="flex flex-col">
                           <span className="text-xs font-black text-white uppercase italic tracking-tight">{r.release}</span>
@@ -251,6 +239,7 @@ export default function Earnings() {
                        </div>
                     </div>
                   ))}
+                  <div className="text-[10px] font-black text-white/20 uppercase tracking-widest italic text-center py-8">No release revenue yet</div>
                </div>
             </div>
          </div>
@@ -273,6 +262,11 @@ export default function Earnings() {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5 italic">
+              {payoutHistory.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="px-8 py-12 text-center text-[11px] font-bold text-white/20 uppercase tracking-widest italic">No payouts yet</td>
+                </tr>
+              )}
               {payoutHistory.map((p) => (
                 <tr key={p.id} className="hover:bg-white/[0.01] transition-colors group">
                   <td className="px-8 py-6 text-[11px] text-white/20 tracking-widest uppercase font-mono">{p.date.replace(/-/g, '/')}</td>
