@@ -9,7 +9,9 @@ Issues I found while auditing the site. **Fixed in this push** at the top, **awa
 - [x] **ModelPicker dropdown clipping** — was getting cut off by `overflow:hidden` on the AI Assistant chat panel and any other modal. Refactored to render via React Portal to `document.body` with absolute positioning relative to the trigger button. Resize/scroll-aware. Esc key + click-outside close it. Z-index 1000.
 - [x] **AI Assistant first-message 503** — recommended default was Anthropic Sonnet, but no Anthropic key was set. The first message would error "AI not configured" before the user could even pick a different provider. Now on mount the assistant fetches `/api/ai/providers` and **smart-falls-back** to whichever provider IS configured (Anthropic → Groq → NVIDIA → Cerebras → OpenRouter, in priority order).
 - [x] **/api/health endpoint** missing the free chat providers in its service map — fixed (NVIDIA / Groq / Cerebras / OpenRouter now reported).
-- [x] **AI Models page clarity** — removed the dead "Premium $15/mo" card (linked to nowhere), reduced the 3-card preamble to 2 (System AI Free + BYOK), added a green "Live & Working Today" callout so artists know what works without a key.
+- [x] **AI Models → Connectors & BYOK overhaul** — the old read-only model catalog is now a full **Connectors & Bring Your Own Key** page. Users enter/save/test their own API keys for every supported provider. Keys stored in localStorage and sent per-request to the provider API — never stored on DropKast servers. Sidebar renamed from "AI Models" to "Connectors".
+- [x] **POST /api/ai/validate-key endpoint** — lightweight test call for any provider key so users can validate before using.
+- [x] **Backend per-request API key support** — `_ai-chat.ts` and `_text-providers.ts` now accept `apiKeys` in the request body, merging with server env vars. BYOK keys take priority for the user's session.
 - [x] **All routes return 200** — audited every sidebar link including new `/messages`, `/academy`, `/profile`, `/ai-providers`. None broken.
 
 ---

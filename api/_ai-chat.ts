@@ -19,7 +19,7 @@ import type { Request, Response } from 'express';
 import Anthropic from '@anthropic-ai/sdk';
 import { store } from './_store.js';
 import { isOverBudget, recordUsage } from './_ai-budget.js';
-import { streamOpenAICompatible, PROVIDER_TIMEOUT_MS, FALLBACK_ORDER, listAvailableTextProviders, type TextProviderId } from './_text-providers.js';
+import { streamOpenAICompatible, PROVIDER_TIMEOUT_MS, FALLBACK_ORDER, listAvailableTextProviders, CONFIG_FOR_PROVIDER, type TextProviderId } from './_text-providers.js';
 import { getPersona, type PersonaId } from '../src/lib/ai-personas.js';
 
 const SONNET = 'claude-sonnet-4-6';
@@ -107,17 +107,28 @@ async function runTool(name: string, input: Record<string, unknown>): Promise<un
 }
 
 export async function handleAiChat(req: Request, res: Response): Promise<void> {
-  const { message, userId, provider, persona } = req.body as { message: string; userId?: string; provider?: TextProviderId; persona?: PersonaId };
-  const chosenProvider: TextProviderId = provider ?? 'anthropic';
+  const { message, provider, persona, apiKeys } = req.body as { message: string; provider?: TextProviderId; persona?: PersonaId; apiKeys?: Record<string, string> };
+  const userId = req.userId; // From auth middleware
   const personaId: PersonaId = persona ?? DEFAULT_PERSONA;
   const personaObj = getPersona(personaId);
   const SYSTEM_PROMPT = personaObj.systemPrompt;
 
-  // Anthropic path requires its key. Other providers handled below.
-  if (chosenProvider === 'anthropic' && !process.env.ANTHROPIC_API_KEY) {
+  // Merge user-provided keys into env for this request
+  if (apiKeys) {
+    for (const [key, value] of Object.entries(apiKeys)) {
+      if (value) process.env[key] = value;
+    }
+  }
+
+  // Determine provider: use explicit provider, or first available from fallback order
+  const available = listAvailableTextProviders(apiKeys).filter(p => p.configured).map(p => p.id);
+  const chosenProvider: TextProviderId = provider ?? available[0] ?? 'anthropic';
+
+  // If no providers configured at all, return helpful error
+  if (available.length === 0) {
     res.status(503).json({
-      error: 'AI not configured',
-      message: 'Set ANTHROPIC_API_KEY in your environment, or pass provider="nvidia"/"groq"/"cerebras"/"openrouter".',
+      error: 'No AI providers configured',
+      message: 'Add at least one API key: ANTHROPIC_API_KEY, GROQ_API_KEY, NVIDIA_API_KEY, CEREBRAS_API_KEY, OPENROUTER_API_KEY, MOONSHOT_API_KEY, OPENAI_API_KEY, or GOOGLE_API_KEY',
     });
     return;
   }
@@ -140,15 +151,26 @@ export async function handleAiChat(req: Request, res: Response): Promise<void> {
     res.write(`data: ${JSON.stringify(data)}\n\n`);
   };
 
-  // ---- OpenAI-compatible providers (NVIDIA / Groq / Cerebras / OpenRouter)
-  // These don't support tool use through this adapter, so the assistant
-  // can't call your data — it's a plain chatbot until you switch back to
-  // Anthropic. Useful for free fallback when Claude budget is hit.
-  //
-  // Automatic rotation: if the chosen provider fails (timeout / auth / rate
-  // limit), we fall through FALLBACK_ORDER to find a configured provider
-  // that responds. The done event reports which provider served the reply.
-  if (chosenProvider !== 'anthropic') {
+  // Check if chosen provider is anthropic and configured
+  const isAnthropic = chosenProvider === 'anthropic' && process.env.ANTHROPIC_API_KEY;
+  const availableProviders = listAvailableTextProviders(apiKeys).filter(p => p.configured).map(p => p.id);
+  
+  // Cost guardrail: refuse if user is over their daily AI budget (applies to all providers)
+  const budget = await isOverBudget(userId);
+  if (budget.over) {
+    res.status(429).json({
+      error: 'AI budget exceeded',
+      message: `Daily AI budget of $${(budget.budgetCents / 100).toFixed(2)} reached. Resets at midnight UTC.`,
+      spent_cents: budget.spentCents,
+      budget_cents: budget.budgetCents,
+    });
+    return;
+  }
+
+  // ---- OpenAI-compatible providers (NVIDIA / Groq / Cerebras / OpenRouter / Moonshot / OpenAI / Google)
+  // These don't support tool use through this adapter — plain chat only.
+  // Automatic rotation: if the chosen provider fails, fall through FALLBACK_ORDER.
+  if (!isAnthropic) {
     initSSE();
     const messages: { role: 'system' | 'user' | 'assistant'; content: string }[] = [
       { role: 'system', content: SYSTEM_PROMPT },
@@ -161,14 +183,15 @@ export async function handleAiChat(req: Request, res: Response): Promise<void> {
     let servedBy: TextProviderId | null = null;
 
     for (const pid of probeOrder) {
-      const cfg = listAvailableTextProviders().find((p: { id: TextProviderId }) => p.id === pid);
+      const cfg = listAvailableTextProviders(apiKeys).find((p: { id: TextProviderId }) => p.id === pid);
       if (!cfg?.configured) {
         errors.push(`${pid}: skipped (no key)`);
         continue;
       }
+      const providerKey = apiKeys?.[CONFIG_FOR_PROVIDER[pid]?.envVar ?? ''];
       try {
         let hasContent = false;
-        for await (const chunk of streamOpenAICompatible(pid, messages, { signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS) })) {
+        for await (const chunk of streamOpenAICompatible(pid, messages, { signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS), apiKey: providerKey })) {
           if (chunk.error) {
             errors.push(`${pid}: ${chunk.error}`);
             hasContent = false;
@@ -195,29 +218,28 @@ export async function handleAiChat(req: Request, res: Response): Promise<void> {
       }
     }
 
-    // All providers failed
-    send('error', {
-      message: 'All AI providers failed. Check your API keys.',
-      details: errors,
-    });
-    send('done', { ok: false, errors });
-    res.end();
-    return;
+    // All OpenAI-compatible providers failed - try Anthropic as last resort if configured
+    if (process.env.ANTHROPIC_API_KEY) {
+      // Fall through to anthropic path
+    } else {
+      send('error', {
+        message: 'All AI providers failed. Check your API keys.',
+        details: errors,
+      });
+      send('done', { ok: false, errors });
+      res.end();
+      return;
+    }
   }
 
-  // Cost guardrail: refuse if user is over their daily AI budget.
-  const budget = await isOverBudget(userId);
-  if (budget.over) {
-    res.status(429).json({
-      error: 'AI budget exceeded',
-      message: `Daily AI budget of $${(budget.budgetCents / 100).toFixed(2)} reached. Resets at midnight UTC.`,
-      spent_cents: budget.spentCents,
-      budget_cents: budget.budgetCents,
+  // ---- Anthropic path: streaming + tool use + prompt caching (only if anthropic key exists)
+  if (!process.env.ANTHROPIC_API_KEY) {
+    res.status(503).json({
+      error: 'No AI providers available',
+      message: 'All configured providers failed and Anthropic is not configured.',
     });
     return;
   }
-
-  // ---- Anthropic path: streaming + tool use + prompt caching.
   initSSE();
 
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });

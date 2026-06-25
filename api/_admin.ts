@@ -21,28 +21,20 @@ import { logger } from './_logger.js';
 import { listAuditEvents } from './_security.js';
 import { getAllUsage } from './_ai-budget.js';
 
-const DEFAULT_ADMIN_EMAILS = ['moses@lvrn.com', 'jshep@lvrn.com'];
-
 export function isAdminEmail(email?: string): boolean {
   if (!email) return false;
-  const raw = process.env.ADMIN_EMAILS || DEFAULT_ADMIN_EMAILS.join(',');
+  const raw = process.env.ADMIN_EMAILS;
+  if (!raw) return false;
   const allowed = raw.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
   return allowed.includes(email.toLowerCase());
 }
 
 /** Express middleware — 403 if caller isn't an admin.
- *  Accepts email from X-User-Email header OR ?email= query param (the latter
- *  is for EventSource which can't set custom headers). Same goes for the
- *  emergency password — header OR ?password= query param. */
+ *  Accepts email from X-User-Email header only. Emergency password via header only.
+ *  Query params removed to prevent credential leakage in logs/URLs. */
 export function adminOnly(req: any, res: any, next: any): void {
-  const email =
-    (req.headers['x-user-email'] as string) ||
-    (req.query?.email as string) ||
-    '';
-  const adminPassword =
-    (req.headers['x-admin-password'] as string) ||
-    (req.query?.password as string) ||
-    undefined;
+  const email = (req.headers['x-user-email'] as string) || '';
+  const adminPassword = (req.headers['x-admin-password'] as string) || undefined;
   const expectedPwd = process.env.ADMIN_EMERGENCY_PASSWORD;
 
   if (isAdminEmail(email)) return next();

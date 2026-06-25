@@ -21,6 +21,7 @@ import {
   Disc,
   Plus,
   Check,
+  Building2,
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
@@ -157,18 +158,19 @@ export default function Settings() {
         >
           {activeTab === 'IDENTITY' && (
             <Card title="Identity Protocol" desc="Switch the active portal — your dashboard, sidebar, and tools update accordingly.">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 {[
                   { id: 'ARTIST', label: 'Artist Core', icon: Music, desc: 'Make the music' },
                   { id: 'INFLUENCER', label: 'Creator Relay', icon: Camera, desc: 'Make content' },
                   { id: 'DJ', label: 'Vibe Selecta', icon: Disc, desc: 'Move the floor' },
+                  { id: 'LABEL', label: 'Label Ops', icon: Building2, desc: 'Manage roster' },
                 ].map((r) => {
                   const Icon = r.icon;
                   const active = role === r.id;
                   return (
                     <button
                       key={r.id}
-                      onClick={() => setRole(r.id as any)}
+                      onClick={() => setRole(r.id)}
                       className={cn(
                         'flex flex-col items-start gap-2 p-4 border transition-all text-left',
                         active
@@ -391,11 +393,21 @@ export default function Settings() {
           )}
 
           {activeTab === 'AI' && (
-            <Card title="AI Automation" desc="Permissions for the on-board AI assistant.">
-              <ToggleRow label="Auto-send to DJs" desc="Automated distribution to verified DJ clusters" checked={autoSendDJs} onChange={toggleAutoSendDJs} />
-              <ToggleRow label="Auto content generation" desc="Generate covers, viral ideas, captions on each new release" checked={autoGenerateContent} onChange={toggleAutoGenerateContent} />
-              <ToggleRow label="Auto ad optimization" desc="Algorithmic budget management across paid platforms" checked={autoOptimizeAds} onChange={toggleAutoOptimizeAds} />
-            </Card>
+            <>
+              <Card title="AI Automation" desc="Permissions for the on-board AI assistant.">
+                <ToggleRow label="Auto-send to DJs" desc="Automated distribution to verified DJ clusters" checked={autoSendDJs} onChange={toggleAutoSendDJs} />
+                <ToggleRow label="Auto content generation" desc="Generate covers, viral ideas, captions on each new release" checked={autoGenerateContent} onChange={toggleAutoGenerateContent} />
+                <ToggleRow label="Auto ad optimization" desc="Algorithmic budget management across paid platforms" checked={autoOptimizeAds} onChange={toggleAutoOptimizeAds} />
+              </Card>
+              <Card title="API Keys" desc="Connect your own AI provider keys (BYOK).">
+                <a
+                  href="/ai-providers"
+                  className="inline-flex items-center gap-2 h-10 px-4 border border-primary/50 text-primary text-[10px] font-mono font-black uppercase italic tracking-widest hover:bg-primary hover:text-white transition-all"
+                >
+                  Manage Connectors →
+                </a>
+              </Card>
+            </>
           )}
 
           {activeTab === 'TUTORIAL' && (

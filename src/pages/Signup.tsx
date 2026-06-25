@@ -55,10 +55,11 @@ export default function Signup() {
   const pickPortal = async (portal: PortalId) => {
     setIsLoading(true);
     try {
-      await login(formData.email, formData.artistName, formData.password);
+      await login(formData.email, formData.password);
       // Patch role + label hints once auth lands. AuthContext.updateUser persists to legacy storage.
       updateUser({
         role: portal as AppUser['role'],
+        artistName: formData.artistName,
         ...(portal === 'LABEL' ? { label: formData.artistName } : {}),
       });
       try {

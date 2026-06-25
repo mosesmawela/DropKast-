@@ -1,0 +1,7 @@
+Contact: mailto:security@dropkast.lvrn.dev
+Expires: 2027-06-24T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://dropkast.lvrn.dev/.well-known/security.txt
+Policy: https://dropkast.lvrn.dev/security-policy
+Acknowledgments: https://dropkast.lvrn.dev/hall-of-fame
+Hiring: https://dropkast.lvrn.dev/careers

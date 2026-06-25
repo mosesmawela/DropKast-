@@ -200,11 +200,17 @@ These are software-only — no external account needed but they take engineering
 
 ---
 
+## 🔑 BYOK (Bring Your Own Key) — Now Live
+
+Users can now connect their own AI provider API keys directly from the **Connectors** page (`/ai-providers`). Keys are stored in the browser and sent per-request — never stored on DropKast servers.
+
+Supported providers: Anthropic, OpenAI, Google, Groq, NVIDIA, Cerebras, OpenRouter, Moonshot, and more.
+
 ## TL;DR: minimum to launch a paid product
 
 If you can get these 5 things, you can charge artists money:
 
-1. ✅ **Anthropic key** — AI features.
+1. ✅ **Anthropic key** — AI features (or users bring their own via BYOK).
 2. ✅ **Supabase project** — real auth + database.
 3. ✅ **RouteNote partnership** — actual delivery to DSPs.
 4. ✅ **Stripe Connect** — splits payouts.

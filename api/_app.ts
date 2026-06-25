@@ -25,7 +25,7 @@ import {
   validate,
 } from "./_schemas.js";
 import { handleAiChat } from "./_ai-chat.js";
-import { listAvailableTextProviders } from "./_text-providers.js";
+import { listAvailableTextProviders, CONFIG_FOR_PROVIDER, type TextProviderId } from "./_text-providers.js";
 import { notifySignup, notifyAnrSubmission, notifyReleaseLive, notifyDjPackDelivered, notifyMissionAccepted } from "./_email.js";
 import { generateScheduleSheet, generateEarningsReport } from "./_sheets.js";
 import { listPlans, getPlan, addPlan, updatePlan, deletePlan, PLAN_TYPES, PLAN_STATUSES, type PlanInput } from "./_planner.js";
@@ -64,6 +64,7 @@ import {
   emitAdminEvent,
   scanForSecrets,
 } from "./_admin.js";
+import { authMiddleware, requireAuth, requireRole } from "./_auth-middleware.js";
 
 let uploadMiddleware: any = null;
 
@@ -94,8 +95,29 @@ export function createApiApp() {
   // Security: Set security-related HTTP headers
   app.use(helmet());
 
-  // Security: Enable CORS with default settings (can be further restricted)
-  app.use(cors());
+  // Security: Enable CORS with restricted origins
+  const allowedOrigins = [
+    'https://dropkast.lvrn.dev',
+    'https://dropkast.vercel.app',
+    /^https:\/\/dropkast-.*\.vercel\.app$/,
+    'http://localhost:4002',
+    'http://localhost:5173',
+    'http://localhost:3000',
+  ].filter(Boolean);
+  
+  app.use(cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true); // Allow non-browser requests
+      const allowed = allowedOrigins.some(o => 
+        typeof o === 'string' ? o === origin : o.test(origin)
+      );
+      if (allowed) callback(null, true);
+      else callback(new Error('Not allowed by CORS'));
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-User-Email', 'X-User-Id', 'X-Admin-Password'],
+  }));
 
   // Security: Rate limiting to prevent abuse
   const limiter = rateLimit({
@@ -175,19 +197,7 @@ export function createApiApp() {
       time: new Date().toISOString(),
       uptimeMs: Date.now() - t0,
       checks,
-      services: {
-        anthropic: Boolean(process.env.ANTHROPIC_API_KEY),
-        nvidia: Boolean(process.env.NVIDIA_API_KEY),
-        groq: Boolean(process.env.GROQ_API_KEY),
-        cerebras: Boolean(process.env.CEREBRAS_API_KEY),
-        openrouter: Boolean(process.env.OPENROUTER_API_KEY),
-        moonshot: Boolean(process.env.MOONSHOT_API_KEY),
-        openai: Boolean(process.env.OPENAI_API_KEY),
-        google: Boolean(process.env.GOOGLE_API_KEY),
-        cloudinary: Boolean(process.env.CLOUDINARY_CLOUD_NAME),
-        database: Boolean(process.env.DATABASE_URL),
-        supabase: Boolean(process.env.VITE_SUPABASE_URL),
-      },
+      // Services status hidden from public health check - use /api/admin/health for details
     });
   });
 
@@ -199,12 +209,58 @@ export function createApiApp() {
   // 5 / hour for DMCA filings to deter spam takedowns
   app.use('/api/dmca', customRateLimit({ name: 'dmca', max: 5, windowMs: 60 * 60 * 1000 }));
 
+  // Apply auth middleware to all API routes (except health check)
+  app.use('/api', (req, res, next) => {
+    if (req.path === '/health') return next();
+    authMiddleware(req, res, next);
+  });
+
   // --- AI Chat (streaming SSE with tool use) ---
-  app.post("/api/ai/chat", validate(aiChatSchema), handleAiChat);
+  app.post("/api/ai/chat", validate(aiChatSchema), requireAuth, (req, res) => {
+    // Inject authenticated userId into request body for handleAiChat
+    req.body.userId = req.userId;
+    handleAiChat(req, res);
+  });
 
   // --- AI providers — which keys are configured ---
-  app.get("/api/ai/providers", (_req, res) => {
-    res.json({ providers: listAvailableTextProviders() });
+  app.get("/api/ai/providers", (req, res) => {
+    const overrideKeys = req.query.keys ? JSON.parse(decodeURIComponent(String(req.query.keys))) : undefined;
+    res.json({ providers: listAvailableTextProviders(overrideKeys) });
+  });
+
+  // --- Validate a single provider API key by doing a lightweight test call ---
+  app.post("/api/ai/validate-key", async (req, res) => {
+    const { provider: pid, apiKey } = req.body ?? {};
+    if (!pid || !apiKey) {
+      return res.status(400).json({ error: 'provider and apiKey required' });
+    }
+    const providerCfg = CONFIG_FOR_PROVIDER[pid as TextProviderId];
+    if (!providerCfg) {
+      return res.status(400).json({ error: `Unknown provider: ${pid}` });
+    }
+    try {
+      const testRes = await fetch(`${providerCfg.baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: providerCfg.defaultModel,
+          messages: [{ role: 'user', content: 'Say "ok" and nothing else.' }],
+          max_tokens: 10,
+        }),
+        signal: AbortSignal.timeout(10_000),
+      });
+      if (testRes.ok) {
+        res.json({ ok: true, provider: pid, name: providerCfg.name });
+      } else {
+        const errText = await testRes.text().catch(() => 'unknown');
+        res.json({ ok: false, provider: pid, name: providerCfg.name, error: `HTTP ${testRes.status}: ${errText.slice(0, 200)}` });
+      }
+    } catch (err: any) {
+      res.json({ ok: false, provider: pid, name: providerCfg.name, error: err.message ?? String(err) });
+    }
   });
 
   // --- A&R critique (Claude-powered) ---

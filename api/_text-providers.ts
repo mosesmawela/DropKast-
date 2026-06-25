@@ -1,9 +1,9 @@
 /**
  * Multi-provider text/chat adapter.
  *
- * Anthropic Claude is the primary path (rich features: streaming + tool use
- * + prompt caching). The other providers are OpenAI-compatible and exposed
- * for free-tier fallback / cost optimization.
+ * All providers are treated equally - no primary/secondary distinction.
+ * The system uses whatever keys are configured. Free providers (Groq, NVIDIA,
+ * Cerebras, OpenRouter) are prioritized for cost efficiency when available.
  *
  * The adapter exposes:
  *   - listAvailableTextProviders() → which providers have keys configured
@@ -11,17 +11,18 @@
  *   - FALLBACK_ORDER → ordered list for automatic provider rotation
  *
  * Tool use is NOT supported on the OpenAI-compatible providers (they require
- * separate function-calling protocols). Use Claude (Anthropic) for tool use.
+ * separate function-calling protocols). Only Anthropic supports tool use via
+ * the native SDK path.
  */
 
 export type TextProviderId = 'anthropic' | 'nvidia' | 'groq' | 'cerebras' | 'openrouter' | 'moonshot' | 'openai' | 'google';
 
 /**
- * Default fallback order for AI provider rotation. Fastest / most reliable
- * come first. Used when the primary provider is unavailable or times out.
+ * Default fallback order for AI provider rotation.
+ * Free/cheap providers first for cost efficiency, then paid.
+ * Anthropic is last since it requires paid key and supports tool use.
  */
 export const FALLBACK_ORDER: TextProviderId[] = [
-  'anthropic',
   'groq',
   'nvidia',
   'cerebras',
@@ -29,9 +30,10 @@ export const FALLBACK_ORDER: TextProviderId[] = [
   'moonshot',
   'openai',
   'google',
+  'anthropic',
 ];
 
-interface ProviderConfig {
+export interface ProviderConfig {
   id: TextProviderId;
   name: string;
   envVar: string;
@@ -99,11 +101,11 @@ const CONFIG: Record<TextProviderId, ProviderConfig> = {
   },
 };
 
-export function listAvailableTextProviders(): { id: TextProviderId; name: string; configured: boolean; defaultModel: string }[] {
+export function listAvailableTextProviders(overrideKeys?: Record<string, string>): { id: TextProviderId; name: string; configured: boolean; defaultModel: string }[] {
   return Object.values(CONFIG).map((c) => ({
     id: c.id,
     name: c.name,
-    configured: Boolean(process.env[c.envVar]),
+    configured: Boolean(process.env[c.envVar]) || Boolean(overrideKeys?.[c.envVar]),
     defaultModel: c.defaultModel,
   }));
 }
@@ -142,16 +144,19 @@ export const PROVIDER_TIMEOUT_MS = 14_000;
  *
  * Accepts an optional `AbortSignal` for external cancellation.
  */
+// Map of provider ID to its config, used externally to look up env var names
+export const CONFIG_FOR_PROVIDER: Record<TextProviderId, ProviderConfig> = CONFIG;
+
 export async function* streamOpenAICompatible(
   provider: TextProviderId,
   messages: { role: 'system' | 'user' | 'assistant'; content: string }[],
-  opts?: { model?: string; max_tokens?: number; temperature?: number; signal?: AbortSignal },
+  opts?: { model?: string; max_tokens?: number; temperature?: number; signal?: AbortSignal; apiKey?: string },
 ): AsyncGenerator<{ token?: string; done?: boolean; error?: string; provider?: TextProviderId }> {
   if (provider === 'anthropic') {
     throw new Error('Use the Anthropic SDK directly for the anthropic provider.');
   }
   const cfg = CONFIG[provider];
-  const apiKey = process.env[cfg.envVar];
+  const apiKey = opts?.apiKey || process.env[cfg.envVar];
   if (!apiKey) {
     yield { error: `${cfg.name} not configured. Set ${cfg.envVar} in your env.` };
     return;

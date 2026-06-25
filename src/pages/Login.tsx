@@ -79,7 +79,7 @@ export default function Login() {
     if (!validate()) return;
     setIsLoading(true);
     try {
-      await login(form.email, form.email.split('@')[0]);
+      await login(form.email, form.password);
       // Apply the chosen portal to the authenticated user so the sidebar and
       // role-gated routes match what they picked. Theme role is uppercase and
       // matches the User.role union ('ARTIST' | 'LABEL' | 'INFLUENCER' | 'DJ').

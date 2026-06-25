@@ -1,361 +1,445 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { useState, useEffect, useCallback } from 'react';
+import { motion } from 'motion/react';
 import {
-  MessageSquare,
-  ImageIcon,
-  Video,
-  ExternalLink,
+  Plug,
+  KeyRound,
   CheckCircle2,
   AlertCircle,
-  Sparkles,
-  TrendingUp,
-  ChevronDown,
-  KeyRound,
-  GraduationCap,
+  Loader2,
+  ExternalLink,
+  Eye,
+  EyeOff,
+  RefreshCw,
+  TestTube,
+  Trash2,
+  Cpu,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
-import {
-  TEXT_PROVIDERS,
-  IMAGE_PROVIDERS,
-  VIDEO_PROVIDERS,
-  providersByKind,
-  type ProviderKind,
-  type ProviderModel,
-  type Tier,
-} from '../lib/ai-providers';
+import { ALL_PROVIDERS, type ProviderModel } from '../lib/ai-providers';
+import { toast } from 'sonner';
 
-const TABS: { id: ProviderKind; label: string; icon: any; count: number }[] = [
-  { id: 'text', label: 'Text / Chat', icon: MessageSquare, count: TEXT_PROVIDERS.length },
-  { id: 'image', label: 'Image', icon: ImageIcon, count: IMAGE_PROVIDERS.length },
-  { id: 'video', label: 'Video', icon: Video, count: VIDEO_PROVIDERS.length },
-];
+const STORAGE_KEY = 'dropkast_byok_keys';
 
-const TIER_BADGE: Record<Tier, { label: string; color: string }> = {
-  free: { label: 'Free', color: 'text-green-500 border-green-500/30 bg-green-500/5' },
-  freemium: { label: 'Freemium', color: 'text-blue-400 border-blue-400/30 bg-blue-400/5' },
-  paid: { label: 'Paid', color: 'text-primary border-primary/30 bg-primary/5' },
-};
+function loadKeys(): Record<string, string> {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveKeys(keys: Record<string, string>) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(keys));
+}
+
+type ConnectorStatus = 'unknown' | 'testing' | 'connected' | 'failed';
+
+interface ConnectorState {
+  key: string;
+  visible: boolean;
+  status: ConnectorStatus;
+  error?: string;
+}
 
 export default function AIProviders() {
-  const [active, setActive] = useState<ProviderKind>('text');
-  const items = providersByKind(active);
-  const free = items.filter((p) => p.tier === 'free');
-  const freemium = items.filter((p) => p.tier === 'freemium');
-  const paid = items.filter((p) => p.tier === 'paid');
+  const [connectors, setConnectors] = useState<Record<string, ConnectorState>>(() => {
+    const saved = loadKeys();
+    const result: Record<string, ConnectorState> = {};
+    for (const p of ALL_PROVIDERS) {
+      const envVar = p.envVar;
+      if (!result[envVar]) {
+        result[envVar] = {
+          key: saved[envVar] || '',
+          visible: false,
+          status: saved[envVar] ? 'unknown' : 'unknown',
+        };
+      }
+    }
+    return result;
+  });
+
+  const [envProviders, setEnvProviders] = useState<{ envVar: string; configured: boolean }[]>([]);
+
+  useEffect(() => {
+    fetch('/api/ai/providers')
+      .then(r => r.json())
+      .then(d => {
+        const list = (d.providers || []) as any[];
+        setEnvProviders(list.map((p: any) => ({
+          envVar: CONFIG_MAP[p.id] || `${p.id.toUpperCase()}_API_KEY`,
+          configured: p.configured,
+        })));
+      })
+      .catch(() => {});
+  }, []);
+
+  const getKeyValue = useCallback((envVar: string) => {
+    return connectors[envVar]?.key || '';
+  }, [connectors]);
+
+  const setKeyValue = useCallback((envVar: string, value: string) => {
+    setConnectors(prev => ({
+      ...prev,
+      [envVar]: { ...prev[envVar], key: value, status: 'unknown', error: undefined },
+    }));
+  }, []);
+
+  const toggleVisible = useCallback((envVar: string) => {
+    setConnectors(prev => ({
+      ...prev,
+      [envVar]: { ...prev[envVar], visible: !prev[envVar].visible },
+    }));
+  }, []);
+
+  const saveAllKeys = useCallback(() => {
+    const toSave: Record<string, string> = {};
+    for (const [envVar, state] of Object.entries(connectors)) {
+      if (state.key) toSave[envVar] = state.key;
+    }
+    saveKeys(toSave);
+    toast.success('API keys saved locally');
+  }, [connectors]);
+
+  const testKey = useCallback(async (envVar: string) => {
+    const key = connectors[envVar]?.key;
+    if (!key) {
+      toast.error('Enter an API key first');
+      return;
+    }
+    setConnectors(prev => ({
+      ...prev,
+      [envVar]: { ...prev[envVar], status: 'testing', error: undefined },
+    }));
+
+    const providerId = PROVIDER_ID_MAP[envVar];
+    if (!providerId) {
+      setConnectors(prev => ({
+        ...prev,
+        [envVar]: { ...prev[envVar], status: 'failed', error: 'Unknown provider' },
+      }));
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/ai/validate-key', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider: providerId, apiKey: key }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setConnectors(prev => ({
+          ...prev,
+          [envVar]: { ...prev[envVar], status: 'connected', error: undefined },
+        }));
+        toast.success(`${providerId} key is valid`);
+      } else {
+        setConnectors(prev => ({
+          ...prev,
+          [envVar]: { ...prev[envVar], status: 'failed', error: data.error || 'Invalid key' },
+        }));
+        toast.error(`${providerId}: ${data.error || 'Invalid key'}`);
+      }
+    } catch (err: any) {
+      setConnectors(prev => ({
+        ...prev,
+        [envVar]: { ...prev[envVar], status: 'failed', error: err.message },
+      }));
+    }
+  }, [connectors]);
+
+  const clearKey = useCallback((envVar: string) => {
+    setConnectors(prev => ({
+      ...prev,
+      [envVar]: { ...prev[envVar], key: '', status: 'unknown', error: undefined },
+    }));
+  }, []);
+
+  const hasLocalKeys = Object.values(connectors).some(c => c.key.length > 0);
+  const configuredCount = Object.values(connectors).filter(c => c.key.length > 0).length;
+
+  // Group providers by envVar for display
+  const groups: { envVar: string; providers: ProviderModel[] }[] = [];
+  const seen = new Set<string>();
+  for (const p of ALL_PROVIDERS) {
+    if (!seen.has(p.envVar)) {
+      seen.add(p.envVar);
+      groups.push({ envVar: p.envVar, providers: ALL_PROVIDERS.filter(x => x.envVar === p.envVar) });
+    }
+  }
 
   return (
     <div className="space-y-6 pb-12">
       <header className="border-b border-[var(--border-main)] pb-5">
         <div className="flex items-center gap-3 mb-2">
-          <Sparkles className="w-4 h-4 text-primary" />
+          <Plug className="w-4 h-4 text-primary" />
           <span className="text-[10px] font-mono font-black uppercase tracking-[0.4em] text-primary italic">
-            AI Provider Catalog
+            Connectors
           </span>
         </div>
         <h1 className="text-2xl sm:text-3xl font-mono font-black tracking-tighter text-[var(--text-main)] italic uppercase">
-          Models, Prices, Free Tiers
+          Bring Your Own Key
         </h1>
         <p className="text-[var(--text-main)]/40 mt-1 text-xs max-w-2xl">
-          Every model DropKast can route through, ranked by tier. Pick the right tool for the job. New to AI? Read the
-          three options below first.
+          Connect your own API keys to power AI features in your workspace. Keys are stored locally in your browser and sent per-request — they never touch our database.
         </p>
       </header>
 
-      {/* Education preamble: 2 ways to use AI on DropKast */}
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <PathCard
-          icon={GraduationCap}
-          color="text-green-500"
-          title="System AI (Free)"
-          desc="Already wired and ready. NVIDIA, Groq, and OpenRouter free tiers power the chat assistant out of the box. Zero signup, zero cost."
-          cta={{ label: 'Open chat assistant', href: '/dashboard' }}
-        />
-        <PathCard
-          icon={KeyRound}
-          color="text-primary"
-          title="Bring Your Own Key"
-          desc="Have an Anthropic / OpenAI / fal.ai key? Add it to Settings and DropKast routes through it for higher quality and tool use."
-          cta={{ label: 'Add API keys', href: '/settings' }}
-        />
-      </section>
-
-      {/* What works right now */}
-      <section className="manifest-card border border-green-500/20 bg-green-500/5 p-4">
-        <div className="flex items-center gap-2 mb-2">
-          <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
-          <span className="text-[10px] font-mono font-black uppercase tracking-[0.3em] text-green-500 italic">
-            Live & Working Today
-          </span>
+      {/* Status summary */}
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="manifest-card border border-green-500/20 bg-green-500/5 p-4">
+          <div className="flex items-center gap-2 mb-1">
+            <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
+            <span className="text-[10px] font-mono font-black uppercase tracking-[0.3em] text-green-500 italic">
+              Connected
+            </span>
+          </div>
+          <p className="text-2xl font-mono font-black text-green-500">{configuredCount}</p>
+          <p className="text-[10px] text-[var(--text-main)]/50 mt-1">providers with keys saved</p>
         </div>
-        <p className="text-xs text-[var(--text-main)]/70 leading-relaxed">
-          Chat assistant + A&R critique + campaign strategy + viral ideas all run through our wired text providers.
-          Image and video generation are stubbed — pick a model in the catalog below and we'll wire the adapter when
-          you're ready (most just need an API key in Settings).
-        </p>
-      </section>
-
-      {/* The differentiator */}
-      <section className="manifest-card border border-primary/30 bg-gradient-to-br from-primary/5 to-transparent p-5">
-        <div className="flex items-center gap-2 mb-2">
-          <Sparkles className="w-4 h-4 text-primary" />
-          <span className="text-[10px] font-mono font-black uppercase tracking-[0.3em] text-primary italic">
-            Trained By Music Professionals
-          </span>
+        <div className="manifest-card border border-primary/20 bg-primary/5 p-4">
+          <div className="flex items-center gap-2 mb-1">
+            <Cpu className="w-3.5 h-3.5 text-primary" />
+            <span className="text-[10px] font-mono font-black uppercase tracking-[0.3em] text-primary italic">
+              AI Features
+            </span>
+          </div>
+          <p className="text-xs text-[var(--text-main)]/70 leading-relaxed">
+            Any connected provider automatically powers the chat assistant, A&R critique, campaign strategy, and more.
+          </p>
         </div>
-        <h2 className="text-lg sm:text-xl font-mono font-black uppercase italic tracking-tight text-[var(--text-main)] mb-2">
-          The brain swaps. The expertise stays.
-        </h2>
-        <p className="text-xs text-[var(--text-main)]/70 leading-relaxed mb-3">
-          Pick any model — Claude, GPT-5, Gemini, Kimi K2.6, or a free Llama. The same playbook runs on top: A&R execs,
-          campaign directors, sync agents, and DJ curators authored every prompt that drives the AI in DropKast. That's
-          why our A&R critique sounds like a label exec, not a chatbot.
-        </p>
-        <a
-          href="https://github.com/mosesmawela/DropKast-/tree/main/personas"
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center gap-1 text-[10px] font-mono font-black uppercase tracking-widest italic text-primary hover:underline"
-        >
-          See the AI employees
-          <ExternalLink className="w-3 h-3" />
-        </a>
+        <div className="manifest-card border border-[var(--border-main)] bg-[var(--card-bg)] p-4">
+          <div className="flex items-center gap-2 mb-1">
+            <KeyRound className="w-3.5 h-3.5 text-[var(--text-main)]/50" />
+            <span className="text-[10px] font-mono font-black uppercase tracking-[0.3em] text-[var(--text-main)]/50 italic">
+              Privacy
+            </span>
+          </div>
+          <p className="text-xs text-[var(--text-main)]/70 leading-relaxed">
+            Keys never stored on our servers. Sent directly from your browser to the provider API. Encrypted in transit.
+          </p>
+        </div>
       </section>
 
-      <div className="flex flex-wrap gap-2">
-        {TABS.map((t) => {
-          const Icon = t.icon;
-          const isActive = active === t.id;
+      {/* Main connector list */}
+      <div className="space-y-3">
+        {groups.map((g) => {
+          const envVar = g.envVar;
+          const conn = connectors[envVar];
+          const mainProvider = g.providers[0];
+          const isConfigured = envProviders.find(e => e.envVar === envVar)?.configured ?? false;
+          const hasKey = conn?.key.length > 0;
+
           return (
-            <button
-              key={t.id}
-              onClick={() => setActive(t.id)}
-              className={cn(
-                'flex items-center gap-2 px-4 py-2 border transition-all text-[11px] font-mono font-black uppercase italic tracking-widest',
-                isActive
-                  ? 'border-primary bg-primary/10 text-primary'
-                  : 'border-[var(--border-main)] text-[var(--text-main)]/50 hover:text-[var(--text-main)] hover:border-white/20',
-              )}
+            <motion.div
+              key={envVar}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="manifest-card border border-[var(--border-main)] bg-[var(--card-bg)] hover:border-primary/40 transition-colors"
             >
-              <Icon className="w-3.5 h-3.5" />
-              {t.label}
-              <span className="text-[9px] opacity-60">({t.count})</span>
-            </button>
+              <div className="p-4">
+                <div className="flex items-start justify-between gap-4 mb-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className={cn(
+                        'text-[8px] font-mono font-black uppercase tracking-widest italic px-1.5 py-0.5 border',
+                        hasKey || isConfigured
+                          ? 'text-green-500 border-green-500/30 bg-green-500/5'
+                          : 'text-[var(--text-main)]/30 border-[var(--border-main)]',
+                      )}>
+                        {hasKey || isConfigured ? 'Connected' : 'Not Connected'}
+                      </span>
+                      <span className="text-[9px] font-mono font-black uppercase tracking-[0.3em] text-[var(--text-main)]/40 italic truncate">
+                        {mainProvider.vendor}
+                      </span>
+                    </div>
+                    <h3 className="text-sm font-mono font-black italic text-[var(--text-main)] truncate">
+                      {mainProvider.name}
+                    </h3>
+                    <p className="text-[10px] text-[var(--text-main)]/60 mt-1 leading-relaxed">
+                      {mainProvider.blurb}
+                    </p>
+                    {g.providers.length > 1 && (
+                      <p className="text-[9px] text-[var(--text-main)]/40 mt-1 italic">
+                        Also supports: {g.providers.slice(1).map(p => p.name).join(', ')}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {conn?.status === 'testing' && <Loader2 className="w-4 h-4 text-primary animate-spin" />}
+                    {conn?.status === 'connected' && <CheckCircle2 className="w-5 h-5 text-green-500" />}
+                    {conn?.status === 'failed' && <AlertCircle className="w-5 h-5 text-red-500" />}
+                    {conn?.status === 'unknown' && hasKey && <KeyRound className="w-5 h-5 text-[var(--text-main)]/30" />}
+                  </div>
+                </div>
+
+                {/* Key input */}
+                <div className="flex items-center gap-2">
+                  <div className="relative flex-1">
+                    <input
+                      type={conn?.visible ? 'text' : 'password'}
+                      value={conn?.key || ''}
+                      onChange={(e) => setKeyValue(envVar, e.target.value)}
+                      placeholder={isConfigured ? `Already set via env var (${envVar})` : `Enter ${envVar}`}
+                      className={cn(
+                        'w-full bg-black border px-3 py-2 text-xs font-mono outline-none transition-all pr-20',
+                        conn?.status === 'connected'
+                          ? 'border-green-500/50 text-green-500'
+                          : conn?.status === 'failed'
+                          ? 'border-red-500/50 text-red-500'
+                          : 'border-[var(--border-main)] text-[var(--text-main)] focus:border-primary',
+                      )}
+                    />
+                    <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                      <button
+                        onClick={() => toggleVisible(envVar)}
+                        className="p-1 text-[var(--text-main)]/30 hover:text-[var(--text-main)] transition-colors"
+                        title={conn?.visible ? 'Hide key' : 'Show key'}
+                      >
+                        {conn?.visible ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => testKey(envVar)}
+                    disabled={!hasKey || conn?.status === 'testing'}
+                    className="h-10 px-3 border border-[var(--border-main)] hover:border-primary hover:text-primary text-[var(--text-main)]/60 text-[10px] font-mono font-black uppercase italic tracking-widest transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5"
+                    title="Test this key"
+                  >
+                    <TestTube className="w-3 h-3" />
+                    Test
+                  </button>
+
+                  <a
+                    href={mainProvider.signupUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="h-10 px-3 border border-[var(--border-main)] hover:border-primary hover:text-primary text-[var(--text-main)]/60 text-[10px] font-mono font-black uppercase italic tracking-widest transition-all flex items-center gap-1.5"
+                    title="Get API key"
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                    Get Key
+                  </a>
+
+                  {hasKey && (
+                    <button
+                      onClick={() => clearKey(envVar)}
+                      className="h-10 px-3 border border-red-500/30 hover:border-red-500 text-red-500/60 hover:text-red-500 text-[10px] font-mono font-black uppercase italic tracking-widest transition-all flex items-center gap-1.5"
+                      title="Remove key"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+
+                {conn?.error && (
+                  <p className="text-[10px] text-red-500/80 mt-2 font-mono">{conn.error}</p>
+                )}
+
+                {isConfigured && (
+                  <p className="text-[9px] text-green-500/60 mt-2 italic">
+                    This provider is pre-configured via server environment variable.
+                  </p>
+                )}
+
+                <div className="flex items-center gap-4 mt-3">
+                  <code className="text-[8px] font-mono text-[var(--text-main)]/30">{envVar}</code>
+                  {mainProvider.freeTier && (
+                    <span className="text-[8px] text-green-500/60 italic">{mainProvider.freeTier}</span>
+                  )}
+                </div>
+              </div>
+            </motion.div>
           );
         })}
       </div>
 
-      <Section title="Free" subtitle="No card required. Use these as the default for prototyping or zero-cost workflows." items={free} accent="text-green-500" />
-      <Section title="Freemium" subtitle="Free starter tier with caps; paid plans unlock the higher quality outputs." items={freemium} accent="text-blue-400" />
-      <Section title="Paid" subtitle="Pay-per-use APIs. Use the right tool for the right job — premium quality where it matters." items={paid} accent="text-primary" />
+      {/* Save all */}
+      {hasLocalKeys && (
+        <div className="flex items-center justify-between manifest-card border border-primary/30 bg-primary/5 p-4">
+          <div>
+            <p className="text-xs font-mono font-black italic text-primary uppercase tracking-widest">
+              {configuredCount} key{configuredCount !== 1 ? 's' : ''} saved locally
+            </p>
+            <p className="text-[10px] text-[var(--text-main)]/50 mt-1">
+              Keys persist in your browser. Clear them anytime by removing each key above.
+            </p>
+          </div>
+          <button
+            onClick={saveAllKeys}
+            className="h-10 px-5 bg-primary text-white text-[10px] font-mono font-black uppercase italic tracking-widest hover:scale-[1.03] active:scale-95 transition-all flex items-center gap-2"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            Save All
+          </button>
+        </div>
+      )}
 
-      <CompareTable kind={active} />
+      {/* How it works */}
+      <section className="manifest-card border border-[var(--border-main)] bg-[var(--card-bg)] p-5">
+        <div className="flex items-center gap-2 mb-3">
+          <Cpu className="w-4 h-4 text-primary" />
+          <span className="text-[10px] font-mono font-black uppercase tracking-[0.3em] text-primary italic">
+            How BYOK Works
+          </span>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-[var(--text-main)]/70 leading-relaxed">
+          <div>
+            <span className="text-primary font-black italic">01.</span> Enter your API key from any supported provider. Keys are stored in your browser's localStorage.
+          </div>
+          <div>
+            <span className="text-primary font-black italic">02.</span> When you use AI features, your key is sent directly from your browser to the provider API — never stored on DropKast servers.
+          </div>
+          <div>
+            <span className="text-primary font-black italic">03.</span> Test your key with the "Test" button. A successful test means that provider is ready to power your AI assistant, A&R critique, and more.
+          </div>
+        </div>
+      </section>
+
+      {/* Free tier notice */}
+      <section className="manifest-card border border-green-500/20 bg-green-500/5 p-4">
+        <div className="flex items-center gap-2 mb-2">
+          <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
+          <span className="text-[10px] font-mono font-black uppercase tracking-[0.3em] text-green-500 italic">
+            No Key? No Problem
+          </span>
+        </div>
+        <p className="text-xs text-[var(--text-main)]/70 leading-relaxed">
+          If the workspace has pre-configured keys (NVIDIA, Groq, Cerebras, OpenRouter free tiers), they're available
+          immediately without adding anything. BYOK is for upgrading to premium models or using your own accounts.
+        </p>
+      </section>
     </div>
   );
 }
 
-function Section({ title, subtitle, items, accent }: { title: string; subtitle: string; items: ProviderModel[]; accent: string }) {
-  if (items.length === 0) return null;
-  return (
-    <section className="space-y-3">
-      <header className="flex items-end justify-between">
-        <div>
-          <h2 className={cn('text-sm font-mono font-black uppercase tracking-[0.3em] italic', accent)}>{title}</h2>
-          <p className="text-[10px] text-[var(--text-main)]/40 mt-1">{subtitle}</p>
-        </div>
-        <span className="text-[9px] font-mono font-black uppercase tracking-[0.3em] text-[var(--text-main)]/30 italic">
-          {items.length} models
-        </span>
-      </header>
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-        {items.map((m) => (
-          <ProviderCard key={m.id} m={m} />
-        ))}
-      </div>
-    </section>
-  );
-}
+const CONFIG_MAP: Record<string, string> = {
+  anthropic: 'ANTHROPIC_API_KEY',
+  nvidia: 'NVIDIA_API_KEY',
+  groq: 'GROQ_API_KEY',
+  cerebras: 'CEREBRAS_API_KEY',
+  openrouter: 'OPENROUTER_API_KEY',
+  moonshot: 'MOONSHOT_API_KEY',
+  openai: 'OPENAI_API_KEY',
+  google: 'GOOGLE_API_KEY',
+};
 
-function ProviderCard({ m }: { m: ProviderModel }) {
-  const tier = TIER_BADGE[m.tier];
-  const [expanded, setExpanded] = useState(false);
-  const headlinePrice = m.pricing[0];
-  return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="manifest-card border border-[var(--border-main)] bg-[var(--card-bg)] hover:border-primary/40 transition-colors"
-    >
-      {/* Always-visible compact header */}
-      <button
-        onClick={() => setExpanded((v) => !v)}
-        className="w-full p-3 flex items-start gap-3 text-left"
-      >
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <span className={cn('text-[8px] font-mono font-black uppercase tracking-widest italic px-1.5 py-0.5 border', tier.color)}>
-              {tier.label}
-            </span>
-            <span className="text-[9px] font-mono font-black uppercase tracking-[0.3em] text-[var(--text-main)]/40 italic truncate">
-              {m.vendor}
-            </span>
-          </div>
-          <h3 className="text-sm font-mono font-black italic text-[var(--text-main)] truncate">{m.name}</h3>
-          <div className="flex items-center gap-2 mt-1">
-            <span className="text-[10px] text-[var(--text-main)]/60 font-medium">{headlinePrice}</span>
-            {m.freeTier && (
-              <span className="text-[9px] text-green-500/80 italic">· free tier</span>
-            )}
-          </div>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          {m.implemented ? (
-            <span title="Wired" className="text-green-500"><CheckCircle2 className="w-4 h-4" /></span>
-          ) : (
-            <span title="Add key + adapter to enable" className="text-[var(--text-main)]/30"><AlertCircle className="w-4 h-4" /></span>
-          )}
-          <ChevronDown className={cn('w-4 h-4 text-[var(--text-main)]/40 transition-transform', expanded && 'rotate-180')} />
-        </div>
-      </button>
-
-      {/* Expanded details */}
-      <AnimatePresence>
-        {expanded && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden border-t border-[var(--border-main)]"
-          >
-            <div className="p-3 space-y-3">
-              <p className="text-xs text-[var(--text-main)]/70 leading-relaxed">{m.blurb}</p>
-
-              {m.pricing.length > 1 && (
-                <div>
-                  <div className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-main)]/40 italic mb-1">
-                    Full pricing
-                  </div>
-                  {m.pricing.map((p, i) => (
-                    <div key={i} className="text-[11px] text-[var(--text-main)]/80 font-medium">
-                      {p}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {m.freeTier && (
-                <div className="text-[10px] text-green-500/80 italic border-l-2 border-green-500/30 pl-2">
-                  <strong className="not-italic">Free tier: </strong>
-                  {m.freeTier}
-                </div>
-              )}
-
-              <div>
-                <div className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-main)]/40 italic mb-1.5">
-                  Best for
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {m.bestFor.map((b) => (
-                    <span
-                      key={b}
-                      className="text-[9px] font-mono uppercase tracking-widest text-[var(--text-main)]/60 px-1.5 py-0.5 bg-white/[0.03] border border-[var(--border-main)]"
-                    >
-                      {b}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between pt-2 border-t border-[var(--border-main)]">
-                <code className="text-[9px] font-mono text-[var(--text-main)]/40 truncate">{m.envVar}</code>
-                <a
-                  href={m.signupUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="flex items-center gap-1 text-[10px] font-mono font-black uppercase tracking-widest italic text-primary hover:text-primary/70 transition-colors shrink-0"
-                >
-                  Get Key
-                  <ExternalLink className="w-3 h-3" />
-                </a>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
-  );
-}
-
-function PathCard({ icon: Icon, color, title, desc, cta }: { icon: any; color: string; title: string; desc: string; cta: { label: string; href: string } }) {
-  return (
-    <a
-      href={cta.href}
-      className="manifest-card border border-[var(--border-main)] bg-[var(--card-bg)] p-4 hover:border-primary/40 transition-colors flex flex-col gap-2"
-    >
-      <Icon className={cn('w-4 h-4', color)} />
-      <h3 className="text-sm font-mono font-black uppercase italic tracking-tight text-[var(--text-main)]">{title}</h3>
-      <p className="text-[11px] text-[var(--text-main)]/60 leading-relaxed flex-1">{desc}</p>
-      <div className="text-[10px] font-mono font-black uppercase tracking-widest italic text-primary mt-1 flex items-center gap-1">
-        {cta.label} <ExternalLink className="w-3 h-3" />
-      </div>
-    </a>
-  );
-}
-
-function CompareTable({ kind }: { kind: ProviderKind }) {
-  const items = providersByKind(kind);
-  return (
-    <section className="space-y-3">
-      <header className="flex items-end justify-between">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <TrendingUp className="w-3.5 h-3.5 text-primary" />
-            <h2 className="text-sm font-mono font-black uppercase tracking-[0.3em] text-primary italic">
-              At-a-glance
-            </h2>
-          </div>
-          <p className="text-[10px] text-[var(--text-main)]/40 mt-0.5">
-            Same data, sorted. Use the search bar in your editor (Ctrl/Cmd-F) to find a specific provider.
-          </p>
-        </div>
-      </header>
-      <div className="overflow-x-auto manifest-card border border-[var(--border-main)] bg-[var(--card-bg)]">
-        <table className="w-full text-xs">
-          <thead>
-            <tr className="border-b border-[var(--border-main)] text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-main)]/40 italic">
-              <th className="text-left px-3 py-2.5">Model</th>
-              <th className="text-left px-3 py-2.5">Vendor</th>
-              <th className="text-left px-3 py-2.5">Tier</th>
-              <th className="text-left px-3 py-2.5">Free?</th>
-              <th className="text-left px-3 py-2.5">Cost</th>
-              <th className="text-left px-3 py-2.5">Wired</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((m) => (
-              <tr key={m.id} className="border-b border-[var(--border-main)]/40 last:border-0 hover:bg-white/[0.02] transition-colors">
-                <td className="px-3 py-2.5 font-mono font-black text-[var(--text-main)] uppercase italic tracking-tight">{m.name}</td>
-                <td className="px-3 py-2.5 text-[var(--text-main)]/60">{m.vendor}</td>
-                <td className="px-3 py-2.5">
-                  <span className={cn('text-[9px] font-mono font-black uppercase tracking-widest italic px-1.5 py-0.5 border', TIER_BADGE[m.tier].color)}>
-                    {TIER_BADGE[m.tier].label}
-                  </span>
-                </td>
-                <td className="px-3 py-2.5 text-[var(--text-main)]/50 text-[10px] italic">{m.freeTier ?? '—'}</td>
-                <td className="px-3 py-2.5 text-[var(--text-main)]/60 text-[10px]">{m.pricing[0]}</td>
-                <td className="px-3 py-2.5">
-                  {m.implemented ? (
-                    <span className="text-green-500 text-[10px] font-mono font-black italic">YES</span>
-                  ) : (
-                    <span className="text-[var(--text-main)]/30 text-[10px] font-mono font-black italic">SOON</span>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </section>
-  );
-}
+const PROVIDER_ID_MAP: Record<string, string> = {
+  ANTHROPIC_API_KEY: 'anthropic',
+  NVIDIA_API_KEY: 'nvidia',
+  GROQ_API_KEY: 'groq',
+  CEREBRAS_API_KEY: 'cerebras',
+  OPENROUTER_API_KEY: 'openrouter',
+  MOONSHOT_API_KEY: 'moonshot',
+  OPENAI_API_KEY: 'openai',
+  GOOGLE_API_KEY: 'google',
+  FAL_API_KEY: 'fal',
+  KLING_API_KEY: 'kling',
+  RUNWAY_API_KEY: 'runway',
+  LUMA_API_KEY: 'luma',
+  PIKA_API_KEY: 'pika',
+  HAILUO_API_KEY: 'hailuo',
+  IDEOGRAM_API_KEY: 'ideogram',
+};

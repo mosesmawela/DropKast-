@@ -1,28 +1,21 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MessageSquare, X, Send, Zap, Sliders, Wrench, Loader2 } from 'lucide-react';
+import { MessageSquare, X, Send, Zap, Sliders, Wrench, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { useAI } from '../context/AIContext';
 import Switch from './ui/Switch';
 import { toast } from 'sonner';
 import ModelPicker from './ModelPicker';
 import { RECOMMENDATIONS } from '../lib/ai-recommendations';
-import { ALL_PROVIDERS } from '../lib/ai-providers';
+import { providersByKind, ALL_PROVIDERS, type ProviderModel } from '../lib/ai-providers';
 
-type ProviderId = 'anthropic' | 'nvidia' | 'groq' | 'cerebras' | 'openrouter';
+type ProviderId = 'anthropic' | 'nvidia' | 'groq' | 'cerebras' | 'openrouter' | 'moonshot' | 'openai' | 'google';
 
-/** Map a chosen model id (from the catalog) to the server-side `provider` enum. */
-function modelIdToProvider(modelId: string): ProviderId {
-  const m = ALL_PROVIDERS.find((p) => p.id === modelId);
-  if (!m) return 'anthropic';
-  switch (m.vendor.toLowerCase()) {
-    case 'anthropic': return 'anthropic';
-    case 'nvidia': return 'nvidia';
-    case 'groq': return 'groq';
-    case 'cerebras': return 'cerebras';
-    case 'openrouter': return 'openrouter';
-    default: return 'anthropic';
-  }
+interface ProviderStatus {
+  id: ProviderId;
+  name: string;
+  configured: boolean;
+  defaultModel: string;
 }
 
 type Message = {
@@ -41,45 +34,82 @@ export default function AIAssistant() {
   const [chosenModel, setChosenModel] = useState<string>(() => {
     return localStorage.getItem(RECOMMENDATIONS.chat.storageKey) || RECOMMENDATIONS.chat.recommendedId;
   });
-  const [providerStatus, setProviderStatus] = useState<Record<ProviderId, boolean>>({
-    anthropic: false,
-    nvidia: false,
-    groq: false,
-    cerebras: false,
-    openrouter: false,
-  });
-  const provider: ProviderId = modelIdToProvider(chosenModel);
+  const [providers, setProviders] = useState<ProviderStatus[]>([]);
+  const [providerError, setProviderError] = useState<string | null>(null);
 
-  // On mount, check which providers are configured. If the user's chosen
-  // provider has no key, transparently fall back to the first available
-  // free provider so the first message doesn't 503.
+  // Load BYOK keys from localStorage
+  const getByokKeys = (): Record<string, string> => {
+    try {
+      return JSON.parse(localStorage.getItem('dropkast_byok_keys') || '{}');
+    } catch { return {}; }
+  };
+
+  // On mount, fetch available providers from API (including BYOK keys)
   useEffect(() => {
-    fetch('/api/ai/providers')
+    const byokKeys = getByokKeys();
+    const params = Object.keys(byokKeys).length > 0
+      ? `?keys=${encodeURIComponent(JSON.stringify(byokKeys))}`
+      : '';
+    fetch(`/api/ai/providers${params}`)
       .then((r) => r.json())
       .then((d) => {
-        const map: Record<ProviderId, boolean> = {
-          anthropic: false, nvidia: false, groq: false, cerebras: false, openrouter: false,
-        };
-        for (const p of d.providers || []) map[p.id as ProviderId] = !!p.configured;
-        setProviderStatus(map);
-
-        // Smart fallback: if current provider is unconfigured, pick a working one.
-        if (!map[provider]) {
-          const fallbackOrder: ProviderId[] = ['anthropic', 'groq', 'nvidia', 'cerebras', 'openrouter'];
-          const fallback = fallbackOrder.find((p) => map[p]);
-          if (fallback) {
-            const targetModel = fallback === 'anthropic' ? 'anthropic-sonnet'
-              : fallback === 'groq' ? 'groq'
-              : fallback === 'nvidia' ? 'nvidia-nim'
-              : fallback === 'cerebras' ? 'cerebras'
-              : 'openrouter-free';
-            setChosenModel(targetModel);
-          }
+        const providerList = (d.providers || []) as ProviderStatus[];
+        setProviders(providerList);
+        
+        // If current model's provider isn't configured, pick first available
+        const currentModel = ALL_PROVIDERS.find(m => m.id === chosenModel);
+        const currentProvider = currentModel ? providerList.find(p => {
+          const vendor = currentModel.vendor.toLowerCase();
+          if (vendor.includes('anthropic')) return p.id === 'anthropic';
+          if (vendor.includes('nvidia')) return p.id === 'nvidia';
+          if (vendor.includes('groq')) return p.id === 'groq';
+          if (vendor.includes('cerebras')) return p.id === 'cerebras';
+          if (vendor.includes('openrouter')) return p.id === 'openrouter';
+          if (vendor.includes('moonshot')) return p.id === 'moonshot';
+          if (vendor.includes('openai')) return p.id === 'openai';
+          if (vendor.includes('google')) return p.id === 'google';
+          return false;
+        }) : null;
+        
+        if (!currentProvider && providerList.length > 0) {
+          // Pick first available provider's default model
+          const firstAvailable = providerList[0];
+          const modelMap: Record<string, string> = {
+            anthropic: 'anthropic-sonnet',
+            groq: 'groq',
+            nvidia: 'nvidia-nim',
+            cerebras: 'cerebras',
+            openrouter: 'openrouter-free',
+            moonshot: 'moonshot-kimi',
+            openai: 'openai-gpt5',
+            google: 'gemini-25-pro',
+          };
+          setChosenModel(modelMap[firstAvailable.id] || firstAvailable.defaultModel);
         }
       })
-      .catch(() => undefined);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+      .catch(() => {
+        setProviderError('Failed to load AI providers');
+      });
+  }, [chosenModel]);
+
+  // Map chosen model to provider ID for API call
+  const getProviderForModel = (modelId: string): ProviderId => {
+    const model = ALL_PROVIDERS.find(p => p.id === modelId);
+    if (!model) return 'anthropic';
+    const vendor = model.vendor.toLowerCase();
+    if (vendor.includes('anthropic')) return 'anthropic';
+    if (vendor.includes('nvidia')) return 'nvidia';
+    if (vendor.includes('groq')) return 'groq';
+    if (vendor.includes('cerebras')) return 'cerebras';
+    if (vendor.includes('openrouter')) return 'openrouter';
+    if (vendor.includes('moonshot')) return 'moonshot';
+    if (vendor.includes('openai')) return 'openai';
+    if (vendor.includes('google')) return 'google';
+    return 'anthropic';
+  };
+
+  const provider: ProviderId = getProviderForModel(chosenModel);
+  const isProviderConfigured = providers.find(p => p.id === provider)?.configured ?? false;
 
   const {
     autoSendDJs,
@@ -128,10 +158,15 @@ export default function AIAssistant() {
     abortRef.current = controller;
 
     try {
+      const byokKeys = getByokKeys();
       const res = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: sendText, provider }),
+        body: JSON.stringify({
+          message: sendText,
+          provider,
+          apiKeys: Object.keys(byokKeys).length > 0 ? byokKeys : undefined,
+        }),
         signal: controller.signal,
       });
 
@@ -142,7 +177,7 @@ export default function AIAssistant() {
           const copy = [...h];
           copy[copy.length - 1] = {
             role: 'ai',
-            text: '⚠️ AI is not configured. Set `ANTHROPIC_API_KEY` in your environment.',
+            text: '⚠️ AI is not configured. Add an API key (Anthropic, Groq, NVIDIA, Cerebras, OpenRouter, Moonshot, OpenAI, or Google) in your environment.',
           };
           return copy;
         });
@@ -375,13 +410,55 @@ export default function AIAssistant() {
                     </div>
 
                     <div className="pt-8 border-t border-white/5">
-                      <div className="p-4 bg-primary/5 border border-primary/20 space-y-2">
-                        <div className="flex items-center gap-2 text-[8px] font-black text-primary uppercase italic">
-                          <Zap className="w-3 h-3" /> Connected
-                        </div>
-                        <p className="text-[8px] text-white/50 leading-relaxed">
-                          Strategist persona with live access to your catalog. Switch the brain (Claude / GPT-5 / Kimi / NVIDIA / Groq) from the model picker.
+                      <div className="space-y-2">
+                        <h4 className="text-[10px] font-black italic text-primary uppercase tracking-widest">
+                          AI Providers
+                        </h4>
+                        <p className="text-[9px] text-white/40 leading-relaxed">
+                          Add API keys in your environment to enable providers. Free tiers available for Groq, NVIDIA, Cerebras, OpenRouter.
                         </p>
+                        {providerError && (
+                          <div className="p-3 bg-red-500/10 border border-red-500/30 text-red-500 text-[9px] font-mono">
+                            {providerError}
+                          </div>
+                        )}
+                        <div className="grid gap-2 max-h-48 overflow-y-auto">
+                          {providers.length === 0 ? (
+                            <div className="text-[9px] text-white/30 italic">Loading providers...</div>
+                          ) : (
+                            providers.map((p) => (
+                              <div
+                                key={p.id}
+                                className="flex items-center justify-between p-3 bg-white/5 border border-white/10"
+                              >
+                                <div className="flex items-center gap-2">
+                                  {p.configured ? (
+                                    <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
+                                  ) : (
+                                    <AlertCircle className="w-3.5 h-3.5 text-white/30" />
+                                  )}
+                                  <span className="text-[9px] font-mono font-black uppercase tracking-widest text-white">
+                                    {p.name}
+                                  </span>
+                                  <span className="text-[8px] font-mono text-white/40 italic">
+                                    ({p.defaultModel})
+                                  </span>
+                                </div>
+                                <span className={cn(
+                                  'text-[8px] font-mono font-black uppercase tracking-widest px-2 py-0.5',
+                                  p.configured ? 'text-green-500 bg-green-500/10' : 'text-white/30 bg-white/5'
+                                )}>
+                                  {p.configured ? 'Connected' : 'Add Key'}
+                                </span>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                        {providers.length > 0 && providers.every(p => !p.configured) && (
+                          <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 text-yellow-500 text-[9px] font-mono">
+                            No providers configured. Add at least one API key to enable AI features.
+                          </div>
+                        )}
                       </div>
                     </div>
                   </motion.div>

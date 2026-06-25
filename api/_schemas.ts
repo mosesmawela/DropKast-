@@ -79,8 +79,9 @@ export const analyticsTrackSchema = z.object({
 export const aiChatSchema = z.object({
   message: z.string().min(1).max(4000),
   conversationId: z.string().optional(),
-  userId: z.string().optional(),
-  provider: z.enum(['anthropic', 'nvidia', 'groq', 'cerebras', 'openrouter']).optional(),
+  provider: z.enum(['anthropic', 'nvidia', 'groq', 'cerebras', 'openrouter', 'moonshot', 'openai', 'google']).optional(),
+  persona: z.string().optional(),
+  apiKeys: z.record(z.string(), z.string()).optional(),
 });
 
 export const preReleaseCreateSchema = z.object({

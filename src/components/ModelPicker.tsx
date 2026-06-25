@@ -176,9 +176,9 @@ export default function ModelPicker({ recommendation, value, onChange, variant =
       </div>
 
       <div className="px-3 py-2 border-t border-white/5 text-[9px] font-mono text-white/30 italic">
-        See full tier list →{' '}
+        Manage API keys →{' '}
         <a href="/ai-providers" className="text-primary hover:underline">
-          /ai-providers
+          /ai-providers (Connectors)
         </a>
       </div>
     </motion.div>

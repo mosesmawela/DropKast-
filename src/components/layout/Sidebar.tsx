@@ -97,7 +97,7 @@ const artistNavGroups: NavGroup[] = [
   {
     label: 'Setup',
     items: [
-      { icon: Cpu,        label: 'AI Models', path: '/ai-providers', moduleId: 'ai-providers' },
+      { icon: Cpu,        label: 'Connectors', path: '/ai-providers', moduleId: 'ai-providers' },
       { icon: Building2,  label: 'Admin',     path: '/admin',        moduleId: 'admin' },
       { icon: Cpu,        label: 'Settings',  path: '/settings',     moduleId: 'settings' },
     ],
@@ -113,7 +113,7 @@ const influencerNav = [
   { id: 'i3', icon: Target, label: 'Missions', path: '/influencer/missions' },
   { id: 'i4', icon: CreditCard, label: 'Earnings', path: '/influencer/earnings' },
   { id: 'i5', icon: Share2, label: 'Social Nodes', path: '/influencer/socials' },
-  { id: 'i6', icon: Sparkles, label: 'AI Models', path: '/ai-providers' },
+  { id: 'i6', icon: Sparkles, label: 'Connectors', path: '/ai-providers' },
   { id: 'i7', icon: Cpu, label: 'Settings', path: '/settings' },
 ];
 
@@ -123,7 +123,7 @@ const djNav = [
   { id: 'd3', icon: Disc, label: 'DJ Packs', path: '/dj/packs' },
   { id: 'd4', icon: MessageSquare, label: 'A&R Intel', path: '/dj/feedback' },
   { id: 'd5', icon: TrendingUp, label: 'Charts', path: '/analytics' },
-  { id: 'd6', icon: Sparkles, label: 'AI Models', path: '/ai-providers' },
+  { id: 'd6', icon: Sparkles, label: 'Connectors', path: '/ai-providers' },
   { id: 'd7', icon: Cpu, label: 'Settings', path: '/settings' },
 ];
 
