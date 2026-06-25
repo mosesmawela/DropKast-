@@ -290,6 +290,20 @@ export const store = {
     return mem.automations.find((a) => a.releaseId === releaseId) ?? null;
   },
 
+  // ---- splits
+  async listSplits() {
+    const db = getDb();
+    if (db) return db.select().from(schema.splits);
+    return mem.splits;
+  },
+
+  // ---- UGC
+  async listUgcAssets() {
+    const db = getDb();
+    if (db) return db.select().from(schema.ugcAssets);
+    return mem.ugcAssets;
+  },
+
   // ---- analytics
   async insertAnalyticsEvent(rec: any) {
     const db = getDb();
@@ -300,10 +314,15 @@ export const store = {
     mem.analytics.push(rec);
     return rec;
   },
-  async listAnalyticsEvents(releaseId: string) {
+  async listAnalyticsEvents(releaseId?: string) {
     const db = getDb();
-    if (db) return db.select().from(schema.analyticsEvents).where(eq(schema.analyticsEvents.releaseId, releaseId));
-    return mem.analytics.filter((e) => e.releaseId === releaseId);
+    if (db) {
+      const q = db.select().from(schema.analyticsEvents);
+      if (releaseId) return q.where(eq(schema.analyticsEvents.releaseId, releaseId));
+      return q;
+    }
+    if (releaseId) return mem.analytics.filter((e) => e.releaseId === releaseId);
+    return mem.analytics;
   },
 
   // ---- pre-releases

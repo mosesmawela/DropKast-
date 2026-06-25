@@ -1,10 +1,11 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Mail, Lock, User, Github, Terminal, Music, Camera, Disc, Building2, ArrowRight, ChevronLeft, CheckCircle2 } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, Github, Terminal, Music, Camera, Disc, Building2, ArrowRight, ChevronLeft, CheckCircle2, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme, UserRole } from '../context/ThemeContext';
 import { cn } from '../lib/utils';
+import { isDevBypassActive } from '../lib/api';
 
 const PORTALS: {
   id: UserRole;
@@ -59,10 +60,14 @@ export default function Login() {
   const [step, setStep] = useState<'portal' | 'creds'>('portal');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [form, setForm] = useState({ email: '', password: '' });
+  const [form, setForm] = useState({
+    email: bypassActive ? import.meta.env.VITE_BYPASS_EMAIL || 'admin@dropkast.dev' : '',
+    password: bypassActive ? import.meta.env.VITE_BYPASS_PASSWORD || 'dropkast123' : '',
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const selectedPortal = PORTALS.find((p) => p.id === role) ?? PORTALS[0];
+  const bypassActive = isDevBypassActive();
 
   const validate = () => {
     const errs: Record<string, string> = {};
@@ -322,23 +327,44 @@ export default function Login() {
                 </button>
               </form>
 
-              <div className="mt-12 pt-8 border-t border-dotted border-white/10 flex flex-col gap-8">
-                <div className="flex items-center gap-4">
-                  <div className="h-[1px] flex-1 bg-white/5" />
-                  <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.5em] italic">
-                    Or sign in with
-                  </span>
-                  <div className="h-[1px] flex-1 bg-white/5" />
+              {bypassActive ? (
+                <div className="mt-12 pt-8 border-t border-dotted border-white/10">
+                  <div className="p-6 border border-primary/30 bg-primary/[0.03]">
+                    <div className="flex items-center gap-3 mb-4">
+                      <Shield className="w-5 h-5 text-primary" />
+                      <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic">
+                        Demo Mode
+                      </span>
+                    </div>
+                    <p className="text-white/60 text-xs mb-4 leading-relaxed">
+                      Supabase is not configured. You are in <strong className="text-white">demo mode</strong> with
+                      full admin access. The credentials above are pre-filled — click continue to log in.
+                    </p>
+                    <div className="space-y-1 text-[10px] font-mono text-white/30">
+                      <div><span className="text-primary">Email:</span> admin@dropkast.dev</div>
+                      <div><span className="text-primary">Password:</span> dropkast123</div>
+                    </div>
+                  </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <button className="h-12 border border-white/5 text-[9px] font-black text-white/20 uppercase tracking-widest hover:border-white hover:text-white transition-all flex items-center justify-center gap-2">
-                    <User className="w-3 h-3" /> GOOGLE
-                  </button>
-                  <button className="h-12 border border-white/5 text-[9px] font-black text-white/20 uppercase tracking-widest hover:border-white hover:text-white transition-all flex items-center justify-center gap-2">
-                    <Github className="w-3 h-3" /> GITHUB
-                  </button>
+              ) : (
+                <div className="mt-12 pt-8 border-t border-dotted border-white/10 flex flex-col gap-8">
+                  <div className="flex items-center gap-4">
+                    <div className="h-[1px] flex-1 bg-white/5" />
+                    <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.5em] italic">
+                      Or sign in with
+                    </span>
+                    <div className="h-[1px] flex-1 bg-white/5" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <button className="h-12 border border-white/5 text-[9px] font-black text-white/20 uppercase tracking-widest hover:border-white hover:text-white transition-all flex items-center justify-center gap-2">
+                      <User className="w-3 h-3" /> GOOGLE
+                    </button>
+                    <button className="h-12 border border-white/5 text-[9px] font-black text-white/20 uppercase tracking-widest hover:border-white hover:text-white transition-all flex items-center justify-center gap-2">
+                      <Github className="w-3 h-3" /> GITHUB
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             <div className="mt-10 text-center relative">

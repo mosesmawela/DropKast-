@@ -6,6 +6,7 @@ import ModelPicker from "../../components/ModelPicker";
 import { RECOMMENDATIONS } from "../../lib/ai-recommendations";
 import { useCampaigns } from "../../context/CampaignContext";
 import { useReleases } from "../../context/ReleaseContext";
+import { apiFetch } from "../../lib/api";
 
 interface ViralIdeaGeneratorProps {
   onClose: () => void;
@@ -47,7 +48,7 @@ export default function ViralIdeaGenerator({ onClose }: ViralIdeaGeneratorProps)
     const prompt = `You are a viral music-marketing strategist. Generate exactly 3 social content ideas for "${subject}" optimized for ${focus.toLowerCase()}. Return ONLY a JSON array, no prose, where each object has keys: "type" (platform/format like "TikTok Challenge"), "title" (short punchy name), "script" (the concept in 1-2 sentences), "caption" (ready-to-post caption with hashtags), "visual" (visual direction in one line). Output strictly the JSON array.`;
 
     try {
-      const res = await fetch('/api/ai/chat', {
+      const res = await apiFetch('/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: prompt }),

@@ -30,6 +30,7 @@ import { useReleases } from '../context/ReleaseContext';
 import ScrollReveal from '../components/animations/ScrollReveal';
 import AnimatedBeam from '../components/animations/AnimatedBeam';
 import CircularPulse from '../components/animations/CircularPulse';
+import { apiFetch } from '../lib/api';
 
 // Populated from real analytics once a release is collecting streams.
 const streamData: { name: string; value: number }[] = [];
@@ -76,7 +77,7 @@ export default function Analytics() {
     setIsAiThinking(true);
 
     try {
-      const res = await fetch('/api/ai/chat', {
+      const res = await apiFetch('/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: `As my music analytics assistant, answer concisely: ${userText}` }),

@@ -65,8 +65,20 @@ import {
   scanForSecrets,
 } from "./_admin.js";
 import { authMiddleware, requireAuth, requireRole } from "./_auth-middleware.js";
+import { eventBus } from "./_event-bus.js";
+import { startScheduler, stopScheduler, scheduleTask, cancelTask, listTasks, getRuns, registerCronAction } from "./_scheduler.js";
+import { registerWebhook, unregisterWebhook, getWebhook, listWebhooks, getDeliveries } from "./_webhooks.js";
+import { createToken, revokeToken, listTokens, tokenMiddleware, getDefaultScopes } from "./_api-tokens.js";
+import { handleBackupExport, handleBackupImport } from "./_backup.js";
+import { validateMimeType, validateExtension, validateFileSize, validateUploadUrl, sanitizeFilename, UPLOAD_SIZE_LIMITS } from "./_upload-security.js";
+import { searchItems, MemorySearchProvider, type SearchCategory } from "./_catalog-search.js";
 
 let uploadMiddleware: any = null;
+
+const memCreatorAccounts: Record<string, any> = {};
+const memPayouts: Record<string, any> = {};
+const memVerifiedPosts: any[] = [];
+const memDjFeedback: any[] = [];
 
 function getUploadMiddleware() {
   if (uploadMiddleware) return uploadMiddleware;
@@ -134,6 +146,26 @@ export function createApiApp() {
   // ---- Phase 6 + 7: structured logging + security headers (early in chain) ----
   app.use(httpLog);
   app.use(securityHeaders);
+
+  // Start background task scheduler
+  startScheduler(1000);
+
+  // Register a sample scheduled task: health check every 5 minutes
+  registerCronAction('health-check', async () => {
+    const db = getDb();
+    if (db) {
+      try { await (db as any).execute?.('select 1'); } catch { /* ignore */ }
+    }
+    return { ok: true, ts: Date.now() };
+  });
+  scheduleTask({
+    name: 'db-health-check',
+    description: 'Ping database every 5 minutes',
+    schedule: { type: 'cron', expression: '*/5 * * * *' },
+    action: 'health-check',
+    params: {},
+    enabled: true,
+  });
 
   const upload = getUploadMiddleware();
 
@@ -729,7 +761,8 @@ export function createApiApp() {
       return res.status(400).json({ error: 'payeeEmail and role required' });
     }
     try {
-      const result = await payoutAdapter.onboardCreator({ payeeEmail, payeeName, role, country, returnUrl });
+      const adapter = getPayoutAdapter();
+      const result = await adapter.onboardCreator({ payeeEmail, payeeName, role, country, returnUrl });
       memCreatorAccounts[payeeEmail] = {
         payeeEmail,
         payeeName,
@@ -738,12 +771,12 @@ export function createApiApp() {
         stripeAccountId: result.accountId,
         onboardingStatus: result.status,
         payoutsEnabled: result.status === 'active',
-        provider: payoutAdapter.id,
+        provider: adapter.id,
         updatedAt: new Date(),
       };
-      logAudit(req, { actorId: payeeEmail, action: 'connect.onboard', metadata: { role, provider: payoutAdapter.id } });
+      logAudit(req, { actorId: payeeEmail, action: 'connect.onboard', metadata: { role, provider: adapter.id } });
       notifySignup(payeeEmail, payeeName || payeeEmail, role);
-      res.json({ ok: true, ...result, provider: payoutAdapter.id });
+      res.json({ ok: true, ...result, provider: adapter.id });
     } catch (err) {
       logger.error({ err, payeeEmail }, 'connect onboard failed');
       res.status(500).json({ error: 'onboard_failed' });
@@ -845,7 +878,8 @@ export function createApiApp() {
       return res.status(412).json({ error: 'payee_not_onboarded', note: `Run /api/connect/onboard first for ${payeeEmail}` });
     }
     try {
-      const result = await payoutAdapter.pay({
+      const pa = getPayoutAdapter();
+      const result = await pa.pay({
         payeeEmail,
         payeeAccountId: acct.stripeAccountId,
         amountCents: Number(amountCents),
@@ -861,7 +895,7 @@ export function createApiApp() {
         amountCents: Number(amountCents),
         currency: 'USD',
         status: result.ok ? 'processing' : 'failed',
-        provider: payoutAdapter.id,
+        provider: pa.id,
         providerTransferId: result.transferId,
         createdAt: new Date(),
       };
@@ -879,13 +913,14 @@ export function createApiApp() {
   app.get('/api/tax-docs/:payeeEmail', (req, res) => {
     const acct = memCreatorAccounts[req.params.payeeEmail];
     if (!acct) return res.status(404).json({ error: 'not_onboarded' });
+    const pa = getPayoutAdapter();
     res.json({
       payeeEmail: req.params.payeeEmail,
-      provider: payoutAdapter.id,
-      documents: payoutAdapter.id === 'stripe'
+      provider: pa.id,
+      documents: pa.id === 'stripe'
         ? [{ year: new Date().getFullYear(), type: '1099-K', url: `https://dashboard.stripe.com/connect/accounts/${acct.stripeAccountId}/tax-documents` }]
         : [],
-      note: payoutAdapter.id === 'stripe'
+      note: pa.id === 'stripe'
         ? 'Stripe issues 1099-K and 1042-S automatically once thresholds are met.'
         : 'Tax docs available once Stripe Connect is configured.',
     });
@@ -1164,7 +1199,7 @@ export function createApiApp() {
     res.json({
       timestamp: new Date().toISOString(),
       providers,
-      payoutAdapter: payoutAdapter.id,
+      payoutAdapter: getPayoutAdapter().id,
       uptimeSec: Math.round(process.uptime()),
       nodeVersion: process.version,
     });
@@ -1266,6 +1301,181 @@ export function createApiApp() {
   app.post('/api/admin/scan', adminOnly, (req: any, res: any) => {
     const text = String(req.body?.text || '');
     res.json(scanForSecrets(text));
+  });
+
+  /* ================================================================
+   * WEBHOOK MANAGEMENT — register / list / delete outgoing webhooks
+   * ================================================================ */
+  app.get('/api/webhooks', (_req, res) => {
+    res.json({ webhooks: listWebhooks() });
+  });
+
+  app.post('/api/webhooks', (req, res) => {
+    const { url, events, secret, retryMax, retryDelayMs, timeoutMs, enabled } = req.body ?? {};
+    if (!url || !events?.length) {
+      return res.status(400).json({ error: 'url and events required' });
+    }
+    const id = `wh-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    registerWebhook({
+      id, url, events, secret,
+      retryMax: retryMax ?? 3,
+      retryDelayMs: retryDelayMs ?? 2000,
+      timeoutMs: timeoutMs ?? 10000,
+      enabled: enabled ?? true,
+      headers: req.body.headers ?? {},
+      createdAt: new Date(),
+    });
+    res.status(201).json({ id, url, events });
+  });
+
+  app.delete('/api/webhooks/:id', (req, res) => {
+    const ok = unregisterWebhook(req.params.id);
+    if (!ok) return res.status(404).json({ error: 'webhook not found' });
+    res.json({ ok: true });
+  });
+
+  app.get('/api/webhooks/:id/deliveries', (req, res) => {
+    const limit = parseInt(String(req.query.limit), 10) || 50;
+    res.json({ deliveries: getDeliveries(req.params.id, limit) });
+  });
+
+  /* ================================================================
+   * API TOKEN MANAGEMENT — create / revoke / list tokens
+   * ================================================================ */
+  app.get('/api/tokens', (req, res) => {
+    const all = listTokens().map((t) => ({
+      id: t.id, prefix: t.prefix, name: t.name,
+      scopes: t.scopes, createdBy: t.createdBy,
+      expiresAt: t.expiresAt, lastUsedAt: t.lastUsedAt,
+      enabled: t.enabled, createdAt: t.createdAt,
+    }));
+    res.json({ tokens: all });
+  });
+
+  app.post('/api/tokens', (req, res) => {
+    const { name, scopes, expiresAt } = req.body ?? {};
+    if (!name) return res.status(400).json({ error: 'name required' });
+    const userId = (req.headers['x-user-id'] as string) || 'anon';
+    const result = createToken({
+      name,
+      scopes: scopes ?? getDefaultScopes(),
+      createdBy: userId,
+      expiresAt: expiresAt ? new Date(expiresAt) : undefined,
+    });
+    res.status(201).json(result);
+  });
+
+  app.post('/api/tokens/:id/revoke', (req, res) => {
+    const ok = revokeToken(req.params.id);
+    if (!ok) return res.status(404).json({ error: 'token not found' });
+    res.json({ ok: true });
+  });
+
+  /* ================================================================
+   * BACKUP & EXPORT — full user data export and import
+   * ================================================================ */
+  app.get('/api/backup/export', handleBackupExport);
+  app.post('/api/backup/import', handleBackupImport);
+
+  /* ================================================================
+   * CATALOG SEARCH — multi-category search across all entities
+   * ================================================================ */
+  app.get('/api/search', async (req, res) => {
+    const query = String(req.query.q || '');
+    const categories = req.query.categories
+      ? String(req.query.categories).split(',') as SearchCategory[]
+      : undefined;
+    const limit = parseInt(String(req.query.limit), 10) || 20;
+
+    if (!query || query.length < 2) {
+      return res.status(400).json({ error: 'Query must be at least 2 characters' });
+    }
+
+    try {
+      const [releases, campaigns, influencers, splits, anr, promo, preReleases] = await Promise.all([
+        store.listReleases(),
+        store.listCampaigns(),
+        store.listInfluencers(),
+        store.listSplits(),
+        store.listAnrSubmissions(),
+        store.listPromoPacks(),
+        store.listPreReleases(),
+      ]);
+
+      const searchProvider = new MemorySearchProvider();
+      if (!categories || categories.includes('releases')) {
+        searchProvider.setItems(releases.map((r: any) => ({ id: r.id, title: r.title, artist: r.artist, category: 'releases' as SearchCategory, subtitle: r.genre, metadata: { status: r.status } })));
+      }
+      if (!categories || categories.includes('campaigns')) {
+        searchProvider.setItems(searchProvider['items'] = [...(searchProvider as any).items || [], ...campaigns.map((c: any) => ({ id: c.id, title: c.goal || c.id, category: 'campaigns' as SearchCategory, subtitle: c.status, metadata: { budget: c.budget } }))]);
+      }
+      const allItems: any[] = [
+        ...releases.map((r: any) => ({ id: r.id, title: r.title, artist: r.artist, category: 'releases' as SearchCategory, subtitle: r.genre, metadata: { status: r.status } })),
+        ...campaigns.map((c: any) => ({ id: c.id, title: c.goal || c.id, category: 'campaigns' as SearchCategory, subtitle: c.status, metadata: { budget: c.budget } })),
+        ...influencers.map((i: any) => ({ id: i.id, title: i.name, artist: i.handle, category: 'influencers' as SearchCategory, subtitle: `${i.platform} · ${i.followers || 0} followers`, metadata: { reach: i.reach } })),
+        ...splits.map((s: any) => ({ id: s.id, title: `Split ${s.id}`, category: 'splits' as SearchCategory, subtitle: `${s.payeeEmail || ''} · ${s.percentage || 0}%`, metadata: s })),
+        ...anr.map((a: any) => ({ id: a.id, title: a.trackTitle || a.id, category: 'anr' as SearchCategory, subtitle: a.status, metadata: { critique: a.critique } })),
+        ...promo.map((p: any) => ({ id: p.id, title: `Promo ${p.releaseId || p.id}`, category: 'promo' as SearchCategory, subtitle: p.type, metadata: { status: p.status } })),
+        ...preReleases.map((p: any) => ({ id: p.id, title: p.title || p.id, category: 'pre_releases' as SearchCategory, subtitle: p.status, metadata: { hookStart: p.hookStart } })),
+      ].filter((item) => !categories || categories.includes(item.category));
+
+      const results = searchItems(allItems, query, { limit });
+      res.json({ query, count: results.length, results });
+    } catch (err) {
+      res.status(500).json({ error: 'search failed' });
+    }
+  });
+
+  /* ================================================================
+   * UPLOAD VALIDATION — validate file metadata before upload
+   * ================================================================ */
+  app.post('/api/validate/upload', (req, res) => {
+    const { filename, mimeType, sizeBytes, category, url } = req.body ?? {};
+    const errors: string[] = [];
+    const warnings: string[] = [];
+    const cat = (category || 'audio') as 'audio' | 'image' | 'document';
+
+    if (url) {
+      const urlCheck = validateUploadUrl(url);
+      if (!urlCheck.ok) errors.push(urlCheck.error!);
+    }
+
+    if (filename) {
+      const extCheck = validateExtension(filename, cat);
+      if (!extCheck.ok) errors.push(extCheck.error!);
+    }
+
+    if (mimeType) {
+      const mimeCheck = validateMimeType(mimeType, cat);
+      if (!mimeCheck.ok && !mimeCheck.detectedMime?.includes('octet-stream')) {
+        errors.push(mimeCheck.error!);
+      } else if (mimeCheck.detectedMime?.includes('octet-stream')) {
+        warnings.push('Generic binary stream — content will be sniffed server-side');
+      }
+    }
+
+    if (sizeBytes !== undefined) {
+      const maxSize = UPLOAD_SIZE_LIMITS[cat] || UPLOAD_SIZE_LIMITS.audio;
+      const sizeCheck = validateFileSize(Number(sizeBytes), maxSize);
+      if (!sizeCheck.ok) errors.push(sizeCheck.error!);
+    }
+
+    const sanitized = filename ? sanitizeFilename(filename) : undefined;
+    res.json({
+      ok: errors.length === 0,
+      errors,
+      warnings,
+      sanitizedFilename: sanitized,
+    });
+  });
+
+  /* ================================================================
+   * API TOKEN MIDDLEWARE — accepts Bearer tokens as alternative auth
+   * Applied after authMiddleware so it can skip if already authed
+   * ================================================================ */
+  app.use('/api', (req, res, next) => {
+    if (req.userId) return next();
+    tokenMiddleware()(req, res, next);
   });
 
   // Generic error handler

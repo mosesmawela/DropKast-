@@ -30,11 +30,25 @@ declare global {
 /**
  * Extract user from Authorization header (Supabase JWT) or X-User-Id header.
  * Attaches user to req.user and req.userId for downstream use.
+ *
+ * In development mode (DEV_MODE=true), accepts X-Dev-Auth: true header
+ * to create a mock admin user. Used when Supabase is not configured.
  */
 export async function authMiddleware(req: Request, res: Response, next: NextFunction): Promise<void> {
   const authHeader = req.headers.authorization;
   const userIdHeader = req.headers['x-user-id'] as string;
   const userEmailHeader = req.headers['x-user-email'] as string;
+  const isDevMode = process.env.DEV_MODE === 'true';
+  const isDevAuth = req.headers['x-dev-auth'] === 'true';
+
+  // Priority 0: Dev bypass (only when DEV_MODE=true)
+  if (isDevMode && isDevAuth) {
+    const email = userEmailHeader || 'admin@dropkast.dev';
+    const id = userIdHeader || 'dev-user-001';
+    req.user = { id, email, role: 'admin', artistName: email.split('@')[0] };
+    req.userId = id;
+    return next();
+  }
 
   // Priority 1: Supabase JWT in Authorization header
   if (authHeader?.startsWith('Bearer ') && supabase) {
@@ -63,7 +77,7 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
       req.user = {
         id: userIdHeader,
         email: userEmailHeader,
-        role: 'artist',
+        role: isDevMode ? 'admin' : 'artist',
       };
     }
     return next();

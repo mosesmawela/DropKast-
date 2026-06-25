@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import ModelPicker from './ModelPicker';
 import { RECOMMENDATIONS } from '../lib/ai-recommendations';
 import { providersByKind, ALL_PROVIDERS, type ProviderModel } from '../lib/ai-providers';
+import { apiFetch } from '../lib/api';
 
 type ProviderId = 'anthropic' | 'nvidia' | 'groq' | 'cerebras' | 'openrouter' | 'moonshot' | 'openai' | 'google';
 
@@ -159,7 +160,7 @@ export default function AIAssistant() {
 
     try {
       const byokKeys = getByokKeys();
-      const res = await fetch('/api/ai/chat', {
+      const res = await apiFetch('/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

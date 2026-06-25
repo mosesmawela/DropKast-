@@ -21,6 +21,7 @@ import { store } from './_store.js';
 import { isOverBudget, recordUsage } from './_ai-budget.js';
 import { streamOpenAICompatible, PROVIDER_TIMEOUT_MS, FALLBACK_ORDER, listAvailableTextProviders, CONFIG_FOR_PROVIDER, type TextProviderId } from './_text-providers.js';
 import { getPersona, type PersonaId } from '../src/lib/ai-personas.js';
+import { recordFailure, recordSuccess, isOnCooldown } from './_cooldown.js';
 
 const SONNET = 'claude-sonnet-4-6';
 
@@ -188,7 +189,13 @@ export async function handleAiChat(req: Request, res: Response): Promise<void> {
         errors.push(`${pid}: skipped (no key)`);
         continue;
       }
-      const providerKey = apiKeys?.[CONFIG_FOR_PROVIDER[pid]?.envVar ?? ''];
+      const providerCfg = CONFIG_FOR_PROVIDER[pid];
+      const host = providerCfg ? new URL(providerCfg.baseUrl).hostname : pid;
+      if (isOnCooldown(host)) {
+        errors.push(`${pid}: skipped (on cooldown)`);
+        continue;
+      }
+      const providerKey = apiKeys?.[providerCfg?.envVar ?? ''];
       try {
         let hasContent = false;
         for await (const chunk of streamOpenAICompatible(pid, messages, { signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS), apiKey: providerKey })) {
@@ -205,11 +212,14 @@ export async function handleAiChat(req: Request, res: Response): Promise<void> {
           }
         }
         if (servedBy) {
+          recordSuccess(host);
           send('done', { ok: true, provider: servedBy, fallbacks: errors });
           res.end();
           return;
         }
+        recordFailure(host);
       } catch (err: any) {
+        recordFailure(host);
         if (err.name === 'TimeoutError' || err.name === 'AbortError') {
           errors.push(`${pid}: timed out after ${PROVIDER_TIMEOUT_MS}ms`);
         } else {
@@ -241,6 +251,14 @@ export async function handleAiChat(req: Request, res: Response): Promise<void> {
     return;
   }
   initSSE();
+
+  const anthropicHost = 'api.anthropic.com';
+  if (isOnCooldown(anthropicHost)) {
+    send('error', { message: 'Anthropic is temporarily on cooldown after repeated failures. Try again shortly.' });
+    send('done', { ok: false });
+    res.end();
+    return;
+  }
 
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
   const conversation: Anthropic.MessageParam[] = [{ role: 'user', content: message }];
@@ -296,9 +314,15 @@ export async function handleAiChat(req: Request, res: Response): Promise<void> {
           send('tool_call', { name: block.name, input: block.input });
           let result: unknown;
           try {
-            result = await runTool(block.name, block.input as Record<string, unknown>);
+            result = await Promise.race([
+              runTool(block.name, block.input as Record<string, unknown>),
+              new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Tool execution timed out after 15s')), 15_000)
+              ),
+            ]);
           } catch (err) {
-            result = { error: String(err) };
+            result = { error: String(err).slice(0, 300) };
+            logger.warn({ tool: block.name, error: String(err).slice(0, 200) }, 'ai-chat: tool execution failed');
           }
           send('tool_result', { name: block.name, preview: JSON.stringify(result).slice(0, 200) });
           toolResults.push({
@@ -312,7 +336,9 @@ export async function handleAiChat(req: Request, res: Response): Promise<void> {
     }
 
     send('done', { ok: true });
+    recordSuccess(anthropicHost);
   } catch (err) {
+    recordFailure(anthropicHost);
     console.error('[AI chat] error:', err);
     send('error', { message: err instanceof Error ? err.message : 'unknown error' });
   } finally {
