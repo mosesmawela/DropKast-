@@ -6,8 +6,8 @@
  *
  * Drop in real artist photos by editing the ARTISTS array below.
  */
-import { useEffect, useRef, useState } from 'react';
-import { motion } from 'motion/react';
+import { useEffect, useRef, useState, useMemo, memo } from 'react';
+import { motion, useMotionValue, useAnimationFrame, useTransform, useMotionValueEvent, MotionValue } from 'motion/react';
 import { Headphones, TrendingUp, Music } from 'lucide-react';
 
 interface Artist {
@@ -34,33 +34,31 @@ const ARTISTS: Artist[] = [
 ];
 
 export default function ArtistCarousel3D() {
-  const [angle, setAngle] = useState(0);
+  const angle = useMotionValue(0);
   const [paused, setPaused] = useState(false);
-  const rafRef = useRef<number | null>(null);
-  const lastT = useRef<number | null>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
 
-  // Continuous rotation
-  useEffect(() => {
-    const tick = (t: number) => {
-      if (lastT.current === null) lastT.current = t;
-      const dt = t - lastT.current;
-      lastT.current = t;
-      if (!paused) {
-        // ~10° per second — slow + cinematic
-        setAngle((a) => (a + (dt / 1000) * 10) % 360);
-      }
-      rafRef.current = requestAnimationFrame(tick);
-    };
-    rafRef.current = requestAnimationFrame(tick);
-    return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      lastT.current = null;
-    };
-  }, [paused]);
+  // ⚡ Bolt: Use useAnimationFrame to update MotionValue directly, bypassing React re-renders
+  useAnimationFrame((_, delta) => {
+    if (!paused) {
+      // ~10° per second
+      const currentAngle = angle.get();
+      angle.set((currentAngle + (delta / 1000) * 10) % 360);
+    }
+  });
 
   const radius = 360;
   const cardCount = ARTISTS.length;
   const stepDeg = 360 / cardCount;
+
+  // ⚡ Bolt: Sync active index only when necessary for pagination dots
+  useMotionValueEvent(angle, "change", (latest) => {
+    const active = Math.round((360 - latest) / stepDeg) % cardCount;
+    const normalizedActive = active < 0 ? active + cardCount : active;
+    if (normalizedActive !== activeIndex) {
+      setActiveIndex(normalizedActive);
+    }
+  });
 
   return (
     <div className="relative w-full py-20 px-4 overflow-hidden">
@@ -89,35 +87,25 @@ export default function ArtistCarousel3D() {
         onTouchStart={() => setPaused(true)}
         onTouchEnd={() => setPaused(false)}
       >
-        <div
+        <motion.div
           className="absolute left-1/2 top-1/2 w-72 h-96 -ml-36 -mt-48"
           style={{
             transformStyle: 'preserve-3d',
-            transform: `translateZ(-${radius}px) rotateY(${angle}deg)`,
-            transition: 'none',
+            rotateY: angle,
+            z: -radius,
           }}
         >
-          {ARTISTS.map((a, i) => {
-            const cardAngle = i * stepDeg;
-            // Compute facing factor — front-most card scales / glows brighter
-            const relative = ((cardAngle + angle) % 360 + 360) % 360;
-            const distFromFront = Math.min(relative, 360 - relative); // 0..180
-            const isFront = distFromFront < 30;
-
-            return (
-              <div
-                key={a.name}
-                className="absolute inset-0"
-                style={{
-                  transform: `rotateY(${cardAngle}deg) translateZ(${radius}px)`,
-                  transformStyle: 'preserve-3d',
-                }}
-              >
-                <ArtistCard artist={a} isFront={isFront} />
-              </div>
-            );
-          })}
-        </div>
+          {ARTISTS.map((a, i) => (
+            <ArtistCard
+              key={a.name}
+              artist={a}
+              index={i}
+              angle={angle}
+              stepDeg={stepDeg}
+              radius={radius}
+            />
+          ))}
+        </motion.div>
 
         {/* Floor reflection / vignette */}
         <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-black to-transparent pointer-events-none" />
@@ -126,14 +114,11 @@ export default function ArtistCarousel3D() {
       {/* Pagination dots */}
       <div className="flex items-center justify-center gap-2 mt-8 relative z-10">
         {ARTISTS.map((_, i) => {
-          const targetAngle = i * stepDeg;
-          const relative = ((targetAngle + angle) % 360 + 360) % 360;
-          const distFromFront = Math.min(relative, 360 - relative);
-          const isActive = distFromFront < stepDeg / 2;
+          const isActive = activeIndex === i;
           return (
             <button
               key={i}
-              onClick={() => setAngle((360 - i * stepDeg) % 360)}
+              onClick={() => angle.set((360 - i * stepDeg) % 360)}
               aria-label={`Show ${ARTISTS[i].name}`}
               className={`h-1.5 transition-all ${isActive ? 'w-8 bg-primary' : 'w-1.5 bg-white/20 hover:bg-white/40'}`}
             />
@@ -150,77 +135,118 @@ export default function ArtistCarousel3D() {
 }
 
 /* =========================================================================
- * Artist card — front-facing flair when isFront
+ * Artist card — front-facing flair driven by MotionValues
  * ========================================================================= */
-function ArtistCard({ artist, isFront }: { artist: Artist; isFront: boolean }) {
+const ArtistCard = memo(({
+  artist,
+  index,
+  angle,
+  stepDeg,
+  radius
+}: {
+  artist: Artist;
+  index: number;
+  angle: MotionValue<number>;
+  stepDeg: number;
+  radius: number;
+}) => {
   const accent = artist.accent || '#FF4D00';
+  const cardAngle = index * stepDeg;
+
+  // ⚡ Bolt: Derive scale and shadow from rotation directly via MotionValues to bypass React re-renders
+  const scale = useTransform(angle, (latest) => {
+    const relative = ((cardAngle + latest) % 360 + 360) % 360;
+    const distFromFront = Math.min(relative, 360 - relative);
+    return distFromFront < 30 ? 1.05 : 1;
+  });
+
+  const boxShadow = useTransform(angle, (latest) => {
+    const relative = ((cardAngle + latest) % 360 + 360) % 360;
+    const distFromFront = Math.min(relative, 360 - relative);
+    return distFromFront < 30
+      ? `0 30px 80px ${accent}55, 0 0 0 1px ${accent}66`
+      : `0 10px 30px rgba(0,0,0,0.5)`;
+  });
+
+  const liveBadgeOpacity = useTransform(angle, (latest) => {
+    const relative = ((cardAngle + latest) % 360 + 360) % 360;
+    const distFromFront = Math.min(relative, 360 - relative);
+    return distFromFront < 30 ? 1 : 0;
+  });
+
   return (
-    <motion.div
-      animate={{
-        scale: isFront ? 1.05 : 1,
-        boxShadow: isFront
-          ? `0 30px 80px ${accent}55, 0 0 0 1px ${accent}66`
-          : `0 10px 30px rgba(0,0,0,0.5)`,
+    <div
+      className="absolute inset-0"
+      style={{
+        transform: `rotateY(${cardAngle}deg) translateZ(${radius}px)`,
+        transformStyle: 'preserve-3d',
       }}
-      transition={{ duration: 0.6 }}
-      className="w-full h-full bg-dark border border-white/10 overflow-hidden flex flex-col"
-      style={{ backfaceVisibility: 'hidden' }}
     >
-      {/* Cover */}
-      <div className="relative flex-1 overflow-hidden">
-        {artist.artwork ? (
-          <img src={artist.artwork} alt={artist.name} className="w-full h-full object-cover" />
-        ) : (
-          <div
-            className="w-full h-full flex items-center justify-center text-9xl font-black italic tracking-tighter relative"
-            style={{
-              background: `linear-gradient(135deg, ${accent}55, ${accent}11 40%, #000 100%)`,
-              color: 'rgba(255,255,255,0.85)',
-            }}
-          >
-            {artist.name.charAt(0)}
-            {/* Soft grain */}
+      <motion.div
+        style={{
+          backfaceVisibility: 'hidden',
+          scale,
+          boxShadow
+        }}
+        className="w-full h-full bg-dark border border-white/10 overflow-hidden flex flex-col"
+      >
+        {/* Cover */}
+        <div className="relative flex-1 overflow-hidden">
+          {artist.artwork ? (
+            <img src={artist.artwork} alt={artist.name} className="w-full h-full object-cover" />
+          ) : (
             <div
-              className="absolute inset-0 opacity-30 mix-blend-overlay pointer-events-none"
+              className="w-full h-full flex items-center justify-center text-9xl font-black italic tracking-tighter relative"
               style={{
-                backgroundImage:
-                  "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'><filter id='n'><feTurbulence baseFrequency='0.9'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.4'/></svg>\")",
+                background: `linear-gradient(135deg, ${accent}55, ${accent}11 40%, #000 100%)`,
+                color: 'rgba(255,255,255,0.85)',
               }}
-            />
+            >
+              {artist.name.charAt(0)}
+              {/* Soft grain */}
+              <div
+                className="absolute inset-0 opacity-30 mix-blend-overlay pointer-events-none"
+                style={{
+                  backgroundImage:
+                    "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'><filter id='n'><feTurbulence baseFrequency='0.9'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.4'/></svg>\")",
+                }}
+              />
+            </div>
+          )}
+
+          {/* Genre tag */}
+          <div className="absolute top-3 left-3 px-2 py-1 bg-black/70 backdrop-blur-sm text-[9px] font-black uppercase tracking-widest italic text-white">
+            {artist.genre}
           </div>
-        )}
 
-        {/* Genre tag */}
-        <div className="absolute top-3 left-3 px-2 py-1 bg-black/70 backdrop-blur-sm text-[9px] font-black uppercase tracking-widest italic text-white">
-          {artist.genre}
-        </div>
-
-        {/* Now-playing pulse when front */}
-        {isFront && (
-          <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2 py-1 bg-primary text-white text-[9px] font-black uppercase tracking-widest italic">
+          {/* Now-playing pulse when front — driven by MotionValue opacity */}
+          <motion.div
+            style={{ opacity: liveBadgeOpacity }}
+            className="absolute top-3 right-3 flex items-center gap-1.5 px-2 py-1 bg-primary text-white text-[9px] font-black uppercase tracking-widest italic"
+          >
             <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
             Live
-          </div>
-        )}
-      </div>
-
-      {/* Bottom strip */}
-      <div className="p-4 border-t border-white/10 bg-black/60 backdrop-blur-sm">
-        <h3 className="text-xl font-black italic text-white tracking-tight mb-1">{artist.name}</h3>
-        {artist.hashtag && (
-          <div className="text-[10px] text-white/40 italic tracking-widest">{artist.hashtag}</div>
-        )}
-        <div className="flex items-center justify-between mt-3 text-[10px] font-black uppercase tracking-widest italic">
-          <span className="flex items-center gap-1.5 text-white/60">
-            <Headphones className="w-3 h-3" />
-            {artist.monthlyStreams}
-          </span>
-          <span className="flex items-center gap-1.5" style={{ color: accent }}>
-            <TrendingUp className="w-3 h-3" />
-            /mo
-          </span>
+          </motion.div>
         </div>
-      </div>
-    </motion.div>
+
+        {/* Bottom strip */}
+        <div className="p-4 border-t border-white/10 bg-black/60 backdrop-blur-sm">
+          <h3 className="text-xl font-black italic text-white tracking-tight mb-1">{artist.name}</h3>
+          {artist.hashtag && (
+            <div className="text-[10px] text-white/40 italic tracking-widest">{artist.hashtag}</div>
+          )}
+          <div className="flex items-center justify-between mt-3 text-[10px] font-black uppercase tracking-widest italic">
+            <span className="flex items-center gap-1.5 text-white/60">
+              <Headphones className="w-3 h-3" />
+              {artist.monthlyStreams}
+            </span>
+            <span className="flex items-center gap-1.5" style={{ color: accent }}>
+              <TrendingUp className="w-3 h-3" />
+              /mo
+            </span>
+          </div>
+        </div>
+      </motion.div>
+    </div>
   );
-}
+});
