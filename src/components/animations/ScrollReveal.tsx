@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { ReactNode, Key } from 'react';
+import { ReactNode, memo, useMemo } from 'react';
 
 interface ScrollRevealProps {
   children: ReactNode;
@@ -8,55 +8,76 @@ interface ScrollRevealProps {
   variant?: 'fade' | 'blur' | 'slide';
   width?: "fit-content" | "100%";
   className?: string;
-  key?: Key;
 }
 
-export default function ScrollReveal({
+const DIRECTIONS = {
+  up: { y: 40 },
+  down: { y: -40 },
+  left: { x: 40 },
+  right: { x: -40 },
+  none: { x: 0, y: 0 }
+} as const;
+
+type Direction = keyof typeof DIRECTIONS;
+
+const SCROLL_REVEAL_VARIANTS = {
+  fade: {
+    hidden: (direction: Direction) => ({ opacity: 0, ...DIRECTIONS[direction] }),
+    visible: { opacity: 1, x: 0, y: 0 }
+  },
+  blur: {
+    hidden: (direction: Direction) => ({ opacity: 0, filter: 'blur(10px)', ...DIRECTIONS[direction] }),
+    visible: { opacity: 1, filter: 'blur(0px)', x: 0, y: 0 }
+  },
+  slide: {
+    hidden: (direction: Direction) => ({ opacity: 0, ...DIRECTIONS[direction] }),
+    visible: { opacity: 1, x: 0, y: 0 }
+  }
+};
+
+const VIEWPORT_CONFIG = { once: true, margin: "-100px" } as const;
+
+const TRANSITION_BASE = {
+  duration: 0.8,
+  ease: [0.21, 0.47, 0.32, 0.98] as const
+} as const;
+
+/**
+ * ScrollReveal Component
+ * Optimized for performance by hoisting static variants and configuration.
+ * Uses 'custom' prop for dynamic directions to avoid object allocations in render.
+ * Wrapped in React.memo to prevent unnecessary re-renders in high-usage scenarios.
+ */
+const ScrollReveal = memo(({
   children,
   delay = 0,
   direction = 'up',
   variant = 'blur',
   width = "fit-content",
   className
-}: ScrollRevealProps) {
-  const directions = {
-    up: { y: 40 },
-    down: { y: -40 },
-    left: { x: 40 },
-    right: { x: -40 },
-    none: { x: 0, y: 0 }
-  };
-
-  const variants = {
-    fade: {
-      hidden: { opacity: 0, ...directions[direction] },
-      visible: { opacity: 1, x: 0, y: 0 }
-    },
-    blur: {
-      hidden: { opacity: 0, filter: 'blur(10px)', ...directions[direction] },
-      visible: { opacity: 1, filter: 'blur(0px)', x: 0, y: 0 }
-    },
-    slide: {
-      hidden: { opacity: 0, ...directions[direction] },
-      visible: { opacity: 1, x: 0, y: 0 }
-    }
-  };
+}: ScrollRevealProps) => {
+  // Memoize transition to prevent object allocation on every render
+  const transition = useMemo(() => ({
+    ...TRANSITION_BASE,
+    delay
+  }), [delay]);
 
   return (
     <div style={{ position: "relative", width, overflow: "visible" }} className={className}>
       <motion.div
-        variants={variants[variant]}
+        custom={direction}
+        variants={SCROLL_REVEAL_VARIANTS[variant]}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
-        transition={{
-          duration: 0.8,
-          delay: delay,
-          ease: [0.21, 0.47, 0.32, 0.98]
-        }}
+        viewport={VIEWPORT_CONFIG}
+        transition={transition}
       >
         {children}
       </motion.div>
     </div>
   );
-}
+});
+
+ScrollReveal.displayName = 'ScrollReveal';
+
+export default ScrollReveal;
