@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { Music, Mail, Lock, User, Globe, ArrowRight, Mic2, Building2, Megaphone, Headphones, ChevronLeft } from 'lucide-react';
+import { Music, Mail, Lock, User, Globe, ArrowRight, Mic2, Building2, Megaphone, Headphones, ChevronLeft, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import React, { useState } from 'react';
 import { cn } from '../lib/utils';
@@ -8,17 +8,18 @@ import type { User as AppUser } from '../types';
 
 type PortalId = 'ARTIST' | 'LABEL' | 'INFLUENCER' | 'DJ';
 
-const PORTALS: { id: PortalId; label: string; tagline: string; icon: typeof Mic2; landing: string }[] = [
-  { id: 'ARTIST',     label: 'Artist',       tagline: 'I make music and release it.',                           icon: Mic2,       landing: '/dashboard' },
-  { id: 'LABEL',      label: 'Label',        tagline: 'I run a label with multiple artists on my roster.',      icon: Building2,  landing: '/dashboard' },
-  { id: 'INFLUENCER', label: 'Influencer',   tagline: 'I create content and want paid missions for artists.',   icon: Megaphone,  landing: '/influencer/missions' },
-  { id: 'DJ',         label: 'DJ / Curator', tagline: 'I play sets and break music — send me edits and packs.', icon: Headphones, landing: '/dj/packs' },
+const PORTALS: { id: PortalId; label: string; tagline: string; desc: string; icon: typeof Mic2; landing: string }[] = [
+  { id: 'ARTIST',     label: 'Artist',       tagline: 'I make the music',       desc: 'Distribute your music, run AI-assisted campaigns, get paid.',                                    icon: Mic2,       landing: '/dashboard' },
+  { id: 'LABEL',      label: 'Label',        tagline: 'I manage a roster',      desc: 'Distribute multiple artists from one account. Switch between rosters, see catalogue-wide earnings.', icon: Building2,  landing: '/dashboard' },
+  { id: 'INFLUENCER', label: 'Influencer',   tagline: 'I create content',       desc: 'Get paid to post, track campaign performance, instant payouts.',                                  icon: Megaphone,  landing: '/influencer/missions' },
+  { id: 'DJ',         label: 'DJ / Curator', tagline: 'I move the floor',       desc: 'Get exclusive packs, stems, edits. Send feedback to artists.',                                    icon: Headphones, landing: '/dj/packs' },
 ];
 
 export default function Signup() {
   const navigate = useNavigate();
-  const { login, updateUser } = useAuth();
+  const { signup, updateUser } = useAuth();
   const [step, setStep] = useState<'form' | 'portal'>('form');
+  const [selectedPortal, setSelectedPortal] = useState<PortalId>('ARTIST');
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     artistName: '',
@@ -55,7 +56,7 @@ export default function Signup() {
   const pickPortal = async (portal: PortalId) => {
     setIsLoading(true);
     try {
-      await login(formData.email, formData.password);
+      await signup(formData.email, formData.password, formData.artistName);
       // Patch role + label hints once auth lands. AuthContext.updateUser persists to legacy storage.
       updateUser({
         role: portal as AppUser['role'],
@@ -82,7 +83,7 @@ export default function Signup() {
         <div className="barcode-sim h-8 w-24" />
       </div>
 
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full max-w-2xl relative z-10">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={cn("w-full relative z-10", step === 'portal' ? 'max-w-5xl' : 'max-w-2xl')}>
         <AnimatePresence mode="wait">
           {step === 'form' ? (
             <motion.div
@@ -233,47 +234,85 @@ export default function Signup() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 10 }}
               transition={{ duration: 0.18 }}
-              className="manifest-card corner-marker p-12 bg-black shadow-none border-white/10"
+              className="w-full max-w-5xl"
             >
-              <div className="mb-10">
-                <button
-                  type="button"
-                  onClick={() => setStep('form')}
-                  disabled={isLoading}
-                  className="text-[10px] font-black text-white/40 hover:text-white uppercase italic tracking-widest inline-flex items-center gap-1 mb-6 disabled:opacity-30"
-                >
-                  <ChevronLeft className="w-3 h-3" /> Back to credentials
-                </button>
-                <h1 className="text-5xl font-black text-white mb-3 leading-none uppercase italic">
+              <button
+                type="button"
+                onClick={() => setStep('form')}
+                disabled={isLoading}
+                className="mb-6 flex items-center gap-2 text-[10px] font-mono font-black text-white/40 hover:text-white tracking-[0.3em] uppercase italic transition-colors disabled:opacity-30"
+              >
+                <ChevronLeft className="w-4 h-4" /> Back to credentials
+              </button>
+
+              <div className="text-center mb-10">
+                <h1 className="text-4xl md:text-5xl font-black text-white mb-3 leading-none uppercase italic font-mono tracking-tighter">
                   Which <span className="text-primary">portal</span>?
                 </h1>
-                <p className="text-white/40 text-sm italic max-w-xl">
-                  DropKast serves four sides of the music economy. Pick the one that's you — you can switch later in Settings.
+                <p className="text-white/40 text-[10px] font-black tracking-[0.4em] italic uppercase font-mono">
+                  Pick how you'll use DropKast — you can switch anytime
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
                 {PORTALS.map((p) => {
+                  const active = selectedPortal === p.id;
                   const Icon = p.icon;
                   return (
                     <button
                       key={p.id}
                       type="button"
                       disabled={isLoading}
-                      onClick={() => pickPortal(p.id)}
-                      className="manifest-card group p-6 bg-black border border-white/10 hover:border-primary hover:bg-primary/5 transition-all text-left flex items-start gap-4 disabled:opacity-50 disabled:cursor-wait"
+                      onClick={() => setSelectedPortal(p.id)}
+                      onDoubleClick={() => pickPortal(p.id)}
+                      className={cn(
+                        'manifest-card relative p-7 text-left flex flex-col gap-5 transition-all border bg-white/[0.02] hover:bg-white/[0.05] min-h-[300px] group disabled:opacity-50 disabled:cursor-wait',
+                        active ? 'border-primary scale-[1.02]' : 'border-white/10',
+                      )}
+                      style={
+                        active
+                          ? { boxShadow: '0 0 0 1px var(--color-primary), 0 30px 80px rgba(255,77,0,0.2)' }
+                          : undefined
+                      }
                     >
-                      <div className="w-12 h-12 border border-white/20 group-hover:border-primary flex items-center justify-center shrink-0 transition-all">
-                        <Icon className="w-5 h-5 text-white/60 group-hover:text-primary transition-colors" />
+                      <div className={cn('w-14 h-14 border flex items-center justify-center transition-all', active ? 'border-primary' : 'border-white/10')}>
+                        <Icon className={cn('w-7 h-7', active ? 'text-primary' : 'text-white/50')} />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-lg font-black italic text-white mb-1 uppercase tracking-tight">{p.label}</div>
-                        <p className="text-[11px] text-white/40 italic leading-snug normal-case tracking-normal">{p.tagline}</p>
+
+                      <div>
+                        <div className={cn('text-[10px] font-mono font-black uppercase tracking-[0.3em] italic mb-2', active ? 'text-primary' : 'text-white/40')}>
+                          {p.tagline}
+                        </div>
+                        <h3 className="text-2xl md:text-3xl font-black italic uppercase tracking-tighter font-mono leading-none text-white">
+                          {p.label}
+                        </h3>
                       </div>
-                      <ArrowRight className="w-4 h-4 text-white/20 group-hover:text-primary transition-colors mt-1" />
+
+                      <p className="text-sm text-white/60 leading-relaxed">{p.desc}</p>
+
+                      {active && (
+                        <div className="absolute top-4 right-4 flex items-center gap-2 text-[9px] font-mono font-black uppercase tracking-[0.3em] text-primary italic">
+                          <CheckCircle2 className="w-4 h-4" />
+                          Selected
+                        </div>
+                      )}
                     </button>
                   );
                 })}
+              </div>
+
+              <div className="flex flex-col md:flex-row gap-4 max-w-2xl mx-auto">
+                <button
+                  type="button"
+                  disabled={isLoading}
+                  onClick={() => pickPortal(selectedPortal)}
+                  className="primary-button h-16 flex-1 bg-white text-black hover:bg-primary hover:text-white flex items-center justify-between px-8 transition-all disabled:opacity-30"
+                >
+                  <span className="text-[12px] font-mono font-black tracking-widest uppercase italic">
+                    {isLoading ? 'Provisioning...' : `Continue as ${PORTALS.find(p => p.id === selectedPortal)?.label}`}
+                  </span>
+                  <ArrowRight className="w-5 h-5" />
+                </button>
               </div>
 
               {isLoading && (

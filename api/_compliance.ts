@@ -15,9 +15,9 @@ import { logger } from './_logger.js';
 
 /** Build a JSON archive of everything we have on a given user. */
 export async function handleDataExport(req: Request, res: Response): Promise<void> {
-  const userId = String(req.query.userId ?? req.headers['x-user-id'] ?? '');
+  const userId = (req as any).userId;
   if (!userId) {
-    res.status(400).json({ error: 'userId required (query string or x-user-id header)' });
+    res.status(401).json({ error: 'unauthorized' });
     return;
   }
 
@@ -52,9 +52,9 @@ export async function handleDataExport(req: Request, res: Response): Promise<voi
 
 /** Soft-delete: marks user data as scheduled for deletion. Real hard-delete is done by a daily cron. */
 export async function handleDataDelete(req: Request, res: Response): Promise<void> {
-  const userId = String(req.query.userId ?? req.headers['x-user-id'] ?? '');
+  const userId = (req as any).userId;
   if (!userId) {
-    res.status(400).json({ error: 'userId required (query string or x-user-id header)' });
+    res.status(401).json({ error: 'unauthorized' });
     return;
   }
 

@@ -53,7 +53,7 @@ export function registerCronAction(name: string, handler: (params: Record<string
   logger.info({ action: name }, 'scheduler: registered cron action');
 }
 
-export function scheduleTask(input: Omit<ScheduledTask, 'id' | 'status' | 'runCount' | 'createdAt' | 'updatedAt' | 'nextRun'>): ScheduledTask {
+function _scheduleTask(input: Omit<ScheduledTask, 'id' | 'status' | 'runCount' | 'createdAt' | 'updatedAt' | 'nextRun'>): ScheduledTask {
   const task: ScheduledTask = {
     ...input,
     id: generateId(),
@@ -69,7 +69,13 @@ export function scheduleTask(input: Omit<ScheduledTask, 'id' | 'status' | 'runCo
   return task;
 }
 
-export function cancelTask(id: string): boolean {
+export function scheduleTask(input: Omit<ScheduledTask, 'id' | 'status' | 'runCount' | 'createdAt' | 'updatedAt' | 'nextRun'>): ScheduledTask {
+  const task = _scheduleTask(input);
+  subscribeTaskToEvent(task);
+  return task;
+}
+
+function _cancelTask(id: string): boolean {
   const task = tasks.get(id);
   if (!task) return false;
   task.status = 'cancelled';
@@ -77,6 +83,11 @@ export function cancelTask(id: string): boolean {
   task.updatedAt = new Date();
   eventBus.emit('task.cancelled', 'scheduler', { taskId: id });
   return true;
+}
+
+export function cancelTask(id: string): boolean {
+  unsubscribeTaskFromEvent(id);
+  return _cancelTask(id);
 }
 
 export function getTask(id: string): ScheduledTask | undefined {
@@ -222,11 +233,31 @@ export function stopScheduler(): void {
   logger.info('scheduler: stopped');
 }
 
-eventBus.on('*', (event) => {
-  for (const task of tasks.values()) {
-    if (!task.enabled || task.status === 'running') continue;
-    if (task.schedule.type === 'event' && task.schedule.eventType === event.type) {
-      executeTask(task).catch((err) => logger.error({ err, taskId: task.id }, 'scheduler: event-triggered execute error'));
-    }
+/**
+ * Event-triggered task subscriptions — one listener per event-type task
+ * instead of a wildcard handler that could be exploited.
+ */
+const eventUnsubscribers = new Map<string, () => void>();
+
+function subscribeTaskToEvent(task: ScheduledTask): void {
+  if (task.schedule.type !== 'event') return;
+  const eventType = task.schedule.eventType;
+  if (eventUnsubscribers.has(task.id)) return;
+
+  const unsub = eventBus.on(eventType, (event) => {
+    const current = tasks.get(task.id);
+    if (!current || !current.enabled || current.status === 'running') return;
+    executeTask(current).catch((err) => logger.error({ err, taskId: task.id }, 'scheduler: event-triggered execute error'));
+  });
+  eventUnsubscribers.set(task.id, unsub);
+}
+
+export function unsubscribeTaskFromEvent(taskId: string): void {
+  const unsub = eventUnsubscribers.get(taskId);
+  if (unsub) {
+    unsub();
+    eventUnsubscribers.delete(taskId);
   }
-});
+}
+
+

@@ -93,13 +93,11 @@ void SEED_PARTICIPANTS;
 /* =============== PUBLIC API =============== */
 
 export function listThreadsForViewer(viewerId: string, viewerRole: Role): Array<Thread & { other: Participant; unread: number }> {
-  // For seed data, viewerId is "current user" — we treat it as matching role.
-  // Threads where the viewer is participant A or B (we mock this by role).
   const out: Array<Thread & { other: Participant; unread: number }> = [];
   for (const t of threads) {
     let viewerSide: 'a' | 'b' | null = null;
-    if (t.a.role === viewerRole) viewerSide = 'a';
-    else if (t.b.role === viewerRole) viewerSide = 'b';
+    if (t.a.id === viewerId) viewerSide = 'a';
+    else if (t.b.id === viewerId) viewerSide = 'b';
     if (!viewerSide) continue;
     const other = viewerSide === 'a' ? t.b : t.a;
     const unread = viewerSide === 'a' ? t.unreadForA ?? 0 : t.unreadForB ?? 0;

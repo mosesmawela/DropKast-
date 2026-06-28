@@ -54,6 +54,8 @@ export default function Login() {
   const { login, updateUser } = useAuth();
   const { role, setRole } = useTheme();
 
+  const bypassActive = isDevBypassActive();
+
   // Always open on the portal step so the user confirms which side of DropKast
   // they're signing into. The selected portal is highlighted from their last
   // choice (persisted in theme), so a returning user just clicks through.
@@ -67,7 +69,6 @@ export default function Login() {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const selectedPortal = PORTALS.find((p) => p.id === role) ?? PORTALS[0];
-  const bypassActive = isDevBypassActive();
 
   const validate = () => {
     const errs: Record<string, string> = {};
@@ -205,6 +206,29 @@ export default function Login() {
                 <ArrowRight className="w-5 h-5" />
               </button>
             </div>
+
+            {bypassActive && (
+              <div className="flex flex-col md:flex-row gap-4 max-w-2xl mx-auto mt-4">
+                <button
+                  onClick={async () => {
+                    setIsLoading(true);
+                    try {
+                      await login(form.email, form.password);
+                      updateUser({ role: selectedPortal.id as never });
+                      localStorage.setItem('dropkast_welcome_seen', 'true');
+                      navigate(selectedPortal.landing);
+                    } catch {}
+                  }}
+                  className="primary-button h-14 flex-1 border border-primary/40 bg-primary/[0.04] text-primary hover:bg-primary hover:text-black flex items-center justify-center gap-3 px-8 transition-all"
+                >
+                  <Shield className="w-4 h-4" />
+                  <span className="text-[11px] font-mono font-black tracking-widest uppercase italic">
+                    Dev Bypass — Log in instantly
+                  </span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
 
             <div className="mt-10 text-center">
               <p className="text-white/30 text-[11px] font-mono font-black tracking-[0.1em] italic">

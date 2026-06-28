@@ -8,7 +8,7 @@
  */
 import crypto from 'crypto';
 
-const SECRET = process.env.SIGNED_URL_SECRET || 'dev-signed-url-secret-rotate-me';
+const SECRET: string = process.env.SIGNED_URL_SECRET || (() => { throw new Error('SIGNED_URL_SECRET environment variable is required'); })();
 const DEFAULT_TTL_SECONDS = 60 * 60 * 24; // 24 hours
 
 export function signPackUrl(input: {

@@ -119,9 +119,9 @@ export async function importBackup(data: BackupArchive, userId: string): Promise
 }
 
 export async function handleBackupExport(req: Request, res: Response): Promise<void> {
-  const userId = String(req.query.userId ?? req.headers['x-user-id'] ?? '');
+  const userId = (req as any).userId;
   if (!userId) {
-    res.status(400).json({ error: 'userId required' });
+    res.status(401).json({ error: 'unauthorized' });
     return;
   }
 
@@ -137,9 +137,9 @@ export async function handleBackupExport(req: Request, res: Response): Promise<v
 }
 
 export async function handleBackupImport(req: Request, res: Response): Promise<void> {
-  const userId = String(req.headers['x-user-id'] ?? req.body?.userId ?? '');
+  const userId = (req as any).userId;
   if (!userId) {
-    res.status(400).json({ error: 'userId required' });
+    res.status(401).json({ error: 'unauthorized' });
     return;
   }
 

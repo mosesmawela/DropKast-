@@ -23,10 +23,11 @@ class EventBus {
     if (!this.subscriptions.has(type)) {
       this.subscriptions.set(type, new Set());
     }
-    this.subscriptions.get(type)!.add({ handler });
+    const sub: Subscription = { handler };
+    this.subscriptions.get(type)!.add(sub);
     this.emitter.on(type, handler);
     return () => {
-      this.subscriptions.get(type)?.delete({ handler });
+      this.subscriptions.get(type)?.delete(sub);
       this.emitter.off(type, handler);
     };
   }
@@ -35,7 +36,7 @@ class EventBus {
     if (!this.subscriptions.has(type)) {
       this.subscriptions.set(type, new Set());
     }
-    this.subscriptions.get(type)!.add({ handler, once: true });
+    this.subscriptions.get(type)!.add({ handler, once: true } as Subscription);
     this.emitter.once(type, handler);
   }
 
@@ -56,7 +57,15 @@ class EventBus {
   }
 
   off(type: string, handler: EventHandler): void {
-    this.subscriptions.get(type)?.delete({ handler });
+    const subs = this.subscriptions.get(type);
+    if (subs) {
+      for (const sub of subs) {
+        if (sub.handler === handler) {
+          subs.delete(sub);
+          break;
+        }
+      }
+    }
     this.emitter.off(type, handler);
   }
 

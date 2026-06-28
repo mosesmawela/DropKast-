@@ -9,7 +9,19 @@ export const releaseCreateSchema = z.object({
   platforms: z.union([z.array(z.any()), z.string()]).optional(),
 }).passthrough();
 
-export const releasePatchSchema = z.object({}).passthrough();
+export const releasePatchSchema = z.object({
+  title: z.string().min(1).optional(),
+  artist: z.string().optional(),
+  genre: z.string().optional(),
+  audioUrl: z.string().url().optional(),
+  artworkUrl: z.string().url().optional(),
+  status: z.enum(['draft', 'submitted', 'in_review', 'approved', 'delivering', 'live', 'rejected', 'taken_down']).optional(),
+  isrc: z.string().optional(),
+  upc: z.string().optional(),
+  releaseDate: z.string().optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
+  platforms: z.array(z.record(z.string(), z.unknown())).optional(),
+});
 
 export const campaignCreateSchema = z.object({
   releaseId: z.string().optional(),

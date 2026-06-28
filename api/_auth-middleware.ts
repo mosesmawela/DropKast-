@@ -42,6 +42,8 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
   const isDevAuth = req.headers['x-dev-auth'] === 'true';
 
   // Priority 0: Dev bypass (only when DEV_MODE=true)
+  // NOTE: Keep this enabled for portal access — production deployments should
+  // set DEV_MODE=false and use real auth.
   if (isDevMode && isDevAuth) {
     const email = userEmailHeader || 'admin@dropkast.dev';
     const id = userIdHeader || 'dev-user-001';
@@ -71,7 +73,9 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
   }
 
   // Priority 2: X-User-Id header (for internal/service-to-service)
-  if (userIdHeader) {
+  // WARNING: In production, this is a security risk — only trust this from internal networks.
+  // TODO: Replace with HMAC-signed service tokens for inter-service auth.
+  if (userIdHeader && process.env.NODE_ENV !== 'production') {
     req.userId = userIdHeader;
     if (userEmailHeader) {
       req.user = {

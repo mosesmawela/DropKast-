@@ -22,6 +22,7 @@ import { isOverBudget, recordUsage } from './_ai-budget.js';
 import { streamOpenAICompatible, PROVIDER_TIMEOUT_MS, FALLBACK_ORDER, listAvailableTextProviders, CONFIG_FOR_PROVIDER, type TextProviderId } from './_text-providers.js';
 import { getPersona, type PersonaId } from '../src/lib/ai-personas.js';
 import { recordFailure, recordSuccess, isOnCooldown } from './_cooldown.js';
+import { logger } from './_logger.js';
 
 const SONNET = 'claude-sonnet-4-6';
 
@@ -114,15 +115,13 @@ export async function handleAiChat(req: Request, res: Response): Promise<void> {
   const personaObj = getPersona(personaId);
   const SYSTEM_PROMPT = personaObj.systemPrompt;
 
-  // Merge user-provided keys into env for this request
-  if (apiKeys) {
-    for (const [key, value] of Object.entries(apiKeys)) {
-      if (value) process.env[key] = value;
-    }
-  }
+  // Merge user-provided keys into a local map for this request only
+  // NEVER pollute process.env — that would leak keys across requests
+  const requestApiKeys: Record<string, string> = { ...apiKeys };
+  const getKey = (envVar: string): string | undefined => requestApiKeys[envVar] || process.env[envVar];
 
   // Determine provider: use explicit provider, or first available from fallback order
-  const available = listAvailableTextProviders(apiKeys).filter(p => p.configured).map(p => p.id);
+  const available = listAvailableTextProviders(requestApiKeys).filter(p => p.configured).map(p => p.id);
   const chosenProvider: TextProviderId = provider ?? available[0] ?? 'anthropic';
 
   // If no providers configured at all, return helpful error
@@ -153,8 +152,8 @@ export async function handleAiChat(req: Request, res: Response): Promise<void> {
   };
 
   // Check if chosen provider is anthropic and configured
-  const isAnthropic = chosenProvider === 'anthropic' && process.env.ANTHROPIC_API_KEY;
-  const availableProviders = listAvailableTextProviders(apiKeys).filter(p => p.configured).map(p => p.id);
+  const isAnthropic = chosenProvider === 'anthropic' && getKey('ANTHROPIC_API_KEY');
+  const availableProviders = listAvailableTextProviders(requestApiKeys).filter(p => p.configured).map(p => p.id);
   
   // Cost guardrail: refuse if user is over their daily AI budget (applies to all providers)
   const budget = await isOverBudget(userId);
@@ -184,7 +183,7 @@ export async function handleAiChat(req: Request, res: Response): Promise<void> {
     let servedBy: TextProviderId | null = null;
 
     for (const pid of probeOrder) {
-      const cfg = listAvailableTextProviders(apiKeys).find((p: { id: TextProviderId }) => p.id === pid);
+      const cfg = listAvailableTextProviders(requestApiKeys).find((p: { id: TextProviderId }) => p.id === pid);
       if (!cfg?.configured) {
         errors.push(`${pid}: skipped (no key)`);
         continue;
@@ -195,7 +194,7 @@ export async function handleAiChat(req: Request, res: Response): Promise<void> {
         errors.push(`${pid}: skipped (on cooldown)`);
         continue;
       }
-      const providerKey = apiKeys?.[providerCfg?.envVar ?? ''];
+      const providerKey = requestApiKeys[providerCfg?.envVar ?? ''];
       try {
         let hasContent = false;
         for await (const chunk of streamOpenAICompatible(pid, messages, { signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS), apiKey: providerKey })) {

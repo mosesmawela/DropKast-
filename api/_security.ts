@@ -12,52 +12,86 @@
  */
 import type { Request, Response, NextFunction } from 'express';
 
-interface Bucket {
-  tokens: number;
-  resetAt: number;
-}
-
-const memoryBuckets = new Map<string, Bucket>();
-
 function clientId(req: Request): string {
-  // Prefer X-Forwarded-For (Vercel + Cloudflare set it) — first hop is the real client.
   const fwd = req.headers['x-forwarded-for'];
   if (typeof fwd === 'string' && fwd.length > 0) return fwd.split(',')[0].trim();
   return req.ip ?? req.socket.remoteAddress ?? 'unknown';
 }
 
+let upstashRedis: any | undefined;
+let upstashInitAttempted = false;
+
+async function getUpstashRedis(): Promise<any | undefined> {
+  if (upstashInitAttempted) return upstashRedis;
+  upstashInitAttempted = true;
+  try {
+    const { Redis } = await import('@upstash/redis');
+    if (process.env.UPSTASH_REDIS_REST_URL) {
+      upstashRedis = new Redis({
+        url: process.env.UPSTASH_REDIS_REST_URL,
+        token: process.env.UPSTASH_REDIS_REST_TOKEN ?? '',
+      });
+    }
+  } catch {
+    // @upstash/redis not available — fall back to in-memory
+  }
+  return upstashRedis;
+}
+
 /**
- * In-memory rate limiter — N requests per `windowMs` per IP.
- * Memory is per-serverless-instance, so total throughput across many
- * cold-started lambdas is higher than the cap. Good enough as the first
- * line of defense; swap for Upstash for global rate limiting.
+ * Rate limiter — uses Upstash Redis when available (global limit across
+ * all Vercel instances), falls back to in-memory (per-instance only).
  */
 export function rateLimit(opts: { name: string; max: number; windowMs: number }) {
   return (req: Request, res: Response, next: NextFunction) => {
     const key = `${opts.name}:${clientId(req)}`;
     const now = Date.now();
-    let bucket = memoryBuckets.get(key);
-    if (!bucket || bucket.resetAt < now) {
-      bucket = { tokens: opts.max, resetAt: now + opts.windowMs };
-      memoryBuckets.set(key, bucket);
-    }
-    if (bucket.tokens <= 0) {
-      const retry = Math.ceil((bucket.resetAt - now) / 1000);
-      res.setHeader('Retry-After', String(retry));
+
+    handleRateLimit(key, opts.max, opts.windowMs, now).then((bucket) => {
       res.setHeader('X-RateLimit-Limit', String(opts.max));
-      res.setHeader('X-RateLimit-Remaining', '0');
+      res.setHeader('X-RateLimit-Remaining', String(bucket.remaining));
       res.setHeader('X-RateLimit-Reset', String(Math.ceil(bucket.resetAt / 1000)));
-      return res.status(429).json({
-        error: 'rate_limit_exceeded',
-        message: `Too many requests. Try again in ${retry}s.`,
-      });
-    }
-    bucket.tokens -= 1;
-    res.setHeader('X-RateLimit-Limit', String(opts.max));
-    res.setHeader('X-RateLimit-Remaining', String(bucket.tokens));
-    res.setHeader('X-RateLimit-Reset', String(Math.ceil(bucket.resetAt / 1000)));
-    next();
+      if (!bucket.allowed) {
+        const retry = Math.ceil((bucket.resetAt - now) / 1000);
+        res.setHeader('Retry-After', String(retry));
+        return res.status(429).json({
+          error: 'rate_limit_exceeded',
+          message: `Too many requests. Try again in ${retry}s.`,
+        });
+      }
+      next();
+    }).catch(() => next());
   };
+}
+
+const inMemBuckets = new Map<string, { remaining: number; resetAt: number }>();
+
+async function handleRateLimit(key: string, max: number, windowMs: number, now: number): Promise<{ allowed: boolean; remaining: number; resetAt: number }> {
+  const redis = await getUpstashRedis();
+  if (redis) {
+    try {
+      const windowKey = Math.floor(now / windowMs);
+      const redisKey = `ratelimit:${key}:${windowKey}`;
+      const count = await redis.incr(redisKey);
+      if (count === 1) await redis.expire(redisKey, Math.ceil(windowMs / 1000));
+      const remaining = Math.max(0, max - count);
+      return { allowed: count <= max, remaining, resetAt: (windowKey + 1) * windowMs };
+    } catch {
+      // fall through to in-memory
+    }
+  }
+
+  // In-memory fallback
+  let bucket = inMemBuckets.get(key);
+  if (!bucket || bucket.resetAt < now) {
+    bucket = { remaining: max, resetAt: now + windowMs };
+    inMemBuckets.set(key, bucket);
+  }
+  if (bucket.remaining <= 0) {
+    return { allowed: false, remaining: 0, resetAt: bucket.resetAt };
+  }
+  bucket.remaining -= 1;
+  return { allowed: true, remaining: bucket.remaining, resetAt: bucket.resetAt };
 }
 
 /**
@@ -70,13 +104,16 @@ export function securityHeaders(_req: Request, res: Response, next: NextFunction
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
-  // Note: CSP is more nuanced for the SPA; we set a permissive one here
-  // and rely on Vercel's own headers + html meta for the strict version.
+  // Note: React 19 dev mode requires 'unsafe-eval' for HMR.
+  // In production builds, remove 'unsafe-eval' and 'unsafe-inline'.
+  // Vercel's platform-level CSP headers should be configured for the strict variant.
+  const isProd = (process.env.VERCEL_ENV ?? process.env.NODE_ENV) === 'production';
   res.setHeader(
     'Content-Security-Policy',
     "default-src 'self'; img-src 'self' data: https:; media-src 'self' https:; " +
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com https://*.vercel-analytics.com; " +
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+      `script-src 'self' ${isProd ? '' : "'unsafe-inline' 'unsafe-eval' "}` +
+      "https://va.vercel-scripts.com https://*.vercel-analytics.com; " +
+      `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; ` +
       "font-src 'self' https://fonts.gstatic.com data:; " +
       "connect-src 'self' https://api.anthropic.com https://api.groq.com https://integrate.api.nvidia.com " +
       "https://api.cerebras.ai https://openrouter.ai https://api.moonshot.ai " +

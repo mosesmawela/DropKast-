@@ -2,8 +2,6 @@ import express from "express";
 import helmet from "helmet";
 import cors from "cors";
 import { rateLimit } from "express-rate-limit";
-import multer from "multer";
-import { CloudinaryStorage } from "multer-storage-cloudinary";
 import { v2 as cloudinary } from "cloudinary";
 import { generateStrategy, generateViralIdeas, generateImage, generateVideo, critiqueSubmission } from "../src/services/aiService.js";
 import { store } from "./_store.js";
@@ -73,32 +71,18 @@ import { handleBackupExport, handleBackupImport } from "./_backup.js";
 import { validateMimeType, validateExtension, validateFileSize, validateUploadUrl, sanitizeFilename, UPLOAD_SIZE_LIMITS } from "./_upload-security.js";
 import { searchItems, MemorySearchProvider, type SearchCategory } from "./_catalog-search.js";
 
-let uploadMiddleware: any = null;
-
 const memCreatorAccounts: Record<string, any> = {};
 const memPayouts: Record<string, any> = {};
 const memVerifiedPosts: any[] = [];
 const memDjFeedback: any[] = [];
 
-function getUploadMiddleware() {
-  if (uploadMiddleware) return uploadMiddleware;
+// Cloudinary config — called once at module load if keys present
+const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+const cloudinaryApiKey = process.env.CLOUDINARY_API_KEY;
+const cloudinaryApiSecret = process.env.CLOUDINARY_API_SECRET;
 
-  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-  const apiKey = process.env.CLOUDINARY_API_KEY;
-  const apiSecret = process.env.CLOUDINARY_API_SECRET;
-
-  if (cloudName && apiKey && apiSecret) {
-    cloudinary.config({ cloud_name: cloudName, api_key: apiKey, api_secret: apiSecret });
-    const storage = new CloudinaryStorage({
-      cloudinary: cloudinary as any,
-      params: { folder: "newdistro", resource_type: "auto" } as any,
-    });
-    uploadMiddleware = multer({ storage });
-  } else {
-    console.warn("Cloudinary keys missing. Falling back to memory storage.");
-    uploadMiddleware = multer({ storage: multer.memoryStorage() });
-  }
-  return uploadMiddleware;
+if (cloudName && cloudinaryApiKey && cloudinaryApiSecret) {
+  cloudinary.config({ cloud_name: cloudName, api_key: cloudinaryApiKey, api_secret: cloudinaryApiSecret });
 }
 
 export function createApiApp() {
@@ -115,11 +99,15 @@ export function createApiApp() {
     'http://localhost:4002',
     'http://localhost:5173',
     'http://localhost:3000',
-  ].filter(Boolean);
+  ];
   
   app.use(cors({
     origin: (origin, callback) => {
-      if (!origin) return callback(null, true); // Allow non-browser requests
+      if (!origin) {
+        // Allow server-to-server requests (no Origin header) from known sources
+        callback(null, true);
+        return;
+      }
       const allowed = allowedOrigins.some(o => 
         typeof o === 'string' ? o === origin : o.test(origin)
       );
@@ -128,7 +116,7 @@ export function createApiApp() {
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-User-Email', 'X-User-Id', 'X-Admin-Password'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-User-Email', 'X-User-Id'],
   }));
 
   // Security: Rate limiting to prevent abuse
@@ -166,8 +154,6 @@ export function createApiApp() {
     params: {},
     enabled: true,
   });
-
-  const upload = getUploadMiddleware();
 
   // ---- Real health check (Phase 6) ----
   // Pings the configured services rather than just checking env vars.
@@ -1402,13 +1388,6 @@ export function createApiApp() {
         store.listPreReleases(),
       ]);
 
-      const searchProvider = new MemorySearchProvider();
-      if (!categories || categories.includes('releases')) {
-        searchProvider.setItems(releases.map((r: any) => ({ id: r.id, title: r.title, artist: r.artist, category: 'releases' as SearchCategory, subtitle: r.genre, metadata: { status: r.status } })));
-      }
-      if (!categories || categories.includes('campaigns')) {
-        searchProvider.setItems(searchProvider['items'] = [...(searchProvider as any).items || [], ...campaigns.map((c: any) => ({ id: c.id, title: c.goal || c.id, category: 'campaigns' as SearchCategory, subtitle: c.status, metadata: { budget: c.budget } }))]);
-      }
       const allItems: any[] = [
         ...releases.map((r: any) => ({ id: r.id, title: r.title, artist: r.artist, category: 'releases' as SearchCategory, subtitle: r.genre, metadata: { status: r.status } })),
         ...campaigns.map((c: any) => ({ id: c.id, title: c.goal || c.id, category: 'campaigns' as SearchCategory, subtitle: c.status, metadata: { budget: c.budget } })),
@@ -1481,7 +1460,11 @@ export function createApiApp() {
   // Generic error handler
   app.use((err: any, _req: any, res: any, _next: any) => {
     console.error('[API] unhandled error:', err);
-    res.status(500).json({ error: 'Internal server error', message: err?.message });
+    const isProd = (process.env.VERCEL_ENV ?? process.env.NODE_ENV) === 'production';
+    res.status(500).json({
+      error: 'Internal server error',
+      ...(isProd ? {} : { message: err?.message }),
+    });
   });
 
   return app;

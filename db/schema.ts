@@ -14,7 +14,7 @@ export const users = pgTable('users', {
 // Releases
 export const releases = pgTable('releases', {
   id: text('id').primaryKey(),
-  userId: uuid('user_id').references(() => users.id),
+  userId: uuid('user_id').references(() => users.id).notNull(),
   title: text('title').notNull(),
   artist: text('artist').notNull(),
   genre: text('genre'),
@@ -33,7 +33,7 @@ export const releases = pgTable('releases', {
 // Campaigns
 export const campaigns = pgTable('campaigns', {
   id: text('id').primaryKey(),
-  releaseId: text('release_id').references(() => releases.id),
+  releaseId: text('release_id').references(() => releases.id).notNull(),
   goal: text('goal'),
   budget: real('budget'),
   plan: jsonb('plan').$type<{ objective: string; steps: Array<{ day: number; action: string; type: string }>; suggestedInfluencers?: unknown[] }>(),
@@ -210,7 +210,9 @@ export const djFeedback = pgTable('dj_feedback', {
   comment: text('comment'),
   willPlayInSet: boolean('will_play_in_set'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
-});
+}, (table) => ({
+  djReleaseIdx:  {},  // Composite index on djId + releaseId
+}));
 
 // Verified influencer posts — TikTok/Meta API verifies these before payout
 export const verifiedPosts = pgTable('verified_posts', {

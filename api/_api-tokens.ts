@@ -66,10 +66,12 @@ export function listTokens(): ApiToken[] {
 
 export function validateToken(raw: string): ApiToken | null {
   const hash = hashToken(raw);
+  const hashBuf = Buffer.from(hash, 'hex');
   for (const token of tokens.values()) {
     if (!token.enabled) continue;
     if (token.expiresAt && token.expiresAt < new Date()) continue;
-    if (token.hash === hash) {
+    const tokenHashBuf = Buffer.from(token.hash, 'hex');
+    if (hashBuf.length === tokenHashBuf.length && timingSafeEqual(hashBuf, tokenHashBuf)) {
       token.lastUsedAt = new Date();
       return token;
     }

@@ -40,7 +40,6 @@ const PRIVATE_IPS = [
 
 function isPrivateIp(hostname: string): boolean {
   try {
-    const { URL } = require('url');
     const url = new URL(hostname.startsWith('http') ? hostname : `http://${hostname}`);
     const host = url.hostname;
     if (host === 'localhost' || host === '127.0.0.1' || host === '::1') return true;

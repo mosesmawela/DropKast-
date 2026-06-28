@@ -43,42 +43,42 @@ const mem: Mem = {
 
 export const store = {
   // ---- releases
-  async listReleases() {
+  async listReleases<T = any>(): Promise<T[]> {
     const db = getDb();
-    if (db) return db.select().from(schema.releases);
-    return mem.releases;
+    if (db) return db.select().from(schema.releases) as Promise<T[]>;
+    return mem.releases as T[];
   },
-  async getRelease(id: string) {
+  async getRelease<T = any>(id: string): Promise<T | null> {
     const db = getDb();
     if (db) {
       const [r] = await db.select().from(schema.releases).where(eq(schema.releases.id, id));
-      return r ?? null;
+      return (r ?? null) as T | null;
     }
-    return mem.releases.find((r) => r.id === id) ?? null;
+    return (mem.releases.find((r) => r.id === id) ?? null) as T | null;
   },
-  async insertRelease(release: any) {
+  async insertRelease<T = any>(release: T): Promise<T> {
     const db = getDb();
     if (db) {
-      const [r] = await db.insert(schema.releases).values(release).returning();
-      return r;
+      const [r] = await db.insert(schema.releases).values(release as any).returning();
+      return r as T;
     }
     mem.releases.push(release);
     return release;
   },
-  async patchRelease(id: string, patch: any) {
+  async patchRelease<T = any>(id: string, patch: Partial<T>): Promise<T | null> {
     const db = getDb();
     if (db) {
       const [r] = await db
         .update(schema.releases)
-        .set({ ...patch, updatedAt: new Date() })
+        .set({ ...patch, updatedAt: new Date() } as any)
         .where(eq(schema.releases.id, id))
         .returning();
-      return r ?? null;
+      return (r ?? null) as T | null;
     }
-    const i = mem.releases.findIndex((r) => r.id === id);
+    const i = mem.releases.findIndex((r: any) => r.id === id);
     if (i === -1) return null;
     mem.releases[i] = { ...mem.releases[i], ...patch, updatedAt: new Date() };
-    return mem.releases[i];
+    return mem.releases[i] as T;
   },
 
   // ---- campaigns
