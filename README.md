@@ -247,4 +247,4 @@ See [`IMPLEMENTATION_PLAN.md`](./IMPLEMENTATION_PLAN.md) for the full 8-week pla
 
 ## License
 
-MIT — see [LICENSE](./LICENSE) for details.
+Proprietary — All Rights Reserved. See [LICENSE](./LICENSE) for details.
