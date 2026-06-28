@@ -106,7 +106,13 @@ export async function runMuapi(
   throw new MuapiError('Muapi generation timed out', 504);
 }
 
-/** Pull the BYOK Muapi key off a request header. Never read from process.env for user gens. */
+/**
+ * Resolve the Muapi key for a request.
+ * Priority: the user's BYOK key (x-muapi-key header) → the platform key
+ * (process.env.MUAPI_API_KEY). The user key is per-request only and never
+ * persisted; the platform key lets generation work out-of-the-box.
+ */
 export function muapiKeyFromReq(req: { header: (n: string) => string | undefined }): string {
-  return (req.header('x-muapi-key') || '').trim();
+  const userKey = (req.header('x-muapi-key') || '').trim();
+  return userKey || (process.env.MUAPI_API_KEY || '').trim();
 }
