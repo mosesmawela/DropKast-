@@ -57,6 +57,10 @@ export default function Dashboard() {
   const releaseCount = overview?.counts?.releases ?? releases.length;
   const influencerCount = overview?.counts?.influencers ?? 0;
   const revenueCents = overview?.revenue?.totalRoyaltyLineCents ?? 0;
+  const rosterCount = (() => {
+    try { return (JSON.parse(localStorage.getItem('dropkast.label.roster') || '[]') as any[]).length; }
+    catch { return 0; }
+  })();
 
   const handleQuickCommand = (proto: string) => {
     notify('ai', 'PROTO_ACTIVE', `Initializing ${proto} emergency directive...`);
@@ -102,23 +106,42 @@ export default function Dashboard() {
           chartLabel: 'Audience reach',
           chartUnit: 'Listeners'
         };
-      default:
+      case 'LABEL':
         return {
-          title: 'DROPKAST_CORE',
-          greeting: `HELLO, ${user?.artistName?.split(' ')[0] || 'ARTIST'}`,
+          title: 'Label HQ',
+          greeting: `HELLO, ${user?.label || user?.artistName?.split(' ')[0] || 'LABEL'}`,
           metrics: [
-            { label: 'Total Releases', value: String(releaseCount), trend: 'Catalog', color: 'text-primary', icon: TrendingUp },
-            { label: 'Pre-Release Signals', value: String(preReleaseCount).padStart(2, '0'), trend: preReleaseCount > 0 ? 'Activated' : 'None pending', color: 'text-emerald-400', icon: Zap },
-            { label: 'Active Campaigns', value: activeCampaignsCount.toString().padStart(2, '0'), trend: 'Protocols Ready', color: 'text-white', icon: Layers },
-            { label: 'Node Network', value: `${influencerCount || 0}+`, trend: 'Global Reach', color: 'text-white/40', icon: Globe2 },
+            { label: 'Artists on roster', value: String(rosterCount), trend: rosterCount > 0 ? 'Active' : 'Add your first', color: 'text-primary', icon: Users },
+            { label: 'Catalogue releases', value: String(releaseCount), trend: 'All artists', color: 'text-white', icon: TrendingUp },
+            { label: 'Active campaigns', value: activeCampaignsCount.toString().padStart(2, '0'), trend: 'Across roster', color: 'text-emerald-400', icon: Layers },
+            { label: 'Label earnings', value: `$${(revenueCents / 100).toFixed(0)}`, trend: 'Catalogue-wide', color: 'text-white/40', icon: Wallet },
           ],
           actions: [
-            { title: 'Pre-Release Plan', icon: Zap, path: '/pre-release', desc: 'Build hype before drop day with hook teasers and creator briefs.' },
-            { title: 'Influencer Outreach', icon: MessageSquare, path: '/influencers', desc: 'Browse and brief vetted creators for paid posts.' },
-            { title: 'DJ Packs', icon: Radio, path: '/djs', desc: 'Send stems and edits to DJs with signed download URLs.' },
-            { title: 'AI Studios', icon: ShieldCheck, path: '/studios', desc: 'Cover art, video, captions, EPKs, A&R critique — all in one place.' },
+            { title: 'Manage roster', icon: Users, path: '/roster', desc: 'Add artists, switch into any artist to manage their releases and campaigns.' },
+            { title: 'Catalogue', icon: TrendingUp, path: '/releases', desc: 'Every release across every artist on your label, in one place.' },
+            { title: 'Label analytics', icon: BarChart3, path: '/analytics', desc: 'Catalogue-wide streams, earnings and top territories.' },
+            { title: 'Studios', icon: Sparkles, path: '/studios', desc: 'Generate covers, promo art and video for any artist on the roster.' },
           ],
-          chartLabel: 'Stream trajectory',
+          chartLabel: 'Catalogue growth',
+          chartUnit: 'plays'
+        };
+      default:
+        return {
+          title: 'Artist Hub',
+          greeting: `HELLO, ${user?.artistName?.split(' ')[0] || 'ARTIST'}`,
+          metrics: [
+            { label: 'Total releases', value: String(releaseCount), trend: 'Catalogue', color: 'text-primary', icon: TrendingUp },
+            { label: 'Upcoming releases', value: String(preReleaseCount).padStart(2, '0'), trend: preReleaseCount > 0 ? 'Scheduled' : 'None pending', color: 'text-emerald-400', icon: Zap },
+            { label: 'Active campaigns', value: activeCampaignsCount.toString().padStart(2, '0'), trend: 'Running', color: 'text-white', icon: Layers },
+            { label: 'Creator network', value: `${influencerCount || 0}+`, trend: 'Reach', color: 'text-white/40', icon: Globe2 },
+          ],
+          actions: [
+            { title: 'Plan a pre-release', icon: Zap, path: '/pre-release', desc: 'Build hype before drop day with teasers and creator briefs.' },
+            { title: 'Find creators', icon: MessageSquare, path: '/influencers', desc: 'Browse and brief vetted creators for paid posts.' },
+            { title: 'DJ packs', icon: Radio, path: '/djs', desc: 'Send stems and edits to DJs.' },
+            { title: 'Studios', icon: Sparkles, path: '/studios', desc: 'Cover art, video, captions and more — all in one place.' },
+          ],
+          chartLabel: 'Streams over time',
           chartUnit: 'plays'
         };
     }
