@@ -22,6 +22,8 @@ import {
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import ClaimArtistProfile from '../components/ClaimArtistProfile';
+import FinancialBalanceCard from '../components/financial/FinancialBalanceCard';
+import QuickActionGrid from '../components/financial/QuickActionGrid';
 import { useAuth } from '../context/AuthContext';
 import { useReleases } from '../context/ReleaseContext';
 import { useCampaigns } from '../context/CampaignContext';
@@ -153,6 +155,13 @@ export default function Dashboard() {
     <div className="space-y-12 max-w-7xl mx-auto py-8">
       {/* Balance + payout strip — front-and-center money view */}
       <BalanceStrip />
+
+      {/* Module A: Financial Balance Command Ledger */}
+      <div className="space-y-6">
+        <FinancialBalanceCard />
+        <QuickActionGrid />
+      </div>
+
       <ClaimArtistProfile artistName={user?.artistName || 'your project'} />
       <ScrollReveal direction="down" variant="blur">
         <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-[var(--border-main)] pb-10 relative">
@@ -335,7 +344,7 @@ export default function Dashboard() {
                    Upload audio + artwork, pick your stores, and schedule a drop date — DropKast handles delivery to every DSP.
                  </p>
                   <button
-                    onClick={() => navigate('/release/new')}
+                    onClick={() => navigate('/releases/new')}
                     className="primary-button w-full h-14 flex items-center justify-center gap-3 bg-primary text-white border-none"
                  >
                    <ArrowUpRight className="w-4 h-4" />

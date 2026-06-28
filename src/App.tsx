@@ -79,6 +79,11 @@ const Trending = lazy(() => import('./pages/Trending'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const MusicCharts = lazy(() => import('./pages/MusicCharts'));
 const AudienceInsights = lazy(() => import('./pages/AudienceInsights'));
+const Publishing = lazy(() => import('./pages/Publishing'));
+const PublishingShares = lazy(() => import('./pages/PublishingShares'));
+const VideoDistribution = lazy(() => import('./pages/VideoDistribution'));
+const MarketingPromo = lazy(() => import('./pages/MarketingPromo'));
+const DailyTrends = lazy(() => import('./pages/DailyTrends'));
 
 import PortalPage from './pages/PortalPage';
 
@@ -202,6 +207,11 @@ export default function App() {
                   <Route path="/admin" element={<AdminDashboard />} />
                   <Route path="/analytics/charts" element={<ModuleGuard moduleId="analytics"><MusicCharts /></ModuleGuard>} />
                   <Route path="/analytics/audience" element={<ModuleGuard moduleId="analytics"><AudienceInsights /></ModuleGuard>} />
+                  <Route path="/publishing" element={<ModuleGuard moduleId="publishing"><Publishing /></ModuleGuard>} />
+                  <Route path="/publishing/shares" element={<ModuleGuard moduleId="publishing"><PublishingShares /></ModuleGuard>} />
+                  <Route path="/video/distribute" element={<ModuleGuard moduleId="video"><VideoDistribution /></ModuleGuard>} />
+                  <Route path="/promo" element={<ModuleGuard moduleId="marketing"><MarketingPromo /></ModuleGuard>} />
+                  <Route path="/trending" element={<ModuleGuard moduleId="trending"><DailyTrends /></ModuleGuard>} />
                 </Route>
               </Route>
 

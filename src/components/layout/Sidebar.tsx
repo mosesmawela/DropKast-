@@ -27,12 +27,29 @@ import {
   Link2,
   Flame,
   X,
+  ChevronDown,
+  ChevronRight,
+  Globe,
+  Newspaper,
+  GraduationCap,
+  ExternalLink,
+  Headphones,
+  Music,
+  Youtube,
+  Settings,
+  Download,
+  Image,
+  Send,
+  List,
+  PieChart,
+  type LucideProps,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useTheme } from '../../context/ThemeContext';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { PRESETS, type ModuleId, type WorkspacePreset } from '../../lib/workspace';
 import { toast } from 'sonner';
+import { useState, type FC } from 'react';
 
 interface NavItem {
   icon: any;
@@ -46,60 +63,173 @@ interface NavGroup {
   items: NavItem[];
 }
 
-/**
- * Artist sidebar — grouped to keep the surface scannable.
- * Each group renders with a subtle uppercase eyebrow header (or no header
- * for the "Daily" group at the top).
- *
- * Order matters: most-used at the top, business stuff toward the bottom.
- */
-const artistNavGroups: NavGroup[] = [
-  // Daily flow — no header, top of the bar
+interface TreeSection {
+  label: string;
+  icon: any;
+  badge?: string;
+  badgeColor?: string;
+  defaultOpen?: boolean;
+  children: {
+    label: string;
+    path: string;
+    icon?: any;
+    children?: { label: string; path: string }[];
+  }[];
+}
+
+const treeSections: TreeSection[] = [
   {
-    items: [
-      { icon: LayoutDashboard, label: 'Home',        path: '/dashboard', moduleId: 'home' },
-      { icon: Mail,            label: 'Messages',    path: '/messages',  moduleId: 'messages' },
-      { icon: Sparkles,        label: 'Studios',     path: '/studios',   moduleId: 'studios' },
-      { icon: Flame,           label: "What's Trending", path: '/trending', moduleId: 'trending' },
+    label: 'Overview',
+    icon: LayoutDashboard,
+    defaultOpen: true,
+    children: [{ label: 'Home', path: '/dashboard' }],
+  },
+  {
+    label: 'Distribution Tools',
+    icon: Disc,
+    children: [
+      { label: 'Manage Music', path: '/releases' },
+      { label: 'Upload Music', path: '/releases/new' },
+      { label: 'Manage Video', path: '/releases?tab=video' },
+      { label: 'Upload Video', path: '/video/distribute' },
     ],
   },
-  // Catalogue — releases + artwork-style assets
+  {
+    label: 'Publishing Hub',
+    icon: FileText,
+    badge: 'NEW',
+    children: [
+      { label: 'Manage Compositions', path: '/publishing' },
+      { label: 'Add Composition', path: '/publishing' },
+      { label: 'Rights Owners Info', path: '/publishing' },
+      { label: 'Publishing Analytics', path: '/analytics' },
+      { label: 'Share Requests', path: '/publishing/shares' },
+    ],
+  },
+  {
+    label: 'Daily Trends',
+    icon: TrendingUp,
+    children: [
+      { label: 'Daily Stats', path: '/trending', icon: BarChart },
+      { label: 'Demographics', path: '/analytics/audience', icon: PieChart },
+      { label: 'TikTok Stats', path: '/trending', icon: Video },
+      { label: 'Store Comparison', path: '/analytics', icon: Building2 },
+      { label: 'Music Charts', path: '/analytics/charts', icon: Music },
+      { label: 'Trackers', path: '/analytics', icon: Target },
+    ],
+  },
+  {
+    label: 'Marketing Engine',
+    icon: Megaphone,
+    badge: 'NEW',
+    children: [
+      { label: 'Amplifier Engine', path: '/campaigns' },
+      {
+        label: 'Promotional Tools',
+        icon: Sparkles,
+        path: '/promo',
+      },
+      {
+        label: 'DSP Account Sync',
+        icon: Globe,
+        path: '#',
+        children: [
+          { label: 'Spotify for Artists', path: '/settings' },
+          { label: 'YouTube Official Artist Channel', path: '/settings' },
+          { label: 'Apple for Artists', path: '/settings' },
+          { label: 'Audiomack Artist Account', path: '/settings' },
+        ],
+      },
+    ],
+  },
+  {
+    label: 'Monthly Analytics & Accounting',
+    icon: Wallet,
+    children: [
+      { label: 'Monthly Analytics', path: '/analytics' },
+      { label: 'Accounting', path: '/earnings' },
+    ],
+  },
+  {
+    label: 'Support Workspace',
+    icon: Headphones,
+    children: [
+      { label: 'Support Tickets', path: '#' },
+    ],
+  },
+  {
+    label: 'Account Settings',
+    icon: Settings,
+    children: [
+      { label: 'Payoneer Setup', path: '/settings' },
+      { label: 'Join YouTube Network', path: '/settings' },
+      { label: 'My Backups', path: '/settings' },
+    ],
+  },
+  {
+    label: 'Update Password',
+    icon: Lock,
+    children: [{ label: 'Change Password', path: '/settings' }],
+  },
+  {
+    label: 'ONE Community',
+    icon: Globe,
+    badge: 'NEW',
+    badgeColor: 'bg-[#F05A28]',
+    children: [
+      { label: 'ONErpm Family', path: '#' },
+      { label: 'Blog', path: '#' },
+      { label: 'Social Blender', path: '#' },
+      { label: 'ONErpm Academy', path: '/academy' },
+      { label: 'Press Releases', path: '#' },
+      { label: 'Playlist Covers', path: '#' },
+      { label: 'Distribution Partners', path: '#' },
+      { label: 'Latest Releases', path: '/releases' },
+    ],
+  },
+];
+
+/** Legacy nav groups — used by workspace preset system for compatibility. */
+const artistNavGroups: NavGroup[] = [
+  {
+    items: [
+      { icon: LayoutDashboard, label: 'Home', path: '/dashboard', moduleId: 'home' },
+      { icon: Mail, label: 'Messages', path: '/messages', moduleId: 'messages' },
+    ],
+  },
   {
     label: 'Catalogue',
     items: [
       { icon: Megaphone, label: 'Pre-Release', path: '/pre-release', moduleId: 'pre-release' },
-      { icon: Link2,     label: 'Smart Links', path: '/links',       moduleId: 'smart-links' },
-      { icon: Camera,    label: 'Assets',      path: '/assets',      moduleId: 'assets' },
+      { icon: Link2, label: 'Smart Links', path: '/links', moduleId: 'smart-links' },
+      { icon: Camera, label: 'Assets', path: '/assets', moduleId: 'assets' },
     ],
   },
-  // Promote — humans you pay to push the music
   {
     label: 'Promote',
     items: [
-      { icon: Target,  label: 'Campaigns',   path: '/campaigns',   moduleId: 'campaigns' },
-      { icon: Users,   label: 'Influencers', path: '/influencers', moduleId: 'influencers' },
-      { icon: Radio,   label: 'DJ Packs',    path: '/djs',         moduleId: 'dj-packs' },
-      { icon: Zap,     label: 'Reactions',   path: '/reactions',   moduleId: 'reactions' },
-      { icon: Share2,  label: 'Social Ads',  path: '/social',      moduleId: 'social-ads' },
+      { icon: Target, label: 'Campaigns', path: '/campaigns', moduleId: 'campaigns' },
+      { icon: Users, label: 'Influencers', path: '/influencers', moduleId: 'influencers' },
+      { icon: Radio, label: 'DJ Packs', path: '/djs', moduleId: 'dj-packs' },
+      { icon: Zap, label: 'Reactions', path: '/reactions', moduleId: 'reactions' },
+      { icon: Share2, label: 'Social Ads', path: '/social', moduleId: 'social-ads' },
     ],
   },
-  // Money
   {
     label: 'Money',
     items: [
-      { icon: BarChart,  label: 'Analytics',    path: '/analytics', moduleId: 'analytics' },
-      { icon: Wallet,    label: 'Earnings',     path: '/earnings',  moduleId: 'earnings' },
-      { icon: Sparkles,  label: 'Advances',     path: '/advances',  moduleId: 'advances' },
-      { icon: FileText,  label: 'Split Sheets', path: '/splits',    moduleId: 'splits' },
+      { icon: BarChart, label: 'Analytics', path: '/analytics', moduleId: 'analytics' },
+      { icon: Wallet, label: 'Earnings', path: '/earnings', moduleId: 'earnings' },
+      { icon: Sparkles, label: 'Advances', path: '/advances', moduleId: 'advances' },
+      { icon: FileText, label: 'Split Sheets', path: '/splits', moduleId: 'splits' },
     ],
   },
-  // Setup
   {
     label: 'Setup',
     items: [
-      { icon: Cpu,        label: 'Connectors', path: '/ai-providers', moduleId: 'ai-providers' },
-      { icon: Building2,  label: 'Admin',     path: '/admin',        moduleId: 'admin' },
-      { icon: Cpu,        label: 'Settings',  path: '/settings',     moduleId: 'settings' },
+      { icon: Cpu, label: 'Connectors', path: '/ai-providers', moduleId: 'ai-providers' },
+      { icon: Building2, label: 'Admin', path: '/admin', moduleId: 'admin' },
+      { icon: Cpu, label: 'Settings', path: '/settings', moduleId: 'settings' },
     ],
   },
 ];
@@ -138,7 +268,6 @@ const TOUR_TARGETS: Record<string, string | undefined> = {
   '/pre-release': 'nav-prerelease',
   '/campaigns': 'nav-campaigns',
   '/influencers': 'nav-influencers',
-  '/promo': 'nav-promo',
   '/ugc': 'nav-ugc',
   '/djs': 'nav-djs',
   '/reactions': 'nav-reactions',
@@ -154,6 +283,11 @@ const TOUR_TARGETS: Record<string, string | undefined> = {
   '/influencer/earnings': 'nav-influencer-earnings',
   '/dj/packs': 'nav-djpacks',
   '/dj/feedback': 'nav-djfeedback',
+  '/publishing': 'nav-publishing',
+  '/publishing/shares': 'nav-publishing-shares',
+  '/video/distribute': 'nav-video-distribute',
+  '/promo': 'nav-promo-tools',
+  '/trending': 'nav-trending',
 };
 
 /** Detect which preset (if any) the current enabled-module set matches exactly. */
@@ -182,6 +316,21 @@ export default function Sidebar({ open = false, onClose }: SidebarProps) {
   const { role } = useTheme();
   const { enabled, isEnabled, setPreset } = useWorkspace();
   const activePreset = detectActivePreset(enabled);
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {};
+    treeSections.forEach((s) => {
+      initial[s.label] = s.defaultOpen ?? false;
+    });
+    return initial;
+  });
+
+  const toggleSection = (label: string) => {
+    setOpenSections((prev) => ({ ...prev, [label]: !prev[label] }));
+  };
+
+  const isChildActive = (children: { label: string; path: string }[]): boolean => {
+    return children.some((c) => location.pathname === c.path);
+  };
 
   // For artist/label, render grouped. Filter items by enabled workspace modules.
   // The Roster item is special — only on label, always pinned at the top.
@@ -248,36 +397,86 @@ export default function Sidebar({ open = false, onClose }: SidebarProps) {
         </div>
       )}
 
-      {/* Scrollable nav */}
+      {/* Scrollable nav — Tree structure for ARTIST/LABEL */}
       <nav className="flex-1 overflow-y-auto custom-scrollbar min-h-0 py-2 overscroll-contain">
         {showsGroups ? (
-          <>
-            {/* Roster pinned for label */}
-            {role === 'LABEL' && (
-              <div className="pb-1">
-                <NavLinkRow
-                  item={{ icon: Building2, label: 'Roster', path: '/roster', moduleId: 'home' as ModuleId }}
-                  active={location.pathname === '/roster'}
-                />
-              </div>
-            )}
-            {groupsForRender.map((group, gi) => (
-              <div key={gi} className={cn('pb-1', gi > 0 && 'pt-3')}>
-                {group.label && (
-                  <div className="px-5 pb-1.5 text-[8px] font-mono font-black text-white/20 tracking-[0.4em] uppercase italic">
-                    {group.label}
-                  </div>
-                )}
-                {group.items.map((item) => (
-                  <NavLinkRow
-                    key={item.path}
-                    item={item}
-                    active={location.pathname === item.path}
-                  />
-                ))}
-              </div>
-            ))}
-          </>
+          <div className="space-y-0.5">
+            {treeSections.map((section) => {
+              const isOpen = openSections[section.label] ?? false;
+              const hasActiveChild = isChildActive(section.children);
+              const isActive = section.children.some((c) => location.pathname === c.path) || hasActiveChild;
+
+              return (
+                <div key={section.label}>
+                  {/* Section Header */}
+                  <button
+                    onClick={() => toggleSection(section.label)}
+                    className={cn(
+                      'w-full flex items-center gap-3 px-5 py-2.5 transition-all group text-left',
+                      isActive
+                        ? 'text-primary bg-primary/5'
+                        : 'text-white/40 hover:text-white hover:bg-white/[0.02]',
+                    )}
+                  >
+                    <section.icon className="w-4 h-4 shrink-0" />
+                    <span className="flex-1 text-[10px] font-bold uppercase tracking-widest font-mono leading-none">
+                      {section.label}
+                    </span>
+                    {section.badge && (
+                      <span className={cn(
+                        'px-2 py-0.5 text-[7px] font-black uppercase tracking-widest text-white',
+                        section.badgeColor || 'bg-primary',
+                      )}>
+                        {section.badge}
+                      </span>
+                    )}
+                    {isOpen ? (
+                      <ChevronDown className="w-3 h-3 text-white/20" />
+                    ) : (
+                      <ChevronRight className="w-3 h-3 text-white/20" />
+                    )}
+                  </button>
+
+                  {/* Children */}
+                  {isOpen && (
+                    <div className="ml-3 border-l border-white/5 pl-3">
+                      {section.children.map((child) => {
+                        if (child.children) {
+                          return (
+                            <NestedTreeItem
+                              key={child.label}
+                              label={child.label}
+                              icon={child.icon}
+                              items={child.children.map((c) => ({
+                                label: c.label,
+                                path: c.path,
+                              }))}
+                              location={location}
+                            />
+                          );
+                        }
+                        return (
+                          <Link
+                            key={child.label}
+                            to={child.path}
+                            className={cn(
+                              'flex items-center gap-3 px-4 py-2 text-[9px] font-bold uppercase tracking-widest font-mono transition-all',
+                              location.pathname === child.path
+                                ? 'text-primary bg-primary/5'
+                                : 'text-white/30 hover:text-white hover:bg-white/[0.02]',
+                            )}
+                          >
+                            {child.icon && <child.icon className="w-3 h-3 shrink-0" />}
+                            {child.label}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         ) : (
           flatItems.map((item: any) => (
             <NavLinkRow
@@ -421,5 +620,61 @@ function PlanBadge() {
       </span>
       {!isPaid && <span className="text-primary">Upgrade →</span>}
     </Link>
+  );
+}
+
+/* =========================================================================
+ * NestedTreeItem — collapsible sub-group within a sidebar tree section
+ * ========================================================================= */
+function NestedTreeItem({
+  label,
+  icon: Icon,
+  items,
+  location,
+}: {
+  label: string;
+  icon?: any;
+  items: { label: string; path: string }[];
+  location: any;
+}) {
+  const [open, setOpen] = useState(false);
+  const hasActive = items.some((c) => location.pathname === c.path);
+
+  return (
+    <div>
+      <button
+        onClick={() => setOpen(!open)}
+        className={cn(
+          'w-full flex items-center gap-3 px-4 py-2 text-[9px] font-bold uppercase tracking-widest font-mono transition-all',
+          hasActive ? 'text-primary' : 'text-white/30 hover:text-white',
+        )}
+      >
+        {Icon && <Icon className="w-3 h-3 shrink-0" />}
+        <span className="flex-1 text-left">{label}</span>
+        {open ? (
+          <ChevronDown className="w-2.5 h-2.5 text-white/20" />
+        ) : (
+          <ChevronRight className="w-2.5 h-2.5 text-white/20" />
+        )}
+      </button>
+      {open && (
+        <div className="ml-4 border-l border-white/5 pl-2">
+          {items.map((child) => (
+            <Link
+              key={child.path}
+              to={child.path}
+              className={cn(
+                'block px-4 py-1.5 text-[8px] font-bold uppercase tracking-widest font-mono transition-all',
+                location.pathname === child.path
+                  ? 'text-primary'
+                  : 'text-white/20 hover:text-white/60',
+              )}
+            >
+              {child.label}
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

@@ -156,7 +156,7 @@ export default function NewCampaign() {
                   <div className="text-white/20 font-mono text-sm uppercase tracking-widest italic mb-4">No releases yet</div>
                   <button
                     type="button"
-                    onClick={() => navigate('/release/new')}
+                    onClick={() => navigate('/releases/new')}
                     className="text-[10px] font-black text-primary uppercase italic tracking-widest hover:text-white transition-colors"
                   >
                     + Create your first release

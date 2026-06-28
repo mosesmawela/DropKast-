@@ -32,7 +32,10 @@ export type ModuleId =
   | 'studios'
   | 'trending'
   | 'admin'
-  | 'settings';
+  | 'settings'
+  | 'publishing'
+  | 'video'
+  | 'marketing';
 
 export type ModuleCategory = 'core' | 'ai-tools' | 'creators' | 'business';
 
@@ -81,6 +84,9 @@ export const MODULES: ModuleDef[] = [
   { id: 'admin',        label: 'Admin',        path: '/admin',         category: 'business', description: 'DropKast operator console — oversee every user, submission, campaign, payout.', defaultOn: false },
   { id: 'splits',       label: 'Split Sheets', path: '/splits',        category: 'business', description: 'Co-writer and producer splits.', defaultOn: true },
   { id: 'compliance',   label: 'Compliance',   path: '/compliance',    category: 'business', description: 'GDPR exports, DMCA, audit log.' },
+  { id: 'publishing',   label: 'Publishing',   path: '/publishing',    category: 'core',     description: 'Composition rights administration and share management.', defaultOn: true },
+  { id: 'video',        label: 'Video',        path: '/video/distribute', category: 'core',  description: 'Video distribution to DSP networks.', defaultOn: true },
+  { id: 'marketing',    label: 'Marketing',    path: '/promo',         category: 'ai-tools', description: 'Pre-saves, pitching, promo art generation.', defaultOn: true },
 ];
 
 export const MODULE_BY_ID: Record<ModuleId, ModuleDef> = MODULES.reduce(

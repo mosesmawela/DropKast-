@@ -255,7 +255,7 @@ export default function Analytics() {
                   <motion.div
                     key={node.id}
                     whileHover={{ scale: 1.01 }}
-                    onClick={() => navigate(`/releases/${node.id}`)}
+                    onClick={() => navigate(`/analytics/${node.id}`)}
                     className="p-6 border border-white/5 bg-dark hover:border-primary/20 transition-all cursor-pointer flex items-center justify-between group"
                   >
                      <div className="flex items-center gap-6">

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import React, { useState } from 'react';
 import { cn } from '../lib/utils';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import type { User as AppUser } from '../types';
 
 type PortalId = 'ARTIST' | 'LABEL' | 'INFLUENCER' | 'DJ';
@@ -18,6 +19,7 @@ const PORTALS: { id: PortalId; label: string; tagline: string; desc: string; ico
 export default function Signup() {
   const navigate = useNavigate();
   const { signup, updateUser } = useAuth();
+  const { setRole } = useTheme();
   const [step, setStep] = useState<'form' | 'portal'>('form');
   const [selectedPortal, setSelectedPortal] = useState<PortalId>('ARTIST');
   const [isLoading, setIsLoading] = useState(false);
@@ -55,20 +57,24 @@ export default function Signup() {
 
   const pickPortal = async (portal: PortalId) => {
     setIsLoading(true);
+    setErrors({});
     try {
       await signup(formData.email, formData.password, formData.artistName);
-      // Patch role + label hints once auth lands. AuthContext.updateUser persists to legacy storage.
       updateUser({
         role: portal as AppUser['role'],
         artistName: formData.artistName,
         ...(portal === 'LABEL' ? { label: formData.artistName } : {}),
       });
+      setRole(portal as AppUser['role']);
       try {
         localStorage.setItem('campaign-os-role', portal);
         localStorage.setItem('dropkast_welcome_seen', 'true');
       } catch {/* ignore */}
       const target = PORTALS.find((p) => p.id === portal)?.landing || '/dashboard';
       navigate(target);
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Signup failed. Please try again.';
+      setErrors({ form: msg });
     } finally {
       setIsLoading(false);
     }
@@ -300,6 +306,12 @@ export default function Signup() {
                   );
                 })}
               </div>
+
+              {errors.form && (
+                <div className="max-w-2xl mx-auto mb-4 p-4 bg-red-900/20 border border-red-500/30">
+                  <span className="text-[10px] font-black text-red-400 uppercase tracking-widest font-mono italic">{errors.form}</span>
+                </div>
+              )}
 
               <div className="flex flex-col md:flex-row gap-4 max-w-2xl mx-auto">
                 <button

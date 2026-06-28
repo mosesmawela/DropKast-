@@ -13,3 +13,5 @@ coverage/
 mempalace.yaml
 entities.json
 .vercel
+nul
+.playwright-cli/

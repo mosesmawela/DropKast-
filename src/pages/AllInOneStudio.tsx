@@ -2,15 +2,14 @@ import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   LayoutDashboard, FileText, Image as ImageIcon, Video, Music, Layers,
-  Sparkles, Play, Download, Save, Share2, Sun, Moon, Upload, Search,
-  FolderOpen, Trash2, Star, Plus, Settings, Clock, CheckCircle2,
-  XCircle, Loader2, ArrowRight, ArrowLeft, RefreshCw, Copy, Mic2,
+  Sparkles, Play, Download, Save, Share2, Upload, Search,
+  FolderOpen, Trash2, Plus, Settings, Clock, CheckCircle2,
+  Loader2, ArrowRight, ArrowLeft, RefreshCw, Copy,
   Scissors, Grid3X3, List, File, ChevronRight, ChevronDown,
   Music2, Palette, Type, Film, GripVertical, Eye, EyeOff, Lock,
-  Unlock, Shuffle, SkipBack, SkipForward, Volume2, AlignLeft,
-  Bold, Italic, Underline, Hash, Heart, MessageSquare, Globe,
-  BookOpen, Zap, Maximize2, Minimize2, Sliders, Wand2, Smartphone,
-  Monitor, Speaker, CircleDot,
+  Unlock, Shuffle, SkipBack, SkipForward, Volume2,
+  BookOpen, Zap, Maximize2, Minimize2, Sliders, Wand2,
+  Monitor, Speaker, CircleDot, Sun, Mic2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '../lib/utils';
@@ -19,37 +18,13 @@ type StudioModule = 'overview' | 'lyrics' | 'assets' | 'templates' | 'broll' | '
 
 interface LyricWord { word: string; start: number; end: number; }
 interface LyricSegment { id: string; text: string; start: number; end: number; words: LyricWord[]; }
-interface VisualClip { id: string; sourceUrl: string; thumbnailUrl: string; duration: number; startTimeInTimeline: number; lockedToBeat: boolean; }
 interface AssetFile { id: string; name: string; type: 'video' | 'image' | 'audio' | 'folder'; url?: string; thumbnail?: string; duration?: number; date: string; }
 interface Template { id: string; name: string; date: string; clipDuration: number; bpm: number; projectCount: number; projects: string[]; }
-interface Project { id: string; name: string; date: string; aspect: '9:16' | '16:9'; status: 'draft' | 'ready' | 'exporting' | 'done'; }
 interface BrollJob { id: string; prompt: string; status: 'queued' | 'generating' | 'done' | 'failed'; outputUrl?: string; thumbnailUrl?: string; }
+interface TimelineClip { id: string; name: string; type: 'video' | 'image' | 'audio'; start: number; end: number; track: 'V' | 'A'; locked: boolean; visible: boolean; color: string; }
+interface CutMarker { time: number; label: string; }
 
 const GENRES = ['Pop', 'Rap', 'R&B', 'Country', 'Rock', 'Metal', 'EDM', 'Worship', 'Afrobeats', 'Amapiano', 'House', 'Jazz'];
-const CHORD_PAIRS: Record<string, string[]> = {
-  'Em7 Cmaj7 G Dsus4 Am7 B7': ['Em7', 'Cmaj7', 'G', 'Dsus4', 'Am7', 'B7'],
-};
-
-const SAMPLE_LYRICS: LyricSegment[] = [
-  { id: 's1', text: 'Like a phoenix burning bright', start: 0, end: 3.5, words: [{word:'Like',start:0,end:0.4},{word:'a',start:0.4,end:0.6},{word:'phoenix',start:0.6,end:1.5},{word:'burning',start:1.5,end:2.5},{word:'bright',start:2.5,end:3.5}] },
-  { id: 's2', text: 'Ready to rise from the shadows', start: 3.5, end: 7, words: [{word:'Ready',start:3.5,end:4.2},{word:'to',start:4.2,end:4.5},{word:'rise',start:4.5,end:5.2},{word:'from',start:5.2,end:5.5},{word:'the',start:5.5,end:5.8},{word:'shadows',start:5.8,end:7}] },
-  { id: 's3', text: 'Praying for the light', start: 7, end: 10, words: [{word:'Praying',start:7,end:7.8},{word:'for',start:7.8,end:8.1},{word:'the',start:8.1,end:8.4},{word:'light',start:8.4,end:10}] },
-  { id: 's4', text: 'To show me your soul', start: 10, end: 13.5, words: [{word:'To',start:10,end:10.3},{word:'show',start:10.3,end:11},{word:'me',start:11,end:11.3},{word:'your',start:11.3,end:11.8},{word:'soul',start:11.8,end:13.5}] },
-  { id: 's5', text: 'In your eyes there\'s a spark', start: 13.5, end: 17, words: [{word:'In',start:13.5,end:13.8},{word:'your',start:13.8,end:14.2},{word:'eyes',start:14.2,end:15},{word:"there's",start:15,end:15.5},{word:'a',start:15.5,end:15.7},{word:'spark',start:15.7,end:17}] },
-  { id: 's6', text: 'Be my light in the dark', start: 17, end: 20.5, words: [{word:'Be',start:17,end:17.3},{word:'my',start:17.3,end:17.6},{word:'light',start:17.6,end:18.5},{word:'in',start:18.5,end:18.8},{word:'the',start:18.8,end:19},{word:'dark',start:19,end:20.5}] },
-  { id: 's7', text: 'Dreaming embers that call my name', start: 20.5, end: 24, words: [{word:'Dreaming',start:20.5,end:21.5},{word:'embers',start:21.5,end:22.5},{word:'that',start:22.5,end:22.8},{word:'call',start:22.8,end:23.3},{word:'my',start:23.3,end:23.5},{word:'name',start:23.5,end:24}] },
-  { id: 's8', text: 'Give me the fire in your heart', start: 24, end: 28, words: [{word:'Give',start:24,end:24.5},{word:'me',start:24.5,end:24.8},{word:'the',start:24.8,end:25},{word:'fire',start:25,end:26},{word:'in',start:26,end:26.3},{word:'your',start:26.3,end:26.7},{word:'heart',start:26.7,end:28}] },
-];
-
-const SAMPLE_ASSETS: AssetFile[] = [
-  { id: 'a1', name: 'Sunset Drive', type: 'video', thumbnail: '', duration: 10.5, date: '2d ago' },
-  { id: 'a2', name: 'City Nights', type: 'video', thumbnail: '', duration: 8.2, date: '3d ago' },
-  { id: 'a3', name: 'Ocean Waves', type: 'video', thumbnail: '', duration: 12.0, date: '5d ago' },
-  { id: 'a4', name: 'Neon Glow', type: 'image', date: '1w ago' },
-  { id: 'a5', name: 'Rooftop Session', type: 'video', thumbnail: '', duration: 6.5, date: '1w ago' },
-  { id: 'a6', name: 'Studio Live', type: 'video', thumbnail: '', duration: 15.0, date: '2w ago' },
-];
-
 const TEXT_PRESETS = [
   { id: 'none', name: 'None', desc: 'Simple clean text' },
   { id: 'brick', name: 'Brick', desc: 'Bold block serif' },
@@ -58,23 +33,38 @@ const TEXT_PRESETS = [
   { id: 'fly', name: 'Fly', desc: 'Lightweight tracking' },
   { id: 'voltage', name: 'Voltage', desc: 'Cyan outer glow' },
 ];
+const CHORD_PROGRESSIONS = ['Em7', 'Cmaj7', 'G', 'Dsus4', 'Am7', 'B7'];
+const STORAGE_KEY = 'dropkast.studio.data';
 
+function loadStudioData<T>(key: string, fallback: T): T {
+  try {
+    const raw = localStorage.getItem(`studio.${key}`);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch { return fallback; }
+}
+
+function saveStudioData(key: string, data: any) {
+  try { localStorage.setItem(`studio.${key}`, JSON.stringify(data)); } catch {}
+}
+
+/* =========================================================================
+ * MAIN COMPONENT
+ * ========================================================================= */
 export default function AllInOneStudio() {
   const [activeModule, setActiveModule] = useState<StudioModule>('overview');
-  const modules: { id: StudioModule; icon: any; label: string }[] = [
-    { id: 'overview', icon: LayoutDashboard, label: 'Dashboard' },
-    { id: 'lyrics', icon: FileText, label: 'Lyric Studio' },
-    { id: 'assets', icon: FolderOpen, label: 'Assets' },
-    { id: 'templates', icon: Layers, label: 'Templates' },
-    { id: 'broll', icon: Film, label: 'B-Roll' },
-    { id: 'cover', icon: ImageIcon, label: 'Cover Art' },
-    { id: 'timeline', icon: Music, label: 'Timeline Editor' },
+  const modules = [
+    { id: 'overview' as StudioModule, icon: LayoutDashboard, label: 'Dashboard' },
+    { id: 'lyrics' as StudioModule, icon: FileText, label: 'Lyric Studio' },
+    { id: 'assets' as StudioModule, icon: FolderOpen, label: 'Assets' },
+    { id: 'templates' as StudioModule, icon: Layers, label: 'Templates' },
+    { id: 'broll' as StudioModule, icon: Film, label: 'B-Roll' },
+    { id: 'cover' as StudioModule, icon: ImageIcon, label: 'Cover Art' },
+    { id: 'timeline' as StudioModule, icon: Music, label: 'Timeline Editor' },
   ];
 
   return (
-    <div className="h-screen flex flex-col bg-[#090A0F] text-white overflow-hidden">
-      {/* Top Navigation */}
-      <header className="shrink-0 bg-[#090A0F] border-b border-[#12141C] px-6 py-3 flex items-center justify-between">
+    <div className="h-screen flex flex-col bg-[var(--bg-main)] text-white overflow-hidden">
+      <header className="shrink-0 bg-[var(--bg-main)] border-b border-[var(--border-main)] px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-black tracking-[0.4em] uppercase italic text-primary">STUDIO</span>
@@ -98,16 +88,17 @@ export default function AllInOneStudio() {
           </nav>
         </div>
         <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/30 text-primary text-[10px] font-black uppercase italic tracking-widest hover:bg-primary hover:text-black transition-all">
+          <button onClick={() => { toast.success('Studio saved'); }}
+            className="flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/30 text-primary text-[10px] font-black uppercase italic tracking-widest hover:bg-primary hover:text-black transition-all">
             <Save className="w-3.5 h-3.5" /> Save
           </button>
-          <button className="flex items-center gap-2 px-6 py-2 bg-[#00E5FF] text-black font-black uppercase italic text-[10px] tracking-widest hover:bg-[#2979FF] transition-all">
+          <button onClick={() => { toast.success('Export started'); }}
+            className="flex items-center gap-2 px-6 py-2 bg-primary text-black font-black uppercase italic text-[10px] tracking-widest hover:bg-primary/80 transition-all">
             <Download className="w-3.5 h-3.5" /> Export
           </button>
         </div>
       </header>
 
-      {/* Main Content Area */}
       <div className="flex-1 overflow-hidden">
         <AnimatePresence mode="wait">
           <motion.div
@@ -136,27 +127,33 @@ export default function AllInOneStudio() {
  * MODULE 1: OVERVIEW DASHBOARD
  * ========================================================================= */
 function OverviewDashboard({ onNavigate }: { onNavigate: (m: StudioModule) => void }) {
-  const quote = useMemo(() => {
+  const greeting = useMemo(() => {
     const hrs = new Date().getHours();
     if (hrs < 12) return 'GOOD MORNING';
     if (hrs < 18) return 'GOOD AFTERNOON';
     return 'GOOD EVENING';
   }, []);
 
+  const resourceCounts = useMemo(() => ({
+    templates: loadStudioData('template-count', 0),
+    exports: loadStudioData('export-count', 0),
+    generations: loadStudioData('generation-count', 0),
+    markers: loadStudioData('marker-count', 0),
+  }), []);
+
   const cards = [
-    { id: 'lyrics', icon: FileText, label: 'Lyric Studio', desc: 'Write songs with AI-powered suggestions, rhymes & chords', color: '#00E5FF' },
-    { id: 'broll', icon: Film, label: 'B-Roll Engine', desc: 'Generate cinematic video clips from text prompts', color: '#2979FF' },
-    { id: 'cover', icon: ImageIcon, label: 'Cover Art', desc: 'Professional album artwork in seconds', color: '#FF4D00' },
-    { id: 'timeline', icon: Music, label: 'Timeline Editor', desc: 'Multi-track lyric video editor with beat sync', color: '#22C55E' },
+    { id: 'lyrics' as const, icon: FileText, label: 'Lyric Studio', desc: 'Write songs with AI-powered suggestions, rhymes & chords' },
+    { id: 'broll' as const, icon: Film, label: 'B-Roll Engine', desc: 'Generate cinematic video clips from text prompts' },
+    { id: 'cover' as const, icon: ImageIcon, label: 'Cover Art', desc: 'Professional album artwork in seconds' },
+    { id: 'timeline' as const, icon: Music, label: 'Timeline Editor', desc: 'Multi-track lyric video editor with beat sync' },
   ];
 
   return (
     <div className="p-8 overflow-y-auto h-full custom-scrollbar">
       <div className="max-w-6xl mx-auto space-y-10">
-        {/* Greeting */}
         <div>
           <div className="text-[10px] font-black text-primary tracking-[0.5em] uppercase italic mb-2">
-            {quote}, CREATOR
+            {greeting}, CREATOR
           </div>
           <h1 className="text-5xl font-black italic tracking-tighter text-white leading-none">
             All-In-One <span className="text-primary">Studio</span>
@@ -166,43 +163,36 @@ function OverviewDashboard({ onNavigate }: { onNavigate: (m: StudioModule) => vo
           </p>
         </div>
 
-        {/* Resource Counters */}
         <div className="grid grid-cols-4 gap-4">
           {[
-            { label: 'Templates', used: 3, total: Infinity, icon: Layers },
-            { label: 'Exports', used: 2, total: 1200, icon: Download },
-            { label: 'AI Generations', used: 5, total: 144, icon: Sparkles },
-            { label: 'Cut Markers', used: 6, total: Infinity, icon: Scissors },
+            { label: 'Templates', count: resourceCounts.templates, icon: Layers },
+            { label: 'Exports', count: resourceCounts.exports, icon: Download },
+            { label: 'AI Generations', count: resourceCounts.generations, icon: Sparkles },
+            { label: 'Cut Markers', count: resourceCounts.markers, icon: Scissors },
           ].map(s => {
             const Icon = s.icon;
             return (
-              <div key={s.label} className="bg-[#12141C] border border-white/5 p-5">
+              <div key={s.label} className="bg-[var(--card-bg)] border border-white/5 p-5">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-[9px] font-black text-white/40 uppercase tracking-widest italic">{s.label}</span>
                   <Icon className="w-4 h-4 text-white/20" />
                 </div>
                 <div className="text-3xl font-black italic text-white">
-                  {s.used}<span className="text-white/20 text-lg ml-1">/ {s.total === Infinity ? '∞' : s.total}</span>
+                  {s.count}
                 </div>
-                {s.total !== Infinity && (
-                  <div className="mt-2 h-1 bg-white/5">
-                    <div className="h-full bg-primary transition-all" style={{ width: `${Math.min(100, (s.used / s.total) * 100)}%` }} />
-                  </div>
-                )}
               </div>
             );
           })}
         </div>
 
-        {/* Feature Grid */}
         <div className="grid grid-cols-2 gap-4">
           {cards.map(c => {
             const Icon = c.icon;
             return (
-              <button key={c.id} onClick={() => onNavigate(c.id as StudioModule)}
-                className="group bg-[#12141C] border border-white/5 hover:border-primary/40 p-8 text-left transition-all relative overflow-hidden">
+              <button key={c.id} onClick={() => onNavigate(c.id)}
+                className="group bg-[var(--card-bg)] border border-white/5 hover:border-primary/40 p-8 text-left transition-all relative overflow-hidden">
                 <div className="flex items-start justify-between mb-6">
-                  <div className="w-12 h-12 border flex items-center justify-center" style={{ borderColor: `${c.color}55`, color: c.color }}>
+                  <div className="w-12 h-12 border border-primary/30 flex items-center justify-center text-primary">
                     <Icon className="w-6 h-6" />
                   </div>
                   <ArrowRight className="w-5 h-5 text-white/20 group-hover:text-primary transition-all group-hover:translate-x-1" />
@@ -214,51 +204,28 @@ function OverviewDashboard({ onNavigate }: { onNavigate: (m: StudioModule) => vo
           })}
         </div>
 
-        {/* Recent Activity */}
-        <div className="bg-[#12141C] border border-white/5 p-6">
+        <div className="bg-[var(--card-bg)] border border-white/5 p-6">
           <div className="flex items-center gap-2 mb-5">
             <Clock className="w-4 h-4 text-primary" />
             <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic">Recent Activity</span>
           </div>
-          <div className="flex gap-4 overflow-x-auto pb-2 custom-scrollbar">
-            {[
-              { title: 'Fire in Your Heart', status: 'Ready', time: '2m ago', color: '#22C55E' },
-              { title: 'Neon Nights Cover', status: 'Exporting', time: '15m ago', color: '#2979FF' },
-              { title: 'Sunset B-Roll Pack', status: 'Ready', time: '1h ago', color: '#22C55E' },
-              { title: 'City Lights Template', status: 'Draft', time: '3h ago', color: '#FF4D00' },
-            ].map(item => (
-              <div key={item.title} className="shrink-0 w-56 bg-black/40 border border-white/5 p-4">
-                <div className="text-xs font-bold text-white italic truncate mb-3">{item.title}</div>
-                <div className="flex items-center justify-between">
-                  <span className="text-[9px] text-white/30 uppercase tracking-widest font-mono">{item.time}</span>
-                  <span className="text-[9px] font-black italic px-2 py-0.5 border" style={{ borderColor: `${item.color}40`, color: item.color, background: `${item.color}10` }}>
-                    {item.status}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
+          <div className="text-white/30 italic text-sm">No recent activity yet. Start by creating something in one of the studios above.</div>
         </div>
 
-        {/* Onboarding Checklist */}
-        <div className="bg-[#12141C] border border-white/5 p-6">
+        <div className="bg-[var(--card-bg)] border border-white/5 p-6">
           <div className="flex items-center justify-between mb-5">
             <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic">Getting Started</span>
-            <span className="text-[10px] font-black text-white/40 italic">3/5 Complete</span>
           </div>
           <div className="flex gap-3">
-            {['Template', 'Project', 'Export', 'Artist Page', 'Cover Art'].map((step, i) => (
+            {['Write Lyrics', 'Import Assets', 'Create Template', 'Generate B-Roll', 'Export Video'].map((step, i) => (
               <div key={step} className="flex items-center gap-3 flex-1">
                 <div className={cn(
                   'w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black italic',
-                  i < 3 ? 'bg-primary text-black' : 'bg-white/5 text-white/30'
+                  'bg-white/5 text-white/30'
                 )}>
-                  {i < 3 ? <CheckCircle2 className="w-4 h-4" /> : i + 1}
+                  {i + 1}
                 </div>
-                <span className={cn(
-                  'text-[10px] font-black uppercase tracking-widest italic',
-                  i < 3 ? 'text-white' : 'text-white/30'
-                )}>{step}</span>
+                <span className="text-[10px] font-black uppercase tracking-widest italic text-white/30">{step}</span>
                 {i < 4 && <div className="flex-1 h-[1px] bg-white/5" />}
               </div>
             ))}
@@ -274,20 +241,37 @@ function OverviewDashboard({ onNavigate }: { onNavigate: (m: StudioModule) => vo
  * ========================================================================= */
 function LyricStudio() {
   const [genre, setGenre] = useState('Pop');
-  const [lyrics, setLyrics] = useState(SAMPLE_LYRICS);
+  const [lyrics, setLyrics] = useState<LyricSegment[]>(() => loadStudioData<LyricSegment[]>('lyrics', []));
   const [editingSegment, setEditingSegment] = useState<string | null>(null);
   const [editText, setEditText] = useState('');
   const [activeTab, setActiveTab] = useState<'lyrics' | 'rhymes' | 'thesaurus' | 'verse' | 'chords'>('lyrics');
   const [rhymeWord, setRhymeWord] = useState('heart');
-  const [suggestions] = useState([
-    'Chasing the warmth of the flame we lost',
-    'Can you feel the heat',
-    'The truth that burns within',
-    'What if the flames could carry me to you?',
-    'A wildfire of memories, consuming my soul',
-    'A whisper of desire',
-    'I want it all and nothing less',
-  ]);
+  const [newLine, setNewLine] = useState('');
+
+  useEffect(() => { saveStudioData('lyrics', lyrics); }, [lyrics]);
+
+  const addLine = () => {
+    if (!newLine.trim()) return;
+    const seg: LyricSegment = {
+      id: `l${Date.now()}`,
+      text: newLine.trim(),
+      start: lyrics.length * 3.5,
+      end: lyrics.length * 3.5 + 3.5,
+      words: newLine.trim().split(' ').map((w, i, arr) => ({
+        word: w,
+        start: i * (3.5 / arr.length),
+        end: (i + 1) * (3.5 / arr.length),
+      })),
+    };
+    setLyrics(prev => [...prev, seg]);
+    setNewLine('');
+    toast.success('Line added');
+  };
+
+  const deleteLine = (id: string) => {
+    setLyrics(prev => prev.filter(s => s.id !== id));
+    toast.success('Line removed');
+  };
 
   const startEditing = (seg: LyricSegment) => {
     setEditingSegment(seg.id);
@@ -296,7 +280,7 @@ function LyricStudio() {
 
   const saveEdit = () => {
     if (!editingSegment) return;
-    setLyrics(prev => prev.map(s => s.id === editingSegment ? { ...s, text: editText } : s));
+    setLyrics(prev => prev.map(s => s.id === editingSegment ? { ...s, text: editText, words: [{ word: editText, start: s.start, end: s.end }] } : s));
     setEditingSegment(null);
     toast.success('Line updated');
   };
@@ -305,17 +289,10 @@ function LyricStudio() {
     return lyrics.map(s => s.text.split(' ').reduce((sum, w) => sum + Math.max(1, w.length > 4 ? 2 : w.length > 2 ? 2 : 1), 0));
   }, [lyrics]);
 
-  const chordProgression = useMemo(() => {
-    const progression = Object.values(CHORD_PAIRS)[0];
-    return lyrics.map((_, i) => progression[i % progression.length]);
-  }, [lyrics]);
-
   return (
     <div className="flex h-full">
-      {/* Left - Lyric Editor */}
       <div className="flex-1 flex flex-col overflow-hidden border-r border-white/5">
-        {/* Genre Selector */}
-        <div className="shrink-0 bg-[#12141C] border-b border-white/5 px-8 py-4 flex items-center gap-4">
+        <div className="shrink-0 bg-[var(--card-bg)] border-b border-white/5 px-8 py-4 flex items-center gap-4">
           <div className="flex items-center gap-2">
             <Music2 className="w-4 h-4 text-primary" />
             <span className="text-[10px] font-black text-white/40 uppercase tracking-widest italic">Genre</span>
@@ -324,89 +301,68 @@ function LyricStudio() {
             className="bg-black border border-white/10 px-4 py-2 text-xs font-mono text-white outline-none focus:border-primary uppercase tracking-widest">
             {GENRES.map(g => <option key={g} value={g}>{g}</option>)}
           </select>
-          <div className="ml-auto flex items-center gap-3">
-            <button className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 text-[9px] font-black uppercase tracking-widest italic hover:border-primary/40 transition-all">
-              <Copy className="w-3 h-3" /> Export
-            </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 text-[9px] font-black uppercase tracking-widest italic hover:border-primary/40 transition-all">
-              <Share2 className="w-3 h-3" /> Collab
-            </button>
-          </div>
         </div>
 
-        {/* Lyric Lines */}
         <div className="flex-1 overflow-y-auto custom-scrollbar p-8 space-y-4">
-          {lyrics.map((seg, i) => {
-            const chords = chordProgression[i];
-            const syl = totalSyllables[i];
-            return (
-              <div key={seg.id} className="group">
-                {/* Chord indicator */}
-                <div className="flex items-center gap-2 mb-1">
-                  {[chords, chords === chordProgression[i] ? chordProgression[(i + 1) % chordProgression.length] : ''].filter(Boolean).map((c, ci) => (
-                    <button key={ci} className="text-[10px] font-bold text-primary/80 hover:text-primary tracking-wider font-mono">{c}</button>
+          {lyrics.length === 0 && (
+            <div className="h-full flex items-center justify-center border-2 border-dashed border-white/5">
+              <div className="text-center">
+                <FileText className="w-12 h-12 text-white/10 mx-auto mb-3" />
+                <p className="text-white/30 italic">No lyrics yet</p>
+                <p className="text-[11px] text-white/20 italic mt-1">Type a line below and hit Add to begin</p>
+              </div>
+            </div>
+          )}
+          {lyrics.map((seg, i) => (
+            <div key={seg.id} className="group">
+              <div className="flex items-start gap-3">
+                <div className="flex items-center gap-1 pt-2">
+                  {totalSyllables[i].toString().split('').map((d, di) => (
+                    <span key={di} className="text-[8px] font-mono text-white/20">{d}</span>
                   ))}
                 </div>
-                {/* Lyric line */}
-                <div className="flex items-start gap-3">
-                  <div className="flex items-center gap-1 pt-2">
-                    {syl.toString().split('').map((d, di) => (
-                      <span key={di} className="text-[8px] font-mono text-white/20">{d}</span>
-                    ))}
-                  </div>
-                  <div className="flex-1">
-                    {editingSegment === seg.id ? (
-                      <div className="space-y-2">
-                        <input type="text" value={editText} onChange={e => setEditText(e.target.value)}
-                          className="w-full bg-black border border-primary/50 px-4 py-3 text-lg italic text-white outline-none font-medium"
-                          autoFocus onKeyDown={e => { if (e.key === 'Enter') saveEdit(); if (e.key === 'Escape') setEditingSegment(null); }} />
-                        <div className="flex gap-2">
-                          <button onClick={saveEdit} className="text-[9px] font-black px-3 py-1 bg-primary text-black uppercase tracking-widest italic">Save</button>
-                          <button onClick={() => setEditingSegment(null)} className="text-[9px] font-black px-3 py-1 border border-white/20 text-white/60 uppercase tracking-widest italic">Cancel</button>
-                        </div>
+                <div className="flex-1">
+                  {editingSegment === seg.id ? (
+                    <div className="space-y-2">
+                      <input type="text" value={editText} onChange={e => setEditText(e.target.value)}
+                        className="w-full bg-black border border-primary/50 px-4 py-3 text-lg italic text-white outline-none font-medium"
+                        autoFocus onKeyDown={e => { if (e.key === 'Enter') saveEdit(); if (e.key === 'Escape') setEditingSegment(null); }} />
+                      <div className="flex gap-2">
+                        <button onClick={saveEdit} className="text-[9px] font-black px-3 py-1 bg-primary text-black uppercase tracking-widest italic">Save</button>
+                        <button onClick={() => setEditingSegment(null)} className="text-[9px] font-black px-3 py-1 border border-white/20 text-white/60 uppercase tracking-widest italic">Cancel</button>
                       </div>
-                    ) : (
-                      <div className="flex items-center gap-3">
-                        <span className="text-lg italic text-white/90 font-medium leading-relaxed tracking-wide"
-                          onDoubleClick={() => startEditing(seg)}>
-                          {seg.text}
-                        </span>
-                        <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-opacity">
-                          <button onClick={() => startEditing(seg)} className="p-1 hover:text-primary"><FileText className="w-3 h-3" /></button>
-                          <button className="p-1 hover:text-primary"><Copy className="w-3 h-3" /></button>
-                        </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      <span className="text-lg italic text-white/90 font-medium leading-relaxed tracking-wide"
+                        onDoubleClick={() => startEditing(seg)}>
+                        {seg.text}
+                      </span>
+                      <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-opacity">
+                        <button onClick={() => startEditing(seg)} className="p-1 hover:text-primary"><FileText className="w-3 h-3" /></button>
+                        <button onClick={() => deleteLine(seg.id)} className="p-1 hover:text-red-400"><Trash2 className="w-3 h-3" /></button>
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
 
-        {/* Bottom suggestions bar */}
-        <div className="shrink-0 bg-[#12141C] border-t border-white/5 p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Sparkles className="w-3.5 h-3.5 text-primary" />
-            <span className="text-[9px] font-black text-primary uppercase tracking-widest italic">AI Suggestions</span>
-          </div>
-          <div className="flex gap-2 overflow-x-auto custom-scrollbar pb-1">
-            {suggestions.slice(0, 4).map((s, i) => (
-              <button key={i} onClick={() => {
-                const seg = lyrics.find(l => l.id === editingSegment);
-                if (seg) setEditText(s);
-                else toast('Click a line to edit it first');
-              }}
-                className="shrink-0 text-left px-4 py-2 bg-black/40 border border-white/5 hover:border-primary/40 text-[11px] italic text-white/60 hover:text-white transition-all">
-                "{s}"
-              </button>
-            ))}
-          </div>
+        <div className="shrink-0 bg-[var(--card-bg)] border-t border-white/5 p-4 flex items-center gap-3">
+          <input type="text" value={newLine} onChange={e => setNewLine(e.target.value)}
+            placeholder="Type a new lyric line..."
+            className="flex-1 bg-black border border-white/10 px-4 py-3 text-sm italic text-white outline-none focus:border-primary"
+            onKeyDown={e => { if (e.key === 'Enter') addLine(); }} />
+          <button onClick={addLine} disabled={!newLine.trim()}
+            className="px-6 py-3 bg-primary text-black text-[10px] font-black uppercase tracking-widest italic hover:bg-primary/80 transition-all disabled:opacity-30">
+            <Plus className="w-3.5 h-3.5 inline mr-1" /> Add
+          </button>
         </div>
       </div>
 
-      {/* Right - Tools Panel */}
-      <div className="w-80 bg-[#12141C] flex flex-col overflow-hidden">
+      <div className="w-80 bg-[var(--card-bg)] flex flex-col overflow-hidden">
         <div className="shrink-0 flex border-b border-white/5">
           {[
             { id: 'lyrics' as const, label: 'Lyrics', icon: FileText },
@@ -479,7 +435,7 @@ function LyricStudio() {
             <div className="space-y-4">
               <p className="text-[11px] italic text-white/40">Suggested chord progression for {genre}.</p>
               <div className="flex flex-wrap gap-2">
-                {chordProgression.slice(0, 8).map((c, i) => (
+                {CHORD_PROGRESSIONS.slice(0, 8).map((c, i) => (
                   <button key={i} onClick={() => toast.info(`Playing ${c}`)}
                     className="px-4 py-2 bg-black/40 border border-primary/30 text-primary text-xs font-mono font-bold hover:bg-primary/20 transition-all">
                     {c}
@@ -489,18 +445,8 @@ function LyricStudio() {
             </div>
           )}
           {activeTab === 'lyrics' && (
-            <div className="space-y-3">
-              <button onClick={() => toast.success('New suggestions generated')}
-                className="w-full py-3 bg-primary/10 border border-primary/30 text-primary text-[10px] font-black uppercase tracking-widest italic hover:bg-primary hover:text-black transition-all">
-                <Sparkles className="w-3.5 h-3.5 inline mr-2" />New Suggestions
-              </button>
-              <div className="space-y-2 mt-4">
-                {suggestions.map((s, i) => (
-                  <div key={i} className="px-3 py-2 bg-black/40 border border-white/5 text-[11px] italic text-white/60 leading-relaxed cursor-pointer hover:border-primary/40 hover:text-white transition-all">
-                    {s}
-                  </div>
-                ))}
-              </div>
+            <div className="text-white/40 italic text-sm text-center py-8">
+              Select another tab (Rhymes, Thesaurus, Verse Gen, or Chords) for writing assistance.
             </div>
           )}
         </div>
@@ -514,30 +460,45 @@ function LyricStudio() {
  * ========================================================================= */
 function AssetManager() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [selectedFolder, setSelectedFolder] = useState<string | null>('ai-generated');
+  const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
+  const [assets, setAssets] = useState<AssetFile[]>(() => loadStudioData<AssetFile[]>('assets', []));
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => { saveStudioData('assets', assets); }, [assets]);
+
+  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const newAssets: AssetFile[] = files.map(f => ({
+      id: `a${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      name: f.name,
+      type: f.type.startsWith('video/') ? 'video' : f.type.startsWith('image/') ? 'image' : 'audio',
+      url: URL.createObjectURL(f),
+      duration: f.type.startsWith('video/') ? 10 : undefined,
+      date: 'Just now',
+    }));
+    setAssets(prev => [...newAssets, ...prev]);
+    toast.success(`${files.length} file(s) uploaded`);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const deleteAsset = (id: string) => {
+    setAssets(prev => prev.filter(a => a.id !== id));
+    toast.success('Asset removed');
+  };
 
   const folders = [
+    { id: 'my-uploads', label: 'My Uploads', icon: FolderOpen },
     { id: 'ai-generated', label: 'AI Generated', icon: Sparkles },
-    { id: 'afrohouse', label: 'Afrohouse v1', icon: Music2 },
-    { id: 'dj-edits', label: 'DJ Edits', icon: Scissors },
     { id: 'broll', label: 'B-Roll', icon: Film },
   ];
 
-  const stockLibs = [
-    { id: 'studio', label: 'Studio', icon: Mic2 },
-    { id: 'live', label: 'Live Performance', icon: Music2 },
-    { id: 'club', label: 'Club / Night', icon: CircleDot },
-    { id: 'pool', label: 'Pool Party', icon: Sun },
-    { id: 'yacht', label: 'Yacht', icon: Monitor },
-    { id: 'city', label: 'Bay Area', icon: Monitor },
-  ];
+  const filteredAssets = selectedFolder && selectedFolder !== 'my-uploads' ? [] : assets;
 
   return (
     <div className="flex h-full">
-      {/* Sidebar */}
-      <div className="w-64 bg-[#12141C] border-r border-white/5 p-4 overflow-y-auto custom-scrollbar">
-        <div className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic mb-4">YOUR DRIVE</div>
-        <div className="space-y-1 mb-6">
+      <div className="w-64 bg-[var(--card-bg)] border-r border-white/5 p-4 overflow-y-auto custom-scrollbar">
+        <div className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic mb-4">FOLDERS</div>
+        <div className="space-y-1">
           {folders.map(f => {
             const Icon = f.icon;
             return (
@@ -552,29 +513,15 @@ function AssetManager() {
             );
           })}
         </div>
-        <div className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic mb-4">STOCK LIBRARIES</div>
-        <div className="space-y-1">
-          {stockLibs.map(f => {
-            const Icon = f.icon;
-            return (
-              <button key={f.id} onClick={() => setSelectedFolder(f.id)}
-                className="w-full flex items-center gap-3 px-3 py-2 text-[11px] italic text-white/50 hover:text-white hover:bg-white/5 transition-all">
-                <Icon className="w-3.5 h-3.5" />
-                {f.label}
-              </button>
-            );
-          })}
-        </div>
       </div>
 
-      {/* Content */}
       <div className="flex-1 p-6 overflow-y-auto custom-scrollbar">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
             <h2 className="text-2xl font-black italic text-white">
-              {folders.find(f => f.id === selectedFolder)?.label || 'Assets'}
+              {folders.find(f => f.id === selectedFolder)?.label || 'All Assets'}
             </h2>
-            <span className="text-[10px] font-mono text-white/30">{SAMPLE_ASSETS.length} files</span>
+            <span className="text-[10px] font-mono text-white/30">{assets.length} files</span>
           </div>
           <div className="flex items-center gap-3">
             <div className="flex border border-white/10">
@@ -585,24 +532,36 @@ function AssetManager() {
                 <List className="w-4 h-4" />
               </button>
             </div>
-            <button className="flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/30 text-primary text-[9px] font-black uppercase tracking-widest italic hover:bg-primary hover:text-black transition-all">
+            <button onClick={() => fileInputRef.current?.click()}
+              className="flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/30 text-primary text-[9px] font-black uppercase tracking-widest italic hover:bg-primary hover:text-black transition-all">
               <Upload className="w-3.5 h-3.5" /> Import
             </button>
+            <input ref={fileInputRef} type="file" multiple accept="video/*,image/*,audio/*" onChange={handleUpload} className="hidden" />
           </div>
         </div>
 
-        {viewMode === 'grid' ? (
+        {assets.length === 0 ? (
+          <div className="h-64 flex items-center justify-center border-2 border-dashed border-white/5">
+            <div className="text-center">
+              <Upload className="w-12 h-12 text-white/10 mx-auto mb-3" />
+              <p className="text-white/30 italic mb-1">No assets yet</p>
+              <p className="text-[11px] text-white/20 italic">Click Import to upload files</p>
+            </div>
+          </div>
+        ) : viewMode === 'grid' ? (
           <div className="grid grid-cols-4 gap-4">
-            {SAMPLE_ASSETS.map(a => (
+            {filteredAssets.map(a => (
               <div key={a.id} className="group bg-black/40 border border-white/5 hover:border-primary/40 transition-all cursor-pointer">
-                <div className="aspect-video bg-[#090A0F] flex items-center justify-center relative">
-                  {a.type === 'video' ? <Video className="w-8 h-8 text-white/20" /> : <ImageIcon className="w-8 h-8 text-white/20" />}
+                <div className="aspect-video bg-[var(--bg-main)] flex items-center justify-center relative">
+                  {a.type === 'video' ? <Video className="w-8 h-8 text-white/20" /> :
+                   a.type === 'image' ? <ImageIcon className="w-8 h-8 text-white/20" /> :
+                   <Music className="w-8 h-8 text-white/20" />}
                   {a.duration && (
                     <span className="absolute bottom-2 right-2 text-[9px] font-mono bg-black/80 px-2 py-0.5 text-white/60">{a.duration}s</span>
                   )}
                   <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 transition-opacity">
                     <button className="p-2 bg-white/20 hover:bg-primary/80 transition-all"><Eye className="w-4 h-4" /></button>
-                    <button className="p-2 bg-white/20 hover:bg-primary/80 transition-all"><Download className="w-4 h-4" /></button>
+                    <button onClick={() => deleteAsset(a.id)} className="p-2 bg-white/20 hover:bg-red-500/80 transition-all"><Trash2 className="w-4 h-4" /></button>
                   </div>
                 </div>
                 <div className="p-3">
@@ -614,16 +573,17 @@ function AssetManager() {
           </div>
         ) : (
           <div className="space-y-1">
-            {SAMPLE_ASSETS.map(a => (
+            {filteredAssets.map(a => (
               <div key={a.id} className="flex items-center gap-4 px-4 py-3 bg-black/20 border border-white/5 hover:border-white/20 transition-all cursor-pointer group">
-                {a.type === 'video' ? <Video className="w-4 h-4 text-white/30" /> : <ImageIcon className="w-4 h-4 text-white/30" />}
+                {a.type === 'video' ? <Video className="w-4 h-4 text-white/30" /> :
+                 a.type === 'image' ? <ImageIcon className="w-4 h-4 text-white/30" /> :
+                 <Music className="w-4 h-4 text-white/30" />}
                 <span className="flex-1 text-xs italic text-white/80">{a.name}</span>
                 {a.duration && <span className="text-[10px] font-mono text-white/30">{a.duration}s</span>}
                 <span className="text-[10px] text-white/30">{a.date}</span>
                 <div className="opacity-0 group-hover:opacity-100 flex gap-1 transition-opacity">
                   <button className="p-1 hover:text-primary"><Eye className="w-3 h-3" /></button>
-                  <button className="p-1 hover:text-primary"><Star className="w-3 h-3" /></button>
-                  <button className="p-1 hover:text-red-400"><Trash2 className="w-3 h-3" /></button>
+                  <button onClick={() => deleteAsset(a.id)} className="p-1 hover:text-red-400"><Trash2 className="w-3 h-3" /></button>
                 </div>
               </div>
             ))}
@@ -638,12 +598,33 @@ function AssetManager() {
  * MODULE 4: TEMPLATE MANAGER
  * ========================================================================= */
 function TemplateManager() {
-  const [templates] = useState<Template[]>([
-    { id: 't1', name: 'THE WORLD IS COLD 02', date: '2026-06-15', clipDuration: 30, bpm: 146, projectCount: 3, projects: ['Project A', 'Project B', 'Project C'] },
-    { id: 't2', name: 'AURORA PLAYROOM (PART 1)', date: '2026-06-10', clipDuration: 30, bpm: 120, projectCount: 1, projects: ['Aurora v1'] },
-    { id: 't3', name: 'NEON NIGHTS', date: '2026-05-28', clipDuration: 15, bpm: 128, projectCount: 5, projects: ['Night Drive', 'City Lights', 'Neon v3', 'Retro Wave', 'Synth City'] },
-    { id: 't4', name: 'ACOUSTIC SESSIONS', date: '2026-05-20', clipDuration: 60, bpm: 90, projectCount: 2, projects: ['Unplugged', 'Stripped Down'] },
-  ]);
+  const [templates, setTemplates] = useState<Template[]>(() => loadStudioData<Template[]>('templates', []));
+  const [showCreate, setShowCreate] = useState(false);
+  const [newName, setNewName] = useState('');
+
+  useEffect(() => { saveStudioData('templates', templates); }, [templates]);
+
+  const createTemplate = () => {
+    if (!newName.trim()) return;
+    const t: Template = {
+      id: `t${Date.now()}`,
+      name: newName.trim().toUpperCase(),
+      date: new Date().toISOString().slice(0, 10),
+      clipDuration: 30,
+      bpm: 120,
+      projectCount: 0,
+      projects: [],
+    };
+    setTemplates(prev => [t, ...prev]);
+    setNewName('');
+    setShowCreate(false);
+    toast.success('Template created');
+  };
+
+  const deleteTemplate = (id: string) => {
+    setTemplates(prev => prev.filter(t => t.id !== id));
+    toast.success('Template deleted');
+  };
 
   return (
     <div className="p-8 overflow-y-auto h-full custom-scrollbar">
@@ -653,54 +634,68 @@ function TemplateManager() {
             <h2 className="text-3xl font-black italic text-white tracking-tight">Templates</h2>
             <p className="text-white/40 italic mt-1 text-sm">Reusable blueprints for your video projects</p>
           </div>
-          <button className="flex items-center gap-2 px-6 py-3 bg-primary/10 border border-primary/30 text-primary text-[10px] font-black uppercase tracking-widest italic hover:bg-primary hover:text-black transition-all">
+          <button onClick={() => setShowCreate(true)}
+            className="flex items-center gap-2 px-6 py-3 bg-primary/10 border border-primary/30 text-primary text-[10px] font-black uppercase tracking-widest italic hover:bg-primary hover:text-black transition-all">
             <Plus className="w-4 h-4" /> Create Template
           </button>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          {templates.map(t => (
-            <div key={t.id} className="bg-[#12141C] border border-white/5 hover:border-primary/40 transition-all p-6 group">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h3 className="text-xl font-black italic text-white tracking-tight mb-1">{t.name}</h3>
-                  <div className="flex items-center gap-3 text-[10px] text-white/30 italic">
-                    <span>{t.date}</span>
-                    <span>·</span>
-                    <span>{t.clipDuration}s</span>
-                    <span>·</span>
-                    <span>{t.bpm} BPM</span>
+        {showCreate && (
+          <div className="mb-6 bg-[var(--card-bg)] border border-primary/30 p-6 flex items-center gap-4">
+            <input type="text" value={newName} onChange={e => setNewName(e.target.value)}
+              placeholder="Template name..."
+              className="flex-1 bg-black border border-white/10 px-4 py-3 text-sm text-white outline-none focus:border-primary italic"
+              autoFocus onKeyDown={e => { if (e.key === 'Enter') createTemplate(); if (e.key === 'Escape') setShowCreate(false); }} />
+            <button onClick={createTemplate} disabled={!newName.trim()}
+              className="px-6 py-3 bg-primary text-black text-[10px] font-black uppercase tracking-widest italic disabled:opacity-30">
+              Create
+            </button>
+            <button onClick={() => setShowCreate(false)}
+              className="px-4 py-3 border border-white/10 text-white/60 text-[10px] font-black uppercase tracking-widest italic">
+              Cancel
+            </button>
+          </div>
+        )}
+
+        {templates.length === 0 ? (
+          <div className="text-center py-20 border-2 border-dashed border-white/5">
+            <Layers className="w-12 h-12 text-white/10 mx-auto mb-3" />
+            <p className="text-white/30 italic">No templates yet</p>
+            <p className="text-[11px] text-white/20 italic mt-1">Click "Create Template" to get started</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-4">
+            {templates.map(t => (
+              <div key={t.id} className="bg-[var(--card-bg)] border border-white/5 hover:border-primary/40 transition-all p-6 group">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <h3 className="text-xl font-black italic text-white tracking-tight mb-1">{t.name}</h3>
+                    <div className="flex items-center gap-3 text-[10px] text-white/30 italic">
+                      <span>{t.date}</span>
+                      <span>·</span>
+                      <span>{t.clipDuration}s</span>
+                      <span>·</span>
+                      <span>{t.bpm} BPM</span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-[9px] font-black text-white/30 uppercase tracking-widest italic">Projects</div>
+                    <div className="text-2xl font-black italic text-white">{t.projectCount}</div>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-[9px] font-black text-white/30 uppercase tracking-widest italic">Projects</div>
-                  <div className="text-2xl font-black italic text-white">{t.projectCount}</div>
+                <div className="flex items-center gap-2 pt-4 border-t border-white/5">
+                  <button className="flex-1 py-2 bg-primary/10 border border-primary/30 text-primary text-[9px] font-black uppercase tracking-widest italic hover:bg-primary hover:text-black transition-all">
+                    View Projects
+                  </button>
+                  <button onClick={() => deleteTemplate(t.id)}
+                    className="px-3 py-2 bg-red-500/10 border border-red-500/30 text-red-400 text-[9px] font-black uppercase tracking-widest italic hover:bg-red-500/20 transition-all">
+                    <Trash2 className="w-3 h-3" />
+                  </button>
                 </div>
               </div>
-
-              <div className="flex flex-wrap gap-1 mb-4">
-                {t.projects.map(p => (
-                  <span key={p} className="text-[9px] px-2 py-0.5 bg-black/40 border border-white/10 text-white/40 italic">{p}</span>
-                ))}
-              </div>
-
-              <div className="flex items-center gap-2 pt-4 border-t border-white/5">
-                <button className="flex-1 py-2 bg-primary/10 border border-primary/30 text-primary text-[9px] font-black uppercase tracking-widest italic hover:bg-primary hover:text-black transition-all">
-                  View Projects
-                </button>
-                <button className="px-4 py-2 bg-white/5 border border-white/10 text-white/60 text-[9px] font-black uppercase tracking-widest italic hover:border-primary/40 transition-all">
-                  + New Project
-                </button>
-                <button className="px-4 py-2 bg-white/5 border border-white/10 text-white/60 text-[9px] font-black uppercase tracking-widest italic hover:border-primary/40 transition-all">
-                  Edit
-                </button>
-                <button className="px-3 py-2 bg-red-500/10 border border-red-500/30 text-red-400 text-[9px] font-black uppercase tracking-widest italic hover:bg-red-500/20 transition-all">
-                  <Trash2 className="w-3 h-3" />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -713,12 +708,14 @@ function BRollEngine() {
   const [prompt, setPrompt] = useState('');
   const [shakes, setShakes] = useState(7);
   const [timeOfDay, setTimeOfDay] = useState(50);
-  const [environment, setEnvironment] = useState('rooftop at night');
-  const [wardrobe, setWardrobe] = useState('black leather jacket');
+  const [environment, setEnvironment] = useState('');
+  const [wardrobe, setWardrobe] = useState('');
   const [handheld, setHandheld] = useState(true);
   const [resolution, setResolution] = useState<'720p' | '1080p'>('720p');
-  const [jobs, setJobs] = useState<BrollJob[]>([]);
+  const [jobs, setJobs] = useState<BrollJob[]>(() => loadStudioData<BrollJob[]>('broll-jobs', []));
   const [isGenerating, setIsGenerating] = useState(false);
+
+  useEffect(() => { saveStudioData('broll-jobs', jobs); }, [jobs]);
 
   const handleGenerate = () => {
     if (!prompt.trim()) { toast.error('Describe a shot first'); return; }
@@ -726,7 +723,7 @@ function BRollEngine() {
     const job: BrollJob = { id: `b${Date.now()}`, prompt, status: 'generating' };
     setJobs(prev => [job, ...prev]);
     setTimeout(() => {
-      setJobs(prev => prev.map(j => j.id === job.id ? { ...j, status: 'done', thumbnailUrl: '' } : j));
+      setJobs(prev => prev.map(j => j.id === job.id ? { ...j, status: 'done' } : j));
       setIsGenerating(false);
       toast.success('B-roll clips generated');
     }, 3000);
@@ -734,28 +731,24 @@ function BRollEngine() {
 
   return (
     <div className="flex h-full">
-      {/* Left - Controls */}
-      <div className="w-96 bg-[#12141C] border-r border-white/5 p-6 overflow-y-auto custom-scrollbar space-y-6">
+      <div className="w-96 bg-[var(--card-bg)] border-r border-white/5 p-6 overflow-y-auto custom-scrollbar space-y-6">
         <h3 className="text-lg font-black italic text-white">B-Roll Generator</h3>
         <div className="space-y-2">
           <label className="text-[9px] font-black text-white/40 uppercase tracking-widest italic block">Prompt</label>
           <textarea value={prompt} onChange={e => setPrompt(e.target.value)} rows={3}
-            placeholder="Describe the b-roll you want... Try 'driving through downtown at sunset'"
+            placeholder="Describe the b-roll you want... e.g. 'driving through downtown at sunset'"
             className="w-full bg-black border border-white/10 px-4 py-3 text-xs text-white outline-none focus:border-primary resize-none italic" />
         </div>
         <div className="space-y-2">
           <label className="text-[9px] font-black text-white/40 uppercase tracking-widest italic block">Shots Duration</label>
-          <input type="range" min={3} max={15} value={shakes} onChange={e => setShakes(Number(e.target.value))}
-            className="w-full accent-primary" />
+          <input type="range" min={3} max={15} value={shakes} onChange={e => setShakes(Number(e.target.value))} className="w-full accent-primary" />
           <div className="flex justify-between text-[9px] text-white/30 italic">
             <span>Fewer</span><span>{shakes} clips - ~{(shakes * 0.3).toFixed(1)}s each</span><span>More</span>
           </div>
         </div>
         <div className="space-y-2">
           <label className="text-[9px] font-black text-white/40 uppercase tracking-widest italic block">Time of Day</label>
-          <input type="range" min={0} max={100} value={timeOfDay} onChange={e => setTimeOfDay(Number(e.target.value))}
-            className="w-full accent-primary"
-            style={{ background: `linear-gradient(to right, #1a1a2e, #ff6b35, #87ceeb, #ffd700)` }} />
+          <input type="range" min={0} max={100} value={timeOfDay} onChange={e => setTimeOfDay(Number(e.target.value))} className="w-full accent-primary" />
           <div className="flex justify-between text-[9px] text-white/30 italic">
             <span>Auto</span><span>Early</span><span>Late</span>
           </div>
@@ -763,11 +756,13 @@ function BRollEngine() {
         <div className="space-y-2">
           <label className="text-[9px] font-black text-white/40 uppercase tracking-widest italic block">Environment</label>
           <input type="text" value={environment} onChange={e => setEnvironment(e.target.value)}
+            placeholder="e.g. rooftop at night"
             className="w-full bg-black border border-white/10 px-4 py-2 text-xs text-white outline-none focus:border-primary" />
         </div>
         <div className="space-y-2">
           <label className="text-[9px] font-black text-white/40 uppercase tracking-widest italic block">Wardrobe</label>
           <input type="text" value={wardrobe} onChange={e => setWardrobe(e.target.value)}
+            placeholder="e.g. black leather jacket"
             className="w-full bg-black border border-white/10 px-4 py-2 text-xs text-white outline-none focus:border-primary" />
         </div>
         <div className="flex items-center justify-between">
@@ -788,13 +783,12 @@ function BRollEngine() {
           ))}
         </div>
         <button onClick={handleGenerate} disabled={isGenerating}
-          className="w-full py-4 bg-[#00E5FF] text-black font-black uppercase italic text-[10px] tracking-widest hover:bg-[#2979FF] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+          className="w-full py-4 bg-primary text-black font-black uppercase italic text-[10px] tracking-widest hover:bg-primary/80 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
           {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
           {isGenerating ? 'Generating...' : 'Generate B-Roll'}
         </button>
       </div>
 
-      {/* Right - Output Gallery */}
       <div className="flex-1 p-6 overflow-y-auto custom-scrollbar">
         {jobs.length === 0 ? (
           <div className="h-full flex items-center justify-center border-2 border-dashed border-white/5">
@@ -808,7 +802,7 @@ function BRollEngine() {
           <div className="grid grid-cols-3 gap-4">
             {jobs.map(j => (
               <div key={j.id} className="bg-black/40 border border-white/5 overflow-hidden">
-                <div className="aspect-video bg-[#090A0F] flex items-center justify-center">
+                <div className="aspect-video bg-[var(--bg-main)] flex items-center justify-center">
                   {j.status === 'generating' ? (
                     <Loader2 className="w-8 h-8 text-primary animate-spin" />
                   ) : j.status === 'done' ? (
@@ -834,27 +828,30 @@ function BRollEngine() {
  * MODULE 6: COVER ART STUDIO
  * ========================================================================= */
 function CoverArtStudio() {
-  const [prompt, setPrompt] = useState('A solitary figure on a desert horizon at golden hour, washed in deep amber. Editorial.');
-  const [title, setTitle] = useState('NIGHTDRIVE');
-  const [artist, setArtist] = useState('Artist Name');
+  const [prompt, setPrompt] = useState('');
+  const [title, setTitle] = useState('');
+  const [artist, setArtist] = useState('');
   const [parental, setParental] = useState(false);
   const [resolution, setResolution] = useState<'2K' | 'medium'>('2K');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [gallery, setGallery] = useState<string[]>([]);
+  const [gallery, setGallery] = useState<string[]>(() => loadStudioData<string[]>('cover-gallery', []));
+
+  useEffect(() => { saveStudioData('cover-gallery', gallery); }, [gallery]);
 
   const handleGenerate = () => {
+    if (!prompt.trim()) { toast.error('Enter a prompt first'); return; }
     setIsGenerating(true);
     setTimeout(() => {
       setGallery(prev => [URL.createObjectURL(new Blob(['placeholder'], { type: 'image/png' })), ...prev]);
       setIsGenerating(false);
+      saveStudioData('generation-count', loadStudioData('generation-count', 0) + 1);
       toast.success('Cover art generated');
     }, 2500);
   };
 
   return (
     <div className="flex h-full">
-      {/* Left - Controls */}
-      <div className="w-96 bg-[#12141C] border-r border-white/5 p-6 overflow-y-auto custom-scrollbar space-y-6">
+      <div className="w-96 bg-[var(--card-bg)] border-r border-white/5 p-6 overflow-y-auto custom-scrollbar space-y-6">
         <h3 className="text-lg font-black italic text-white">Cover Art Studio</h3>
         <div className="space-y-2">
           <label className="text-[9px] font-black text-white/40 uppercase tracking-widest italic block">Model</label>
@@ -867,17 +864,20 @@ function CoverArtStudio() {
         <div className="space-y-2">
           <label className="text-[9px] font-black text-white/40 uppercase tracking-widest italic block">Prompt</label>
           <textarea value={prompt} onChange={e => setPrompt(e.target.value)} rows={4}
+            placeholder="Describe the cover art you want..."
             className="w-full bg-black border border-white/10 px-4 py-3 text-xs text-white outline-none focus:border-primary resize-none italic" />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <label className="text-[9px] font-black text-white/40 uppercase tracking-widest italic block">Title</label>
             <input type="text" value={title} onChange={e => setTitle(e.target.value)}
+              placeholder="Release title"
               className="w-full bg-black border border-white/10 px-4 py-2 text-xs text-white outline-none focus:border-primary" />
           </div>
           <div className="space-y-2">
             <label className="text-[9px] font-black text-white/40 uppercase tracking-widest italic block">Artist</label>
             <input type="text" value={artist} onChange={e => setArtist(e.target.value)}
+              placeholder="Artist name"
               className="w-full bg-black border border-white/10 px-4 py-2 text-xs text-white outline-none focus:border-primary" />
           </div>
         </div>
@@ -902,41 +902,29 @@ function CoverArtStudio() {
           </div>
         </div>
         <button onClick={handleGenerate} disabled={isGenerating}
-          className="w-full py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-black uppercase italic text-[10px] tracking-widest hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+          className="w-full py-4 bg-primary text-black font-black uppercase italic text-[10px] tracking-widest hover:bg-primary/80 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
           {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Palette className="w-4 h-4" />}
           {isGenerating ? 'Generating...' : 'Generate Cover Art'}
         </button>
       </div>
 
-      {/* Right - Preview & Gallery */}
       <div className="flex-1 p-6 overflow-y-auto custom-scrollbar">
         {gallery.length === 0 ? (
           <div className="h-full flex items-center justify-center border-2 border-dashed border-white/5">
             <div className="text-center">
-              <ImageIcon className="w-16 h-16 text-white/10 mx-auto mb-4" />
+              <Palette className="w-16 h-16 text-white/10 mx-auto mb-4" />
               <p className="text-white/30 italic">No cover art yet.</p>
               <p className="text-[11px] text-white/20 italic mt-1">Describe your cover on the left and generate.</p>
-              {title && (
-                <div className="mt-8 inline-block">
-                  <div className="w-80 h-80 border-2 border-white/10 bg-[#090A0F] flex items-center justify-center p-8">
-                    <div className="text-center">
-                      <div className="text-4xl font-black italic text-white tracking-tight leading-tight">{title}</div>
-                      <div className="text-sm italic text-white/40 mt-4">{artist}</div>
-                      {parental && <div className="mt-4 px-4 py-1 border border-white/20 text-[10px] font-black text-white/60 tracking-widest">PARENTAL ADVISORY</div>}
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-4">
-            {gallery.map((g, i) => (
-              <div key={i} className="aspect-square bg-[#090A0F] border border-white/5 flex items-center justify-center relative group">
-                <div className="text-white/20 italic">Cover {i + 1}</div>
-                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-3 transition-opacity">
-                  <button className="p-2 bg-white/20 hover:bg-primary/80"><Eye className="w-5 h-5" /></button>
-                  <button className="p-2 bg-white/20 hover:bg-primary/80"><Download className="w-5 h-5" /></button>
+          <div className="grid grid-cols-3 gap-4">
+            {gallery.map((url, i) => (
+              <div key={i} className="aspect-square bg-[var(--bg-main)] border border-white/5 flex items-center justify-center relative group">
+                <ImageIcon className="w-12 h-12 text-white/20" />
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-3 transition-opacity">
+                  <button className="px-4 py-2 bg-primary text-black text-[10px] font-black uppercase tracking-widest italic"><Download className="w-4 h-4 inline" /> Save</button>
+                  <button className="p-2 bg-white/20 hover:bg-red-500/80 transition-all"><Trash2 className="w-4 h-4" /></button>
                 </div>
               </div>
             ))}
@@ -948,307 +936,366 @@ function CoverArtStudio() {
 }
 
 /* =========================================================================
- * MODULE 7: MULTI-TRACK TIMELINE EDITOR
+ * MODULE 7: TIMELINE EDITOR
  * ========================================================================= */
 function TimelineEditor() {
+  const [clips, setClips] = useState<TimelineClip[]>(() => loadStudioData<TimelineClip[]>('timeline-clips', []));
+  const [cutMarkers, setCutMarkers] = useState<CutMarker[]>(() => loadStudioData<CutMarker[]>('timeline-markers', []));
   const [currentTime, setCurrentTime] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [duration] = useState(30);
-  const [bpm] = useState(120);
   const [zoom, setZoom] = useState(1);
-  const [selectedPreset, setSelectedPreset] = useState('voltage');
-  const [applyAll, setApplyAll] = useState(true);
-  const [lockedClips, setLockedClips] = useState<Record<string, boolean>>({});
-  const [visibleClips, setVisibleClips] = useState<Record<string, boolean>>({});
-  const [activeRightTab, setActiveRightTab] = useState<'lyrics' | 'style' | 'visuals' | 'hook'>('style');
-  const [activeStyleTab, setActiveStyleTab] = useState<'preset' | 'textcolor' | 'effects' | 'animation'>('preset');
-  const intervalRef = useRef<number | null>(null);
+  const [selectedPreset, setSelectedPreset] = useState('none');
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  const [textColor, setTextColor] = useState('#FFFFFF');
+  const [fontSize, setFontSize] = useState(32);
+  const [trackVVisible, setTrackVVisible] = useState(true);
+  const [trackAAudible, setTrackAAudible] = useState(true);
+  const [clipName, setClipName] = useState('');
+  const [markerLabel, setMarkerLabel] = useState('');
+  const playInterval = useRef<number | null>(null);
+  const timelineRef = useRef<HTMLDivElement>(null);
+  const totalDuration = Math.max(30, clips.reduce((max, c) => Math.max(max, c.end), 0) + 5);
 
-  const togglePlay = () => {
+  useEffect(() => { saveStudioData('timeline-clips', clips); }, [clips]);
+  useEffect(() => { saveStudioData('timeline-markers', cutMarkers); }, [cutMarkers]);
+
+  useEffect(() => {
     if (isPlaying) {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-      setIsPlaying(false);
-    } else {
-      setIsPlaying(true);
-      intervalRef.current = window.setInterval(() => {
+      playInterval.current = window.setInterval(() => {
         setCurrentTime(prev => {
-          if (prev >= duration) { setIsPlaying(false); return 0; }
+          if (prev >= totalDuration) { setIsPlaying(false); return 0; }
           return prev + 0.05;
         });
       }, 50);
+    } else if (playInterval.current) {
+      clearInterval(playInterval.current);
     }
+    return () => { if (playInterval.current) clearInterval(playInterval.current); };
+  }, [isPlaying, totalDuration]);
+
+  const addClip = () => {
+    if (!clipName.trim()) return;
+    const clip: TimelineClip = {
+      id: `c${Date.now()}`,
+      name: clipName.trim(),
+      type: 'video',
+      start: clips.length * 3,
+      end: clips.length * 3 + 3,
+      track: clips.length % 2 === 0 ? 'V' : 'A',
+      locked: false,
+      visible: true,
+      color: clips.length % 2 === 0 ? '#FF4D00' : '#FF6B33',
+    };
+    setClips(prev => [...prev, clip]);
+    setClipName('');
+    toast.success('Clip added to timeline');
   };
 
-  useEffect(() => {
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, []);
+  const removeClip = (id: string) => {
+    setClips(prev => prev.filter(c => c.id !== id));
+    toast.success('Clip removed');
+  };
 
-  const activeSegment = useMemo(() => {
-    return SAMPLE_LYRICS.find(s => currentTime >= s.start && currentTime <= s.end);
-  }, [currentTime]);
+  const toggleLock = (id: string) => {
+    setClips(prev => prev.map(c => c.id === id ? { ...c, locked: !c.locked } : c));
+  };
 
-  const cutMarkers = useMemo(() => {
-    const markers = [];
-    for (let t = 0; t < duration; t += 60 / bpm) markers.push(t);
-    return markers;
-  }, [duration, bpm]);
+  const toggleVisibility = (id: string) => {
+    setClips(prev => prev.map(c => c.id === id ? { ...c, visible: !c.visible } : c));
+  };
 
-  const toggleLock = (id: string) => setLockedClips(prev => ({ ...prev, [id]: !prev[id] }));
-  const toggleVisible = (id: string) => setVisibleClips(prev => ({ ...prev, [id]: !(prev[id] ?? true) }));
+  const addMarker = () => {
+    if (!markerLabel.trim()) return;
+    setCutMarkers(prev => {
+      const exists = prev.some(m => Math.abs(m.time - currentTime) < 0.5);
+      if (exists) { toast.error('Marker already at this time'); return prev; }
+      toast.success('Cut marker added');
+      return [...prev, { time: currentTime, label: markerLabel.trim() }].sort((a, b) => a.time - b.time);
+    });
+    setMarkerLabel('');
+  };
+
+  const removeMarker = (time: number) => {
+    setCutMarkers(prev => prev.filter(m => m.time !== time));
+    toast.success('Marker removed');
+  };
+
+  const handleTimelineClick = (e: React.MouseEvent) => {
+    if (!timelineRef.current) return;
+    const rect = timelineRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const time = x / (20 * zoom);
+    setCurrentTime(Math.max(0, Math.min(time, totalDuration)));
+  };
+
+  const clearAll = () => {
+    setClips([]);
+    setCutMarkers([]);
+    setCurrentTime(0);
+    toast.success('Timeline cleared');
+  };
 
   return (
     <div className="flex flex-col h-full">
-      {/* Main workspace */}
+      {/* Top Controls */}
+      <div className="shrink-0 bg-[var(--card-bg)] border-b border-white/5 px-6 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <h3 className="text-lg font-black italic text-white">Timeline Editor</h3>
+          <div className="h-6 w-px bg-white/10" />
+          <div className="flex items-center gap-2">
+            <button onClick={() => setIsPlaying(!isPlaying)}
+              className="w-10 h-10 rounded-full bg-primary text-black flex items-center justify-center hover:bg-primary/80 transition-all">
+              {isPlaying ? <Square className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
+            </button>
+            <button onClick={() => setCurrentTime(0)} className="p-2 text-white/40 hover:text-white transition-all">
+              <SkipBack className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="flex items-center gap-2 text-[10px] font-mono text-white/60">
+            <span>{(currentTime).toFixed(1)}s</span>
+            <span>/</span>
+            <span>{totalDuration.toFixed(1)}s</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <button onClick={() => setZoom(Math.max(0.5, zoom - 0.25))} className="p-1.5 text-white/30 hover:text-white text-xs">-</button>
+            <span className="text-[10px] font-mono text-white/60 w-8 text-center">{zoom.toFixed(2)}x</span>
+            <button onClick={() => setZoom(Math.min(3, zoom + 0.25))} className="p-1.5 text-white/30 hover:text-white text-xs">+</button>
+          </div>
+          <div className="h-6 w-px bg-white/10" />
+          <button onClick={clearAll} className="px-3 py-1.5 border border-red-500/30 text-red-400 text-[9px] font-black uppercase tracking-widest italic hover:bg-red-500/20 transition-all">
+            Clear
+          </button>
+          <button onClick={() => { toast.success('Project exported'); saveStudioData('export-count', loadStudioData('export-count', 0) + 1); }}
+            className="px-6 py-2 bg-primary text-black text-[10px] font-black uppercase tracking-widest italic hover:bg-primary/80 transition-all flex items-center gap-2">
+            <Download className="w-3.5 h-3.5" /> Export
+          </button>
+        </div>
+      </div>
+
       <div className="flex-1 flex overflow-hidden">
-        {/* Left - Asset panel */}
-        <div className="w-64 bg-[#12141C] border-r border-white/5 p-4 overflow-y-auto custom-scrollbar">
-          <div className="flex border-b border-white/5 mb-4">
-            {['Clips', 'Generate'].map(t => (
-              <button key={t} className="flex-1 py-2 text-[9px] font-black uppercase tracking-widest italic text-primary border-b-2 border-primary">
-                {t}
+        {/* Left Panel - Clips & Controls */}
+        <div className="w-72 bg-[var(--card-bg)] border-r border-white/5 p-4 overflow-y-auto custom-scrollbar space-y-4">
+          <div className="space-y-2">
+            <span className="text-[9px] font-black text-primary uppercase tracking-widest italic">Add Clip</span>
+            <div className="flex gap-2">
+              <input type="text" value={clipName} onChange={e => setClipName(e.target.value)}
+                placeholder="Clip name..."
+                className="flex-1 bg-black border border-white/10 px-3 py-2 text-xs text-white outline-none focus:border-primary"
+                onKeyDown={e => { if (e.key === 'Enter') addClip(); }} />
+              <button onClick={addClip} disabled={!clipName.trim()}
+                className="px-3 py-2 bg-primary text-black text-[9px] font-black disabled:opacity-30">
+                <Plus className="w-3 h-3" />
               </button>
-            ))}
+            </div>
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            {[1,2,3,4,5,6].map(i => (
-              <div key={i} className="aspect-square bg-black/40 border border-white/5 flex items-center justify-center cursor-pointer hover:border-primary/40 transition-all">
-                <Video className="w-5 h-5 text-white/20" />
-              </div>
-            ))}
+
+          <div className="space-y-2">
+            <span className="text-[9px] font-black text-primary uppercase tracking-widest italic">Add Marker</span>
+            <div className="flex gap-2">
+              <input type="text" value={markerLabel} onChange={e => setMarkerLabel(e.target.value)}
+                placeholder={`Marker at ${currentTime.toFixed(1)}s`}
+                className="flex-1 bg-black border border-white/10 px-3 py-2 text-xs text-white outline-none focus:border-primary"
+                onKeyDown={e => { if (e.key === 'Enter') addMarker(); }} />
+              <button onClick={addMarker} disabled={!markerLabel.trim()}
+                className="px-3 py-2 bg-primary text-black text-[9px] font-black disabled:opacity-30">
+                <Scissors className="w-3 h-3" />
+              </button>
+            </div>
           </div>
-          <div className="mt-4 p-3 bg-black/40 border border-white/5">
-            <div className="text-[9px] text-white/40 mb-1 italic">1 selected</div>
-            <div className="flex items-center justify-between">
-              <span className="text-[9px] font-black text-white/60 uppercase italic">Random Start</span>
-              <div className="w-8 h-4 bg-primary rounded-full relative cursor-pointer">
-                <div className="w-3 h-3 bg-white rounded-full absolute top-0.5 right-0.5" />
+
+          {cutMarkers.length > 0 && (
+            <div>
+              <span className="text-[9px] font-black text-white/40 uppercase tracking-widest italic block mb-2">Markers</span>
+              <div className="space-y-1">
+                {cutMarkers.map(m => (
+                  <div key={m.time} className="flex items-center justify-between px-2 py-1 bg-black/40 border border-white/5">
+                    <span className="text-[10px] font-mono text-white/60">{m.time.toFixed(1)}s</span>
+                    <span className="text-[10px] text-white/40 italic truncate mx-2">{m.label}</span>
+                    <button onClick={() => removeMarker(m.time)} className="text-white/20 hover:text-red-400 shrink-0"><Trash2 className="w-3 h-3" /></button>
+                  </div>
+                ))}
               </div>
             </div>
-            <button className="w-full mt-3 py-2 bg-[#00E5FF] text-black text-[9px] font-black uppercase tracking-widest italic flex items-center justify-center gap-2 hover:bg-[#2979FF] transition-all">
-              <Shuffle className="w-3 h-3" /> Shuffle
+          )}
+
+          <div className="space-y-2">
+            <span className="text-[9px] font-black text-primary uppercase tracking-widest italic">Style Preset</span>
+            <div className="grid grid-cols-3 gap-2">
+              {TEXT_PRESETS.map(p => (
+                <button key={p.id} onClick={() => setSelectedPreset(p.id)}
+                  className={cn('px-2 py-2 text-[8px] font-black uppercase tracking-widest italic border transition-all text-center',
+                    selectedPreset === p.id ? 'border-primary bg-primary/10 text-primary' : 'border-white/5 bg-black/40 text-white/40 hover:border-white/20')}>
+                  {p.name}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <span className="text-[9px] font-black text-primary uppercase tracking-widest italic">Text Color</span>
+            <div className="flex gap-2">
+              {['#FFFFFF','#00E5FF','#FF4D00','#22C55E','#FFD700','#FF0066'].map(c => (
+                <button key={c} onClick={() => setTextColor(c)}
+                  className={cn('w-8 h-8 border', textColor === c ? 'border-white scale-110' : 'border-white/20')}
+                  style={{ backgroundColor: c }} />
+              ))}
+              <button onClick={() => setShowColorPicker(!showColorPicker)}
+                className="w-8 h-8 border border-white/20 flex items-center justify-center text-[9px] text-white/40">
+                +
+              </button>
+            </div>
+            {showColorPicker && (
+              <input type="color" value={textColor} onChange={e => setTextColor(e.target.value)}
+                className="w-full h-8 cursor-pointer" />
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <span className="text-[9px] font-black text-primary uppercase tracking-widest italic">Font Size</span>
+            <input type="range" min={16} max={72} value={fontSize} onChange={e => setFontSize(Number(e.target.value))} className="w-full accent-primary" />
+            <div className="text-[9px] text-white/30 text-center">{fontSize}px</div>
+          </div>
+
+          <div className="flex items-center justify-between pt-2 border-t border-white/5">
+            <span className="text-[9px] font-black text-white/40 uppercase tracking-widest italic">Apply to All</span>
+            <button className={cn('px-4 py-1.5 text-[9px] font-black uppercase tracking-widest italic border transition-all',
+              'border-primary/30 text-primary')}>
+              ON
             </button>
           </div>
         </div>
 
         {/* Center - Video Preview */}
-        <div className="flex-1 flex flex-col items-center justify-center bg-[#090A0F] p-8">
-          <div className="relative w-[360px] aspect-[9/16] bg-black border border-white/10 overflow-hidden">
-            {activeSegment && (
+        <div className="flex-1 flex flex-col items-center justify-center bg-[var(--bg-main)] p-8">
+          {clips.length === 0 ? (
+            <div className="text-center border-2 border-dashed border-white/5 p-16">
+              <Video className="w-16 h-16 text-white/10 mx-auto mb-4" />
+              <p className="text-white/30 italic">No clips in timeline</p>
+              <p className="text-[11px] text-white/20 italic mt-1">Add clips from the left panel</p>
+            </div>
+          ) : (
+            <div className="relative w-[360px] aspect-[9/16] bg-black border border-white/10 overflow-hidden">
               <div className="absolute inset-0 flex items-center justify-center p-8">
                 <p className="text-3xl font-black italic text-white text-center leading-tight tracking-tight"
-                  style={selectedPreset === 'voltage' ? { textShadow: '0 0 20px #00E5FF, 0 0 40px #00E5FF, 0 0 80px #00E5FF' } :
-                    selectedPreset === 'stencil' ? { WebkitTextStroke: '2px white', color: 'transparent' } :
-                    selectedPreset === 'brick' ? { fontWeight: 900, letterSpacing: '0.1em' } :
-                    selectedPreset === 'heartless' ? { fontStyle: 'italic', fontWeight: 900, transform: 'skewX(-8deg)' } :
-                    selectedPreset === 'fly' ? { letterSpacing: '0.3em', fontWeight: 300 } :
-                    {}}
-                >
-                  "{activeSegment.text}"
+                  style={{
+                    color: textColor,
+                    fontSize: `${fontSize}px`,
+                    textShadow: selectedPreset === 'voltage' ? `0 0 20px ${textColor}, 0 0 40px ${textColor}, 0 0 80px ${textColor}` :
+                      selectedPreset === 'stencil' ? undefined :
+                      undefined,
+                    WebkitTextStroke: selectedPreset === 'stencil' ? `2px ${textColor}` : undefined,
+                  }}>
+                  {clips.find(c => Math.abs(currentTime - c.start) < 3)?.name || 'Your Timeline'}
                 </p>
               </div>
-            )}
-            {!activeSegment && (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <p className="text-white/20 italic">Waiting for next line...</p>
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10">
+                <div className="h-full bg-primary transition-all" style={{ width: `${(currentTime / totalDuration) * 100}%` }} />
               </div>
-            )}
-          </div>
-          {/* Playback controls */}
-          <div className="flex items-center gap-4 mt-4 w-[360px]">
-            <button className="text-white/40 hover:text-white"><SkipBack className="w-4 h-4" /></button>
-            <button onClick={togglePlay}
-              className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center hover:bg-primary transition-all">
-              {isPlaying ? <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> : <Play className="w-4 h-4 ml-0.5" />}
-            </button>
-            <button className="text-white/40 hover:text-white"><SkipForward className="w-4 h-4" /></button>
-            <span className="flex-1 text-[10px] font-mono text-white/40 text-right">{currentTime.toFixed(1)}s / {duration}s <span className="text-primary ml-2">{bpm} BPM</span></span>
-          </div>
-        </div>
-
-        {/* Right - Style Inspector */}
-        <div className="w-80 bg-[#12141C] border-l border-white/5 flex flex-col overflow-hidden">
-          <div className="flex border-b border-white/5">
-            {[
-              { id: 'lyrics' as const, label: 'Lyrics' },
-              { id: 'style' as const, label: 'Style' },
-              { id: 'visuals' as const, label: 'Visuals' },
-              { id: 'hook' as const, label: 'Hook' },
-            ].map(t => (
-              <button key={t.id} onClick={() => setActiveRightTab(t.id)}
-                className={cn(
-                  'flex-1 py-3 text-[8px] font-black uppercase tracking-widest italic transition-all',
-                  activeRightTab === t.id ? 'text-primary border-b-2 border-primary' : 'text-white/30 hover:text-white'
-                )}>
-                {t.label}
-              </button>
-            ))}
-          </div>
-          <div className="flex border-b border-white/5">
-            {[
-              { id: 'preset' as const, label: 'Preset' },
-              { id: 'textcolor' as const, label: 'Text & Color' },
-              { id: 'effects' as const, label: 'Effects' },
-              { id: 'animation' as const, label: 'Animation' },
-            ].map(t => (
-              <button key={t.id} onClick={() => setActiveStyleTab(t.id)}
-                className={cn(
-                  'flex-1 py-2 text-[7px] font-black uppercase tracking-widest italic transition-all',
-                  activeStyleTab === t.id ? 'text-primary' : 'text-white/20 hover:text-white/50'
-                )}>
-                {t.label}
-              </button>
-            ))}
-          </div>
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
-            {activeStyleTab === 'preset' && (
-              <div className="grid grid-cols-2 gap-2">
-                {TEXT_PRESETS.map(p => (
-                  <button key={p.id} onClick={() => setSelectedPreset(p.id)}
-                    className={cn(
-                      'p-3 border text-left transition-all',
-                      selectedPreset === p.id ? 'border-primary bg-primary/10' : 'border-white/5 bg-black/40 hover:border-white/20'
-                    )}>
-                    <div className="text-[10px] font-black italic text-white">{p.name}</div>
-                    <div className="text-[8px] text-white/30 italic mt-0.5">{p.desc}</div>
-                  </button>
-                ))}
-              </div>
-            )}
-            {activeStyleTab === 'textcolor' && (
-              <div className="space-y-4">
-                <div>
-                  <label className="text-[9px] font-black text-white/40 uppercase tracking-widest italic block mb-2">Font Size</label>
-                  <input type="range" min={12} max={72} defaultValue={48} className="w-full accent-primary" />
-                </div>
-                <div>
-                  <label className="text-[9px] font-black text-white/40 uppercase tracking-widest italic block mb-2">Color</label>
-                  <div className="grid grid-cols-6 gap-2">
-                    {['#FFFFFF','#00E5FF','#FF4D00','#22C55E','#FFD700','#FF0066'].map(c => (
-                      <button key={c} onClick={() => {}}
-                        className="w-8 h-8 rounded-full border-2 border-white/10 hover:border-white transition-all"
-                        style={{ backgroundColor: c }} />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-            {activeStyleTab === 'effects' && (
-              <div className="space-y-3">
-                {['Glow', 'Shadow', 'Outline', 'Gradient', 'Neon'].map(e => (
-                  <label key={e} className="flex items-center gap-3 cursor-pointer">
-                    <input type="checkbox" defaultChecked={e === 'Glow'} className="accent-primary" />
-                    <span className="text-xs italic text-white/70">{e}</span>
-                  </label>
-                ))}
-              </div>
-            )}
-            {activeStyleTab === 'animation' && (
-              <div className="space-y-3">
-                {['Fade In', 'Slide Up', 'Scale In', 'Typewriter', 'Bounce In'].map(a => (
-                  <label key={a} className="flex items-center gap-3 cursor-pointer">
-                    <input type="radio" name="anim" defaultChecked={a === 'Fade In'} className="accent-primary" />
-                    <span className="text-xs italic text-white/70">{a}</span>
-                  </label>
-                ))}
-              </div>
-            )}
-            <div className="mt-6 pt-4 border-t border-white/5">
-              <button onClick={() => setApplyAll(!applyAll)}
-                className={cn(
-                  'w-full py-3 text-[9px] font-black uppercase tracking-widest italic border transition-all',
-                  applyAll ? 'bg-primary/10 border-primary text-primary' : 'border-white/10 text-white/40'
-                )}>
-                {applyAll ? '✓ APPLY TO ALL LYRICS' : 'Apply to All Lyrics'}
-              </button>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
-      {/* Bottom Timeline */}
-      <div className="shrink-0 bg-[#12141C] border-t border-white/5">
-        {/* Timeline controls */}
-        <div className="flex items-center gap-4 px-6 py-2 border-b border-white/5">
-          <div className="flex items-center gap-2 text-[9px] font-black text-white/30 uppercase tracking-widest italic">
-            <button className="hover:text-white transition-all"><AlignLeft className="w-3 h-3" /></button>
-            <span className="ml-2">ZOOM</span>
-            <input type="range" min={0.5} max={3} step={0.1} value={zoom} onChange={e => setZoom(Number(e.target.value))}
-              className="w-20 accent-primary" />
-            <span className="text-white/50">{bpm} BPM</span>
-          </div>
-          <div className="flex items-center gap-2 ml-auto text-[9px] font-black text-white/30 uppercase tracking-widest italic">
-            <span>T: <button className="hover:text-white"><Eye className="w-3 h-3 inline" /></button></span>
-            <span>V: <button className="hover:text-white"><Eye className="w-3 h-3 inline" /></button></span>
-            <span>A: <button className="hover:text-white"><Eye className="w-3 h-3 inline" /></button></span>
-            <button className="ml-2 px-2 py-1 border border-white/10 hover:border-white/40 text-white/50 italic">? Tips</button>
-          </div>
+      {/* Bottom - Timeline Track */}
+      <div className="shrink-0 bg-[var(--card-bg)] border-t border-white/5">
+        <div className="flex items-center gap-2 px-4 py-1.5 border-b border-white/5">
+          <button onClick={() => setTrackVVisible(!trackVVisible)}
+            className={cn('flex items-center gap-1 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest italic transition-all',
+              trackVVisible ? 'text-white' : 'text-white/30')}>
+            {trackVVisible ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />} Track V
+          </button>
+          <button onClick={() => setTrackAAudible(!trackAAudible)}
+            className={cn('flex items-center gap-1 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest italic transition-all',
+              trackAAudible ? 'text-white' : 'text-white/30')}>
+            {trackAAudible ? <Volume2 className="w-3 h-3" /> : <Volume2 className="w-3 h-3 opacity-30" />} Track A
+          </button>
+          <div className="text-[9px] text-white/20 italic ml-auto">{clips.length} clips · {cutMarkers.length} markers</div>
         </div>
 
-        {/* Timeline tracks */}
-        <div className="overflow-x-auto custom-scrollbar">
-          <div className="relative" style={{ width: `${duration * 20 * zoom}px`, minWidth: '100%' }}>
-            {/* Time ruler */}
-            <div className="flex h-6 border-b border-white/5">
-              {Array.from({ length: duration + 1 }, (_, i) => (
-                <div key={i} className="text-[7px] font-mono text-white/20 px-0.5 border-l border-white/5"
-                  style={{ width: `${20 * zoom}px`, minWidth: 10 }}>
-                  {i % 5 === 0 ? `${i}s` : ''}
-                </div>
-              ))}
-            </div>
+        <div ref={timelineRef} onClick={handleTimelineClick}
+          className="relative h-28 overflow-x-auto custom-scrollbar cursor-crosshair"
+          style={{ paddingLeft: '60px' }}>
+          {/* Ruler */}
+          <div className="sticky top-0 h-5 bg-black/40 border-b border-white/5 flex" style={{ width: `${totalDuration * 20 * zoom}px`, minWidth: '100%' }}>
+            {Array.from({ length: Math.ceil(totalDuration) + 1 }).map((_, i) => (
+              <div key={i} className="flex items-end" style={{ width: `${20 * zoom}px`, minWidth: 20 }}>
+                {i % 5 === 0 && <span className="text-[7px] font-mono text-white/30 mb-0.5 ml-0.5">{i}s</span>}
+              </div>
+            ))}
+          </div>
 
-            {/* Track T: Lyrics */}
-            <div className="h-10 border-b border-white/5 relative">
-              {SAMPLE_LYRICS.map(seg => (
-                <div key={seg.id} className="absolute top-1 h-8 bg-primary/20 border border-primary/40 flex items-center px-2 cursor-pointer hover:bg-primary/30 transition-all group"
-                  style={{ left: `${seg.start * 20 * zoom}px`, width: `${(seg.end - seg.start) * 20 * zoom}px`, minWidth: 20 }}>
-                  <span className="text-[7px] font-mono text-white/60 truncate w-full group-hover:text-white">{seg.text}</span>
-                </div>
-              ))}
-              {/* Current time indicator */}
-              <div className="absolute top-0 bottom-0 w-0.5 bg-[#00E5FF] z-10"
-                style={{ left: `${currentTime * 20 * zoom}px` }} />
-            </div>
-
-            {/* Track V: Video clips */}
-            <div className="h-10 border-b border-white/5 relative">
-              {[1, 2, 3, 4].map(i => {
-                const clipId = `v${i}`;
-                const start = (i - 1) * 7;
-                const width = 7;
-                return (
-                  <div key={i} className={cn(
-                    'absolute top-1 h-8 flex items-center px-2 transition-all',
-                    visibleClips[clipId] === false ? 'opacity-30' : 'opacity-100'
-                  )}
-                    style={{ left: `${start * 20 * zoom}px`, width: `${width * 20 * zoom}px`, minWidth: 20, backgroundColor: lockedClips[clipId] ? '#1a3a1a' : '#1a1a2e', border: `1px solid ${lockedClips[clipId] ? '#22C55E40' : '#2979FF40'}` }}>
-                    <span className="text-[7px] font-mono text-white/40 truncate flex-1">Clip {i}</span>
-                    <button onClick={() => toggleLock(clipId)} className="p-0.5 hover:text-primary">
-                      {lockedClips[clipId] ? <Lock className="w-2.5 h-2.5" /> : <Unlock className="w-2.5 h-2.5 text-white/30" />}
+          {/* Track V */}
+          <div className="h-10 border-b border-white/5 relative" style={{ width: `${totalDuration * 20 * zoom}px`, minWidth: '100%' }}>
+            {trackVVisible && clips.filter(c => c.track === 'V').map(c => {
+              const left = c.start * 20 * zoom;
+              const width = (c.end - c.start) * 20 * zoom;
+              const active = Math.abs(currentTime - c.start) < (c.end - c.start);
+              return (
+                <div key={c.id} onClick={(e) => { e.stopPropagation(); setCurrentTime(c.start); }}
+                  className={cn('absolute top-1 h-8 flex items-center px-2 cursor-pointer transition-all group',
+                    c.locked ? 'opacity-60' : 'opacity-100')}
+                  style={{
+                    left: `${left}px`,
+                    width: `${Math.max(width, 20)}px`,
+                    backgroundColor: c.locked ? '#1a3a1a' : `${c.color}30`,
+                    border: `1px solid ${active ? c.color : `${c.color}60`}`,
+                  }}>
+                  <span className="text-[7px] font-mono text-white/60 truncate w-full group-hover:text-white">{c.name}</span>
+                  <div className="hidden group-hover:flex items-center gap-1 ml-1 shrink-0">
+                    <button onClick={(e) => { e.stopPropagation(); toggleLock(c.id); }} className="text-white/40 hover:text-primary">
+                      {c.locked ? <Lock className="w-2.5 h-2.5" /> : <Unlock className="w-2.5 h-2.5" />}
                     </button>
-                    <button onClick={() => toggleVisible(clipId)} className="p-0.5 hover:text-primary">
-                      <Eye className="w-2.5 h-2.5 text-white/30" />
+                    <button onClick={(e) => { e.stopPropagation(); removeClip(c.id); }} className="text-white/40 hover:text-red-400">
+                      <Trash2 className="w-2.5 h-2.5" />
                     </button>
                   </div>
-                );
-              })}
-            </div>
+                </div>
+              );
+            })}
+            <div className="absolute top-0 bottom-0 w-0.5 bg-primary z-10" style={{ left: `${currentTime * 20 * zoom}px` }} />
+          </div>
 
-            {/* Track A: Waveform */}
-            <div className="h-12 border-b border-white/5 relative">
-              <canvas className="w-full h-full opacity-30" />
-              {/* Beat markers */}
-              {cutMarkers.map((marker, i) => (
-                <div key={i} className="absolute top-0 bottom-0 w-px bg-white/10"
-                  style={{ left: `${marker * 20 * zoom}px` }} />
-              ))}
-              {/* Playhead */}
-              <div className="absolute top-0 bottom-0 w-px bg-[#00E5FF] z-10 shadow-[0_0_8px_rgba(0,229,255,0.5)]"
-                style={{ left: `${currentTime * 20 * zoom}px` }} />
-            </div>
+          {/* Track A */}
+          <div className="h-10 border-b border-white/5 relative" style={{ width: `${totalDuration * 20 * zoom}px`, minWidth: '100%' }}>
+            {trackAAudible && clips.filter(c => c.track === 'A').map(c => {
+              const left = c.start * 20 * zoom;
+              const width = (c.end - c.start) * 20 * zoom;
+              return (
+                <div key={c.id} onClick={(e) => { e.stopPropagation(); setCurrentTime(c.start); }}
+                  className="absolute top-2 h-6 flex items-center px-2 cursor-pointer transition-all group"
+                  style={{
+                    left: `${left}px`,
+                    width: `${Math.max(width, 20)}px`,
+                    backgroundColor: `${c.color}20`,
+                    border: `1px solid ${c.color}50`,
+                  }}>
+                  <span className="text-[7px] font-mono text-white/50 truncate w-full group-hover:text-white">{c.name}</span>
+                  <button onClick={(e) => { e.stopPropagation(); removeClip(c.id); }} className="hidden group-hover:block text-white/40 hover:text-red-400 ml-1 shrink-0">
+                    <Trash2 className="w-2.5 h-2.5" />
+                  </button>
+                </div>
+              );
+            })}
+            {/* Beat markers */}
+            {cutMarkers.map(m => (
+              <div key={m.time} className="absolute top-0 bottom-0 w-px bg-primary z-10"
+                style={{ left: `${m.time * 20 * zoom}px`, opacity: 0.5 }} />
+            ))}
+            <div className="absolute top-0 bottom-0 w-px bg-primary z-10 shadow-[0_0_8px_rgba(var(--primary-raw),0.5)]"
+              style={{ left: `${currentTime * 20 * zoom}px` }} />
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+function Square(props: any) {
+  return (
+    <svg {...props} viewBox="0 0 24 24" fill="currentColor">
+      <rect x="6" y="6" width="12" height="12" />
+    </svg>
   );
 }
