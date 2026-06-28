@@ -59,14 +59,14 @@ export default function Reactions() {
   const toggleSelect = (id: number | string, channel: string) => {
     setSelectedReactors(prev => {
       if (prev.includes(id)) return prev.filter(i => i !== id);
-      notify('info', 'REACTOR_ENGAGED', `${channel} has been queued for submission.`);
+      notify('info', 'Channel selected', `${channel} has been added to your list.`);
       return [...prev, id];
     });
   };
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    notify('ai', 'PACKAGING_METADATA', 'Compiling press assets and high-res audio for reactors...');
+    notify('ai', 'Preparing', 'Compiling press assets and high-res audio for reaction channels...');
     
     try {
       const response = await fetch('/api/influencers/send', {
@@ -81,10 +81,10 @@ export default function Reactions() {
 
       if (!response.ok) throw new Error('Submission failed');
 
-      notify('success', 'SUBMISSION_VERIFIED', `Pitched track to ${selectedReactors.length} reactor nodes.`);
+      notify('success', 'Sent', `Pitched your track to ${selectedReactors.length} reaction channels.`);
       setSelectedReactors([]);
     } catch (err) {
-      notify('error', 'SUBMISSION_ERROR', 'Failed to engage reactor network.');
+      notify('error', "Send failed", 'Failed to reach the reaction channels. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -99,13 +99,13 @@ export default function Reactions() {
                <Youtube className="w-4 h-4" />
                <span className="text-[11px] font-bold uppercase tracking-widest italic font-mono">Reaction Network</span>
             </div>
-            <h1 className="text-5xl font-black tracking-tighter text-white italic font-mono uppercase">Reactor Nodes</h1>
+            <h1 className="text-5xl font-black tracking-tighter text-white italic font-mono uppercase">Reaction Channels</h1>
             <p className="text-white/30 text-sm italic font-medium max-w-xl leading-relaxed">
               Auto-scout and pitch to reaction channels. AI analyzes past reaction history to ensure maximum conversion for your specific sonic profile.
             </p>
           </div>
           <div className="flex flex-col items-end gap-4">
-            <div className="text-[10px] font-bold text-white/20 uppercase tracking-[0.3em] font-mono">Submission Buffer</div>
+            <div className="text-[10px] font-bold text-white/20 uppercase tracking-[0.3em] font-mono">Selected</div>
             <div className="flex items-center gap-4">
               <div className="text-4xl font-black text-white font-mono italic">{selectedReactors.length.toString().padStart(2, '0')}</div>
               <button 
@@ -117,7 +117,7 @@ export default function Reactions() {
                 )}
               >
                 {isSubmitting ? <Cpu className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                {isSubmitting ? 'Transmitting...' : 'Submit to Reactors'}
+                {isSubmitting ? 'Sending...' : 'Submit to Channels'}
               </button>
             </div>
           </div>
@@ -131,15 +131,15 @@ export default function Reactions() {
             <div className="space-y-4">
                <div className="flex items-center gap-3 text-primary font-mono font-black italic">
                  <Sparkles className="w-5 h-5" />
-                 AI SCOUTER_REPORT: READY
+                 AI recommendations ready
                </div>
-               <h3 className="text-3xl font-black italic font-mono uppercase tracking-tight text-white">Target High-Velocity Nodes</h3>
+               <h3 className="text-3xl font-black italic font-mono uppercase tracking-tight text-white">Target Fast-Growing Channels</h3>
                <p className="text-white/40 text-sm italic font-medium max-w-lg leading-relaxed">
                   Pitch your release to reaction channels matched on genre and audience. Strategy recommendations appear here once you've pitched a track and we have response data to learn from.
                </p>
             </div>
             <button 
-              onClick={() => notify('success', 'STRATEGY_ADOPTED', 'Filter and prioritization system tuned to AI recommendations.')}
+              onClick={() => notify('success', 'Applied', 'Filters tuned to AI recommendations.')}
               className="primary-button py-5 px-10 font-mono text-[11px] font-black uppercase tracking-widest bg-white text-black hover:bg-white/80"
             >
               Adopt AI Strategy
@@ -153,7 +153,7 @@ export default function Reactions() {
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
               <input 
                 type="text" 
-                placeholder="Search reactors..." 
+                placeholder="Search channels..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="bg-black border border-white/10 pl-12 pr-6 py-3 text-xs font-mono tracking-widest text-white outline-none focus:border-primary transition-all w-full uppercase"
@@ -175,18 +175,18 @@ export default function Reactions() {
             </div>
          </div>
          <button 
-           onClick={() => notify('info', 'DEEP_SCAN', 'Advanced scraping of reaction history initiated.')}
+           onClick={() => notify('info', 'Detailed search', 'Searching reaction history for more matches.')}
            className="flex items-center gap-2 text-[10px] font-bold font-mono tracking-widest text-white/30 hover:text-white transition-colors"
          >
            <Filter className="w-3.5 h-3.5" />
-           ADVANCED_SCOUTING
+           More filters
          </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {filteredReactors.length === 0 ? (
           <div className="col-span-full py-24 text-center border-2 border-dashed border-white/5 bg-white/[0.01]">
-            <div className="text-white/10 font-mono text-sm uppercase tracking-widest italic">No reactor nodes matching parameters</div>
+            <div className="text-white/10 font-mono text-sm uppercase tracking-widest italic">No channels match your filters</div>
           </div>
         ) : filteredReactors.map((r, i) => (
           <ScrollReveal key={r.id} delay={i * 0.1} direction="up">
@@ -236,11 +236,11 @@ export default function Reactions() {
 
               <div className="mt-8 flex items-center justify-between">
                  <button 
-                   onClick={() => notify('info', 'DEMO_RESTRICTED', 'Preview is restricted to full LVRN Pro membership.')}
+                   onClick={() => notify('info', 'Pro only', 'Preview is available with LVRN Pro membership.')}
                    className="flex items-center gap-2 text-[10px] font-bold font-mono tracking-widest text-white/40 hover:text-white transition-colors"
                  >
                     <Play className="w-3 h-3" />
-                    VIEW_LATEST_REACTION
+                    View latest reaction
                  </button>
                  <button 
                    onClick={() => toggleSelect(r.id, r.channel)}
@@ -249,7 +249,7 @@ export default function Reactions() {
                     selectedReactors.includes(r.id) ? "bg-primary text-white" : "border border-white/10 text-white hover:bg-white hover:text-black"
                    )}
                  >
-                    {selectedReactors.includes(r.id) ? 'NODE_READY' : 'SELECT_NODE'}
+                    {selectedReactors.includes(r.id) ? 'Selected' : 'Select channel'}
                     <ArrowUpRight className="w-4 h-4" />
                  </button>
               </div>

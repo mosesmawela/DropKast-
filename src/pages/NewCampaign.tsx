@@ -31,7 +31,7 @@ import { useAI } from '../context/AIContext';
 
 const goals = [
   { id: 'STREAMS', title: 'Global Streaming', desc: 'Maximize listeners on Spotify, Apple Music & Tidal.', icon: Music, color: 'text-blue-500' },
-  { id: 'VIRAL', title: 'Viral Velocity', desc: 'Focus on TikTok sounds and short-form content growth.', icon: Zap, color: 'text-primary' },
+  { id: 'VIRAL', title: 'Viral Growth', desc: 'Focus on TikTok sounds and short-form content growth.', icon: Zap, color: 'text-primary' },
   { id: 'REVENUE', title: 'Monetization', desc: 'Optimize for sync licensing, merch & direct sales.', icon: DollarSign, color: 'text-green-500' },
   { id: 'AWARENESS', title: 'Legacy Awareness', desc: 'Build long-term brand equity and press coverage.', icon: Users, color: 'text-purple-500' },
 ];
@@ -57,7 +57,7 @@ export default function NewCampaign() {
 
   const handleNext = () => {
     if (step === 1) {
-      notify('info', 'ASSET_LOCKED', 'Sonic fingerprint ingested. Ready for objective calibration.');
+      notify('info', 'Track selected', 'Your track is ready. Now choose a goal.');
     }
     if (step < 3) setStep(step + 1);
   };
@@ -69,7 +69,7 @@ export default function NewCampaign() {
   const generatePlan = async () => {
     if (!selectedRelease || !selectedGoal) return;
     
-    notify('ai', 'STRATEGY_SYNTHESIS', 'Analyzing market volatility and node availability...');
+    notify('ai', 'Generating plan', 'Analyzing the market and available creators...');
     
     const release = releases.find(r => r.id === selectedRelease);
     const goal = goals.find(g => g.id === selectedGoal);
@@ -81,7 +81,7 @@ export default function NewCampaign() {
     );
 
     if (planData) {
-      notify('success', 'ROADMAP_READY', 'Tactical deployment plan has been generated.');
+      notify('success', 'Plan ready', 'Your campaign plan has been generated.');
       setStep(3);
     }
   };
@@ -90,7 +90,7 @@ export default function NewCampaign() {
     if (!selectedRelease || !selectedGoal) return;
     
     setIsLaunching(true);
-    notify('ai', 'PROTOCOLS_ENGAGED', 'Broadcasting metadata to DJ nodes and influencer networks...');
+    notify('ai', 'Launching', 'Sending your release to DJs and creators...');
     
     const release = releases.find(r => r.id === selectedRelease);
     const goal = goals.find(g => g.id === selectedGoal);
@@ -107,7 +107,7 @@ export default function NewCampaign() {
       metrics: { engagement: '0%', reach: '0' }
     });
 
-    notify('success', 'MISSION_INITIALIZED', 'Deployment is live in the Operational Hub.');
+    notify('success', 'Campaign launched', 'Your campaign is now live.');
     navigate('/campaigns');
   };
 
@@ -127,7 +127,7 @@ export default function NewCampaign() {
               "text-[9px] font-bold uppercase tracking-[0.2em] transition-all",
               step >= s ? "text-white" : "text-white/20"
             )}>
-              {s === 1 ? 'Target Release' : s === 2 ? 'Mission Objective' : 'Tactical Roadmap'}
+              {s === 1 ? 'Select Release' : s === 2 ? 'Campaign Goal' : 'Your Plan'}
             </div>
             {s < 3 && <div className="w-12 h-[1px] bg-white/10 mx-4" />}
           </div>
@@ -146,7 +146,7 @@ export default function NewCampaign() {
             <div>
               <h2 className="text-6xl font-black italic font-mono uppercase tracking-tighter text-white mb-6">Select Track</h2>
               <p className="text-white/40 text-lg italic font-medium leading-relaxed max-w-2xl">
-                Identify the core asset for this campaign. Our AI will analyze the sonic profile to match with influencers.
+                Pick the track for this campaign. Our AI will analyze it to match with the right creators.
               </p>
             </div>
 
@@ -216,7 +216,7 @@ export default function NewCampaign() {
             <div>
               <h2 className="text-6xl font-black italic font-mono uppercase tracking-tighter text-white mb-6">Set Objective</h2>
               <p className="text-white/40 text-lg italic font-medium leading-relaxed max-w-2xl">
-                What is the primary success metric for this operation? We will calibrate the AI rollout engine accordingly.
+                What is the main goal for this campaign? We'll tune the AI rollout plan accordingly.
               </p>
             </div>
 
@@ -262,11 +262,11 @@ export default function NewCampaign() {
                   {isAiLoading ? (
                     <>
                       <Cpu className="w-5 h-5 animate-spin" />
-                      Synthesizing DNA...
+                      Generating...
                     </>
                   ) : (
                     <>
-                      Generate Tactical Plan
+                      Generate Plan
                       <Sparkles className="w-5 h-5" />
                     </>
                   )}
@@ -288,12 +288,12 @@ export default function NewCampaign() {
                <div className="relative z-10">
                  <div className="flex items-center gap-3 text-primary mb-4 font-mono font-black italic">
                    <Sparkles className="w-5 h-5" />
-                   STRATEGY_GENERATED
+                   Plan generated
                  </div>
-                 <h2 className="text-5xl font-black italic font-mono uppercase tracking-tighter text-white">Your Tactical Roadmap</h2>
+                 <h2 className="text-5xl font-black italic font-mono uppercase tracking-tighter text-white">Your Campaign Plan</h2>
                </div>
                <div className="relative z-10 text-right space-y-4">
-                 <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest font-mono">Predicted ROI</div>
+                 <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest font-mono">Predicted return</div>
                  <div className="text-5xl font-black text-primary font-mono italic">3.8x — 4.5x</div>
                </div>
             </header>
@@ -308,8 +308,8 @@ export default function NewCampaign() {
                    {[
                      { day: 'Day 01', icon: Cpu, label: 'Asset Preparation', text: 'AI generates 12 TikTok variations and 4 DJ drop edits.' },
                      { day: 'Day 03', icon: Users, label: 'Influencer Seeding', text: 'Auto outreach to 45 matched TikTok creators starts.' },
-                     { day: 'Day 07', icon: Radio, label: 'DJ Distribution', text: 'Blast to genre-specific DJ nodes in SA, US & UK.' },
-                     { day: 'Day 10', icon: Share2, label: 'Social Velocity', text: 'Launch dynamic Meta & Google discovery ads.' },
+                     { day: 'Day 07', icon: Radio, label: 'DJ Distribution', text: 'Send to genre-specific DJs in SA, US & UK.' },
+                     { day: 'Day 10', icon: Share2, label: 'Social Growth', text: 'Launch dynamic Meta & Google discovery ads.' },
                    ].map((item, i) => (
                      <div key={item.day} className={cn(
                        "relative flex items-center mb-24 last:mb-0",
@@ -339,7 +339,7 @@ export default function NewCampaign() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="p-10 border border-white/5 bg-black space-y-6">
-                <h3 className="text-sm font-bold text-white tracking-[0.2em] font-mono uppercase italic">Network Allocation</h3>
+                <h3 className="text-sm font-bold text-white tracking-[0.2em] font-mono uppercase italic">Channel Allocation</h3>
                 <div className="space-y-6">
                   {[
                     { label: 'Influencers', value: '—', progress: 0 },
@@ -365,7 +365,7 @@ export default function NewCampaign() {
                 </div>
                 <div>
                    <h4 className="text-2xl font-black italic font-mono uppercase text-white mb-2 tracking-tight">One-Click Growth</h4>
-                   <p className="text-xs text-white/40 italic font-medium max-w-[280px]">Deploy all assets and launch outreach systems across all networks instantly.</p>
+                   <p className="text-xs text-white/40 italic font-medium max-w-[280px]">Send all your assets and launch outreach across every channel instantly.</p>
                 </div>
                 <button 
                   onClick={handleLaunch}
@@ -375,7 +375,7 @@ export default function NewCampaign() {
                     isLaunching && "opacity-50 cursor-not-allowed grayscale"
                   )}
                 >
-                  {isLaunching ? 'Activating Mission...' : 'Confirm & Launch Mission'}
+                  {isLaunching ? 'Launching...' : 'Confirm & Launch Campaign'}
                   <ArrowRight className="w-5 h-5" />
                 </button>
               </div>

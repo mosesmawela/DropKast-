@@ -38,7 +38,7 @@ export default function Campaigns() {
   const handleDelete = (id: string, title: string) => {
     if (confirm(`Are you sure you want to terminate campaign "${title}"?`)) {
       deleteCampaign(id);
-      notify('error', 'CAMPAIGN_TERMINATED', `Mission ${id} has been wiped from the hub.`);
+      notify('error', 'Campaign deleted', `Campaign ${id} has been removed.`);
     }
   };
 
@@ -49,9 +49,9 @@ export default function Campaigns() {
           <div>
             <div className="flex items-center gap-2 text-primary mb-3 font-mono">
               <Target className="w-4 h-4" />
-              <span className="text-[11px] font-bold uppercase tracking-widest italic font-mono">Campaign OS</span>
+              <span className="text-[11px] font-bold uppercase tracking-widest italic font-mono">Campaigns</span>
             </div>
-            <h1 className="text-5xl font-black tracking-tighter text-white italic font-mono uppercase">Operational Hub</h1>
+            <h1 className="text-5xl font-black tracking-tighter text-white italic font-mono uppercase">Campaigns</h1>
           </div>
           <div className="flex items-center gap-4">
             <AnimatedBeam containerClassName="w-fit">
@@ -121,7 +121,7 @@ export default function Campaigns() {
           className="flex items-center gap-2 text-[10px] font-bold font-mono tracking-widest text-white/40 hover:text-primary transition-colors"
         >
           <Filter className="w-3.5 h-3.5" />
-          NEW_CAMPAIGN
+          Create campaign
         </button>
       </div>
     </div>
@@ -131,8 +131,8 @@ export default function Campaigns() {
         {filteredCampaigns.length === 0 ? (
           <div className="py-24 text-center border-2 border-dashed border-white/5 bg-white/[0.01]">
             <Target className="w-12 h-12 text-white/5 mx-auto mb-6" />
-            <h3 className="text-xl font-bold font-mono uppercase italic text-white/20">No matching missions identified</h3>
-            <p className="text-xs text-white/10 mt-2 font-mono uppercase tracking-widest">Adjust filters or initialize a new campaign</p>
+            <h3 className="text-xl font-bold font-mono uppercase italic text-white/20">No matching campaigns</h3>
+            <p className="text-xs text-white/10 mt-2 font-mono uppercase tracking-widest">Adjust filters or create a new campaign</p>
           </div>
         ) : (
           filteredCampaigns.map((camp, i) => (
@@ -175,7 +175,7 @@ export default function Campaigns() {
                     <div className="text-[10px] font-bold text-white/20 uppercase tracking-widest font-mono italic">AI Progress Report</div>
                     <div className="space-y-2">
                       <div className="flex justify-between text-[11px] font-bold font-mono italic">
-                        <span className="text-white/40 tracking-widest">DEPLOYMENT</span>
+                        <span className="text-white/40 tracking-widest">PROGRESS</span>
                         <span className="text-white">{camp.progress}%</span>
                       </div>
                       <div className="h-1 bg-white/5">
@@ -218,7 +218,7 @@ export default function Campaigns() {
                 <div className="mt-8 pt-8 border-t border-white/5 flex items-center justify-between">
                   <div className="flex items-center gap-6">
                     <div className="flex flex-col">
-                      <span className="text-[9px] font-bold text-white/20 uppercase tracking-widest font-mono">Mission Goal</span>
+                      <span className="text-[9px] font-bold text-white/20 uppercase tracking-widest font-mono">Campaign Goal</span>
                       <span className="text-[11px] font-bold text-white uppercase italic tracking-[0.2em]">{camp.goal.replace(/_/g, ' ')}</span>
                     </div>
                     <div className="flex flex-col">

@@ -30,7 +30,7 @@ export default function CampaignDetails() {
     return (
       <div className="max-w-7xl mx-auto py-24 text-center">
         <div className="text-white/20 font-mono text-sm uppercase tracking-widest italic animate-pulse">
-          Loading mission…
+          Loading campaign…
         </div>
       </div>
     );
@@ -55,7 +55,7 @@ export default function CampaignDetails() {
   }
 
   const statusLabel =
-    campaign.status === 'ACTIVE' ? 'Deployment Active'
+    campaign.status === 'ACTIVE' ? 'Active'
     : campaign.status === 'SCHEDULED' ? 'Scheduled'
     : 'Completed';
 
@@ -73,7 +73,7 @@ export default function CampaignDetails() {
             <div>
               <div className="flex items-center gap-2 text-primary mb-2 font-mono">
                 <Target className="w-4 h-4" />
-                <span className="text-[11px] font-bold uppercase tracking-widest italic font-mono">Mission: {campaign.id}</span>
+                <span className="text-[11px] font-bold uppercase tracking-widest italic font-mono">Campaign: {campaign.id}</span>
               </div>
               <h1 className="text-5xl font-black tracking-tighter text-white italic font-mono uppercase">{campaign.title}</h1>
             </div>
@@ -107,10 +107,10 @@ export default function CampaignDetails() {
           <section className="bg-dark border border-white/5 p-12 space-y-12 shadow-2xl">
             <div className="flex items-center justify-between flex-wrap gap-6">
               <div>
-                <h3 className="text-xl font-bold text-white italic font-mono uppercase tracking-tight mb-2">Omni-Channel Traction</h3>
+                <h3 className="text-xl font-bold text-white italic font-mono uppercase tracking-tight mb-2">All-Channel Traction</h3>
                 <div className="flex items-center gap-3">
                   <span className="text-[10px] font-bold text-white/30 font-mono tracking-widest uppercase">
-                    {campaign.status === 'ACTIVE' ? 'Live ingestion' : 'Awaiting data'}
+                    {campaign.status === 'ACTIVE' ? 'Live data' : 'Awaiting data'}
                   </span>
                   <span className={cn('w-1.5 h-1.5 rounded-full', campaign.status === 'ACTIVE' ? 'bg-green-500 animate-pulse' : 'bg-white/20')} />
                 </div>
@@ -136,7 +136,7 @@ export default function CampaignDetails() {
           {/* Channels — derived from the real campaign */}
           <section className="space-y-8">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-white/30 tracking-[0.3em] font-mono italic uppercase">Deployment Channels</h3>
+              <h3 className="text-sm font-bold text-white/30 tracking-[0.3em] font-mono italic uppercase">Channels</h3>
               <div className="h-[1px] flex-1 ml-12 bg-white/5" />
             </div>
 
@@ -195,7 +195,7 @@ export default function CampaignDetails() {
             <div className="relative z-10 space-y-5">
               <div className="flex items-center gap-3 text-primary font-mono font-black italic text-[11px] uppercase tracking-widest">
                 <Cpu className="w-4 h-4" />
-                AI_Strategy_Pulse
+                AI Strategy
               </div>
               <p className="text-sm font-sans text-white/40 leading-relaxed italic font-medium">
                 AI optimization suggestions appear here once the campaign has enough live performance data to analyze.

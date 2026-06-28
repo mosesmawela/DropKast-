@@ -80,7 +80,7 @@ export default function Influencers() {
         fetchInfluencers();
       }
     } catch (err) {
-      notify('error', 'REGISTRATION_FAILED', 'Failed to initialize influencer node.');
+      notify('error', "Couldn't add", 'Failed to add the creator. Please try again.');
     }
   };
 
@@ -98,7 +98,7 @@ export default function Influencers() {
       if (isSelected) {
         return prev.filter(i => i !== id);
       } else {
-        notify('info', 'NODE_SELECTED', `${name} added to outreach buffer.`);
+        notify('info', 'Selected', `${name} added to your outreach list.`);
         return [...prev, id];
       }
     });
@@ -106,7 +106,7 @@ export default function Influencers() {
 
   const handleLaunchOutreach = async () => {
     setIsSending(true);
-    notify('ai', 'PROTOCOLS_READY', `Injecting personalized outreach data into ${selectedInfluencers.length} nodes...`);
+    notify('ai', 'Sending', `Sending personalized outreach to ${selectedInfluencers.length} creators...`);
     
     try {
       const response = await fetch('/api/influencers/send', {
@@ -120,7 +120,7 @@ export default function Influencers() {
       });
     } catch (err) {
       console.error('Outreach failed:', err);
-      notify('error', 'OUTREACH_FAILED', 'Failed to send outreach. Please try again.');
+      notify('error', "Outreach failed", 'Failed to send outreach. Please try again.');
     } finally {
       setIsSending(false);
     }
@@ -147,7 +147,7 @@ export default function Influencers() {
     if (currentIndex < influencers.length - 1) {
       setCurrentIndex(prev => prev + 1);
     } else {
-       notify('info', 'SECTOR_EXHAUSTED', 'All nearby discovery nodes scanned.');
+       notify('info', 'All done', "You've gone through every creator.");
     }
   };
 
@@ -158,9 +158,9 @@ export default function Influencers() {
           <div>
             <div className="flex items-center gap-2 text-primary mb-3 font-mono">
               <Users className="w-4 h-4" />
-              <span className="text-[11px] font-bold uppercase tracking-widest italic font-mono">Influencer Network</span>
+              <span className="text-[11px] font-bold uppercase tracking-widest italic font-mono">Creator Network</span>
             </div>
-            <h1 className="text-5xl font-black tracking-tighter text-white italic font-mono uppercase">Creator Nodes</h1>
+            <h1 className="text-5xl font-black tracking-tighter text-white italic font-mono uppercase">Creators</h1>
           </div>
           <div className="flex items-center gap-4">
              <button 
@@ -168,7 +168,7 @@ export default function Influencers() {
                className="secondary-button h-14 flex items-center gap-3 px-8 border-white/10 hover:border-white font-mono uppercase italic tracking-widest text-[10px]"
              >
                <UserPlus className="w-4 h-4" />
-               Register_Node
+               Add creator
              </button>
              <div className="flex border border-white/10 p-1 mr-4 bg-white/5">
                 <button 
@@ -178,7 +178,7 @@ export default function Influencers() {
                     viewMode === 'GRID' ? "bg-white text-black" : "text-white/40 hover:text-white"
                   )}
                 >
-                  Matrix
+                  Grid
                 </button>
                 <button 
                   onClick={() => setViewMode('SWIPE')}
@@ -200,7 +200,7 @@ export default function Influencers() {
                 )}
               >
                 {isSending ? <Cpu className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                {isSending ? 'Transmitting...' : `Launch Outreach (${selectedInfluencers.length})`}
+                {isSending ? 'Sending...' : `Send Outreach (${selectedInfluencers.length})`}
               </button>
             </AnimatedBeam>
           </div>
@@ -220,22 +220,22 @@ export default function Influencers() {
               <button onClick={() => setShowAddModal(false)} className="absolute top-8 right-8 text-white/20 hover:text-white">
                 <X className="w-6 h-6" />
               </button>
-              <h3 className="text-3xl font-black italic font-mono uppercase tracking-tighter text-white">Register Influencer Node</h3>
+              <h3 className="text-3xl font-black italic font-mono uppercase tracking-tighter text-white">Add a Creator</h3>
               <form onSubmit={handleAddInfluencer} className="space-y-8">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black font-mono tracking-widest uppercase text-white/20 italic">Node_Identity</label>
+                  <label className="text-[10px] font-black font-mono tracking-widest uppercase text-white/20 italic">Name</label>
                   <input 
                     required
                     type="text" 
                     value={newInfluencer.name}
                     onChange={e => setNewInfluencer({...newInfluencer, name: e.target.value})}
-                    placeholder="Influencer Name"
+                    placeholder="Creator name"
                     className="w-full bg-white/5 border border-white/10 p-4 text-white font-mono uppercase italic text-xs outline-none focus:border-primary transition-all"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-8">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black font-mono tracking-widest uppercase text-white/20 italic">Hub_Platform</label>
+                    <label className="text-[10px] font-black font-mono tracking-widest uppercase text-white/20 italic">Platform</label>
                     <select 
                       value={newInfluencer.platform}
                       onChange={e => setNewInfluencer({...newInfluencer, platform: e.target.value})}
@@ -248,7 +248,7 @@ export default function Influencers() {
                     </select>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black font-mono tracking-widest uppercase text-white/20 italic">Reach_Magnitude</label>
+                    <label className="text-[10px] font-black font-mono tracking-widest uppercase text-white/20 italic">Reach</label>
                     <input 
                       required
                       type="text" 
@@ -260,7 +260,7 @@ export default function Influencers() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black font-mono tracking-widest uppercase text-white/20 italic">Sonic_Niche</label>
+                  <label className="text-[10px] font-black font-mono tracking-widest uppercase text-white/20 italic">Genre</label>
                   <input 
                     required
                     type="text" 
@@ -271,7 +271,7 @@ export default function Influencers() {
                   />
                 </div>
                 <button type="submit" className="w-full h-14 bg-white text-black font-black uppercase font-mono italic tracking-widest hover:bg-primary hover:text-white transition-all shadow-[0_10px_40px_rgba(255,255,255,0.1)]">
-                  Initialize_Node
+                  Add creator
                 </button>
               </form>
             </motion.div>
@@ -316,8 +316,8 @@ export default function Influencers() {
                  </div>
                  <div className="flex items-center gap-4">
                    {[
-                     { label: 'SMART_MATCH', val: 'SMART_MATCH' },
-                     { label: 'ALL_NODES', val: 'ALL' }
+                     { label: 'Best matches', val: 'SMART_MATCH' },
+                     { label: 'All creators', val: 'ALL' }
                    ].map(f => (
                       <button 
                         key={f.val}
@@ -362,7 +362,7 @@ export default function Influencers() {
              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
                {filteredInfluencers.length === 0 ? (
                  <div className="col-span-full py-24 text-center border-2 border-dashed border-white/5 bg-white/[0.01]">
-                   <div className="text-white/10 font-mono text-sm uppercase tracking-widest italic">No nodes matching these parameters in sector</div>
+                   <div className="text-white/10 font-mono text-sm uppercase tracking-widest italic">No creators match your filters</div>
                  </div>
                ) : filteredInfluencers.map((inf, i) => (
                  <ScrollReveal key={inf.id} delay={i * 0.05} direction="up">
@@ -395,7 +395,7 @@ export default function Influencers() {
                      </div>
                      <div className="p-6 space-y-4">
                        <div className="flex justify-between items-center text-[10px] font-bold font-mono italic">
-                         <span className="text-white/20 uppercase tracking-widest">Niche</span>
+                         <span className="text-white/20 uppercase tracking-widest">Genre</span>
                          <span className="text-primary uppercase">{inf.genre}</span>
                        </div>
                        <div className="pt-4 border-t border-white/5 flex items-center justify-between">
@@ -434,7 +434,7 @@ export default function Influencers() {
                                animate={{ x: 0, opacity: 1 }}
                                className="px-2 py-1 bg-primary text-white text-[9px] font-black italic tracking-[0.2em] w-fit"
                              >
-                                HIGH_CONVERSION_NODE
+                                Top match
                              </motion.span>
                              <motion.span 
                                initial={{ x: -20, opacity: 0 }}
@@ -476,10 +476,10 @@ export default function Influencers() {
                        <div className="text-center space-y-8 p-12 border border-white/5 bg-white/[0.02]">
                           <SearchCheck className="w-20 h-20 text-white/10 mx-auto" />
                           <div className="space-y-2">
-                            <p className="text-[11px] font-black text-white/60 uppercase tracking-[0.5em] italic">Sector Scan Complete</p>
-                            <p className="text-[9px] font-medium text-white/20 uppercase tracking-[0.2em]">No further nodes detected in current relay radius.</p>
+                            <p className="text-[11px] font-black text-white/60 uppercase tracking-[0.5em] italic">All caught up</p>
+                            <p className="text-[9px] font-medium text-white/20 uppercase tracking-[0.2em]">You've reviewed every creator.</p>
                           </div>
-                          <button onClick={() => setCurrentIndex(0)} className="w-full py-5 bg-white text-black font-black italic uppercase tracking-widest text-[10px] hover:bg-primary hover:text-white transition-all">Reset Scan Loop</button>
+                          <button onClick={() => setCurrentIndex(0)} className="w-full py-5 bg-white text-black font-black italic uppercase tracking-widest text-[10px] hover:bg-primary hover:text-white transition-all">Start over</button>
                        </div>
                     )}
                  </AnimatePresence>
@@ -501,7 +501,7 @@ export default function Influencers() {
           </div>
         </div>
         <button 
-          onClick={() => notify('ai', 'TEMPLATE_PROTOCOL', 'Loading dynamic pitch templates for current sonic profile...')}
+          onClick={() => notify('ai', 'Loading templates', 'Loading pitch templates for your song...')}
           className="secondary-button py-5 px-12 font-mono uppercase tracking-widest text-[11px] font-black"
         >
           Configure Templates

@@ -69,10 +69,10 @@ export default function DJs() {
     input.onchange = (e: any) => {
       const file = e.target?.files?.[0];
       if (file) {
-        notify('ai', 'PROCESSING_STEMS', `Analyzing ${fileType}: ${file.name}...`);
+        notify('ai', 'Processing', `Analyzing ${fileType}: ${file.name}...`);
         setIsUploading(true);
         setTimeout(() => {
-          notify('success', 'PACK_COMPLETED', `${fileType} finalized and added to DJ pack.`);
+          notify('success', 'Pack ready', `${fileType} finalized and added to your DJ pack.`);
           setIsUploading(false);
         }, 2000);
       }
@@ -83,14 +83,14 @@ export default function DJs() {
   const toggleSelect = (id: number, name: string) => {
     setSelectedDJs(prev => {
       if (prev.includes(id)) return prev.filter(i => i !== id);
-      notify('info', 'DJ_NODE_READY', `${name} designated for signal broadcast.`);
+      notify('info', 'DJ selected', `${name} added to your send list.`);
       return [...prev, id];
     });
   };
 
   const handleSend = async () => {
     setIsSending(true);
-    notify('ai', 'BROADCAST_INITIATED', `Routing DJ pack to ${selectedDJs.length} regional nodes...`);
+    notify('ai', 'Sending', `Sending your DJ pack to ${selectedDJs.length} DJs...`);
     
     try {
       const response = await fetch('/api/djs/send', {
@@ -118,10 +118,10 @@ export default function DJs() {
         });
       });
 
-      notify('success', 'SIGNAL_DELIVERED', 'Global DJ pool updated with latest assets.');
+      notify('success', 'Sent', 'Your DJ pack was sent successfully.');
       setSelectedDJs([]);
     } catch (err) {
-      notify('error', 'BROADCAST_FAILED', 'Failed to route DJ signal packets.');
+      notify('error', "Send failed", 'Failed to send your DJ pack. Please try again.');
     } finally {
       setIsSending(false);
     }
@@ -134,9 +134,9 @@ export default function DJs() {
           <div>
             <div className="flex items-center gap-2 text-primary mb-3 font-mono">
               <Radio className="w-4 h-4" />
-              <span className="text-[11px] font-bold uppercase tracking-widest italic font-mono">Propagation Network</span>
+              <span className="text-[11px] font-bold uppercase tracking-widest italic font-mono">DJ Network</span>
             </div>
-            <h1 className="text-5xl font-black tracking-tighter text-white italic font-mono uppercase">DJ Pack Control</h1>
+            <h1 className="text-5xl font-black tracking-tighter text-white italic font-mono uppercase">DJ Packs</h1>
           </div>
           <div className="flex bg-black border border-white/10 p-1 shrink-0">
              {['BUILD', 'SEND', 'VAULT'].map(tab => (
@@ -201,7 +201,7 @@ export default function DJs() {
                   <div className="relative z-10 max-w-2xl">
                     <h3 className="text-3xl font-black italic font-mono uppercase tracking-tight text-white mb-4">Auto-Stem Generation</h3>
                     <p className="text-white/40 text-sm leading-relaxed italic font-medium mb-8">
-                       Our AI engine analyzes your master track to automatically generate clean edits, 8-bar intro/outro transitions, and high-fidelity instrumentals. All assets are packed into a professional DJ Signal file (.DJS) ready for global distribution.
+                       Our AI engine analyzes your master track to automatically generate clean edits, 8-bar intro/outro transitions, and high-fidelity instrumentals. All assets are packed into a professional DJ pack file ready to send to DJs worldwide.
                     </p>
                     <AnimatedBeam containerClassName="w-fit">
                       <button 
@@ -210,7 +210,7 @@ export default function DJs() {
                          className="primary-button h-16 px-12 flex items-center gap-3"
                        >
                          {isUploading ? <Cpu className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5" />}
-                         {isUploading ? 'Synthesizing...' : 'Build Full DJ Pack'}
+                         {isUploading ? 'Generating...' : 'Build Full DJ Pack'}
                        </button>
                     </AnimatedBeam>
                   </div>
@@ -232,7 +232,7 @@ export default function DJs() {
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
                     <input 
                       type="text" 
-                      placeholder="Search DJ nodes..." 
+                      placeholder="Search DJs..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="bg-black border border-white/10 pl-12 pr-6 py-3 text-xs font-mono tracking-widest text-white outline-none focus:border-primary transition-all w-full uppercase"
@@ -254,7 +254,7 @@ export default function DJs() {
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
-                   <div className="text-sm font-black text-white font-mono italic">{selectedDJs.length} SAVED_NODES</div>
+                   <div className="text-sm font-black text-white font-mono italic">{selectedDJs.length} Selected</div>
                    <button 
                     onClick={handleSend}
                     disabled={selectedDJs.length === 0 || isSending}
@@ -273,7 +273,7 @@ export default function DJs() {
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredDJs.length === 0 ? (
                    <div className="col-span-full py-24 text-center border-2 border-dashed border-white/5 bg-white/[0.01]">
-                     <div className="text-white/10 font-mono text-sm uppercase tracking-widest italic">No DJ nodes matching parameters</div>
+                     <div className="text-white/10 font-mono text-sm uppercase tracking-widest italic">No DJs match your filters</div>
                    </div>
                 ) : filteredDJs.map((dj, i) => (
                    <ScrollReveal key={dj.id} delay={i * 0.05} direction="up">
@@ -319,7 +319,7 @@ export default function DJs() {
                                 selectedDJs.includes(dj.id) ? "bg-primary text-white" : "border border-white/10 text-white hover:bg-white hover:text-black"
                               )}
                             >
-                              {selectedDJs.includes(dj.id) ? 'DESIGNATE_SIGNAL' : 'QUEUE_SIGNAL'}
+                              {selectedDJs.includes(dj.id) ? 'Selected' : 'Add to list'}
                             </button>
                          </div>
                       </div>
@@ -361,7 +361,7 @@ export default function DJs() {
                 {[
                   { title: "Ibiza Heat Vol. 1", status: "UNLOCKED", downloads: 124, tag: "EXCLUSIVE", icon: Zap },
                   { title: "Urban Pulse 2024", status: "LOCKED", downloads: 0, tag: "ELITE_PACK", icon: ShieldCheck },
-                  { title: "Midnight Deep Nodes", status: "LOCKED", downloads: 0, tag: "LEGACY", icon: Disc3 },
+                  { title: "Midnight Deep", status: "LOCKED", downloads: 0, tag: "LEGACY", icon: Disc3 },
                 ].map((pack, i) => (
                    <div key={i} className={cn(
                      "p-10 border bg-dark space-y-8 relative overflow-hidden group transition-all",
@@ -379,7 +379,7 @@ export default function DJs() {
                       
                       <div className="relative z-10">
                          <h3 className="text-2xl font-black italic font-mono uppercase tracking-tight text-white mb-2">{pack.title}</h3>
-                         <div className="text-[10px] font-bold text-white/30 uppercase tracking-[0.3em] font-mono italic">{pack.status}_SIGNAL</div>
+                         <div className="text-[10px] font-bold text-white/30 uppercase tracking-[0.3em] font-mono italic">{pack.status}</div>
                       </div>
 
                       <div className="relative z-10 pt-6 border-t border-white/5 flex items-center justify-between">

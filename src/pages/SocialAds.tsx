@@ -62,11 +62,11 @@ export default function SocialAds() {
 
   const handleLaunchAd = () => {
     setIsCreating(true);
-    notify('ai', 'GENERATING_CREATIVES', 'Analyzing song mood to generate high-CTR video hooks...');
+    notify('ai', 'Generating', 'Analyzing your song to generate high-performing video hooks...');
     setTimeout(() => {
       const newAd = {
         id: `ADS-00${adSets.length + 1}`,
-        name: newAdConfig.name || 'AI Generated Discovery',
+        name: newAdConfig.name || 'AI Generated Ad',
         platform: newAdConfig.platform,
         spend: `$0.00`,
         cpc: '$0.00',
@@ -74,7 +74,7 @@ export default function SocialAds() {
         ctr: '0.0%'
       };
       setAdSets([newAd, ...adSets]);
-      notify('success', 'AD_SET_DEPLOYED', 'Meta Discovery Campaign initialized with AI creative buffer.');
+      notify('success', 'Ad set launched', 'Your ad set is live with AI-generated creatives.');
       setIsCreating(false);
       setShowBuilder(false);
     }, 2500);
@@ -82,9 +82,9 @@ export default function SocialAds() {
 
   const handleOptimize = () => {
     setIsOptimizing(true);
-    notify('ai', 'BUDGET_REBALANCING', 'Shifting budget from low-performing YouTube nodes to high-yield Instagram variants...');
+    notify('ai', 'Rebalancing budget', 'Shifting budget from low-performing YouTube ads to high-performing Instagram ones...');
     setTimeout(() => {
-      notify('success', 'OPTIMIZATION_COMPLETE', 'ROAS projected to increase by 14% based on current velocity.');
+      notify('success', 'Optimized', 'Return on ad spend projected to increase by 14% based on current growth.');
       setIsOptimizing(false);
     }, 3000);
   };
@@ -96,7 +96,7 @@ export default function SocialAds() {
           <div>
             <div className="flex items-center gap-2 text-primary mb-3 font-mono">
               <Monitor className="w-4 h-4" />
-              <span className="text-[11px] font-bold uppercase tracking-widest italic font-mono">Ad Strategy Console</span>
+              <span className="text-[11px] font-bold uppercase tracking-widest italic font-mono">Ads</span>
             </div>
             <h1 className="text-5xl font-black tracking-tighter text-white italic font-mono uppercase">Social Ads</h1>
           </div>
@@ -107,7 +107,7 @@ export default function SocialAds() {
                className="secondary-button h-14 flex items-center gap-3 px-8"
              >
                <RefreshCw className={cn("w-4 h-4", isOptimizing && "animate-spin")} />
-               {isOptimizing ? 'Optimizing...' : 'Execute Re-Optimization'}
+               {isOptimizing ? 'Optimizing...' : 'Re-optimize'}
              </button>
              <AnimatedBeam containerClassName="w-fit">
                <button 
@@ -177,25 +177,25 @@ export default function SocialAds() {
            <div className="p-10 border border-white/5 bg-primary/5 space-y-6">
               <div className="flex items-center gap-3 text-primary font-mono font-black italic">
                  <Sparkles className="w-5 h-5" />
-                 SC_CREATIVE_REPORT
+                 Creative report
               </div>
               <p className="text-white/40 text-sm italic font-medium leading-relaxed">
                  Creative performance insights appear here once your ad sets have run long enough to gather data.
               </p>
               <button 
-                onClick={() => notify('success', 'VERSION_DEPLOYED', 'Variation B-2 pushed to active ad sets.')}
+                onClick={() => notify('success', 'Published', 'Variation B-2 pushed to your active ad sets.')}
                 className="w-full py-4 border border-primary/20 text-primary font-mono text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary/10 transition-all"
               >
-                 Deploy Variation B-2
+                 Publish Variation B-2
               </button>
            </div>
            <div className="p-10 border border-white/5 bg-black space-y-6">
-              <h3 className="text-[10px] font-bold text-white/20 uppercase tracking-widest font-mono italic">Ad Node Integrity</h3>
+              <h3 className="text-[10px] font-bold text-white/20 uppercase tracking-widest font-mono italic">Ad System Status</h3>
               <div className="space-y-4">
                  {[
                    { label: 'Pixel Status', val: 'Operational', color: 'text-green-500' },
                    { label: 'Tracking Delay', val: '< 1ms', color: 'text-white' },
-                   { label: 'Cloud Buffer', val: 'Synchronized', color: 'text-white' },
+                   { label: 'Sync Status', val: 'Synchronized', color: 'text-white' },
                  ].map(s => (
                    <div key={s.label} className="flex justify-between items-center text-[11px] font-bold font-mono uppercase italic">
                       <span className="text-white/30">{s.label}</span>
@@ -210,11 +210,11 @@ export default function SocialAds() {
       {/* Ad Sets Table */}
       <div className="space-y-6">
          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-bold text-white uppercase tracking-[0.4em] font-mono italic">Active Ad Clusters</h2>
+            <h2 className="text-sm font-bold text-white uppercase tracking-[0.4em] font-mono italic">Active Ad Sets</h2>
             <div className="flex items-center gap-4 text-[10px] font-bold text-white/20 font-mono tracking-widest">
                <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-primary" />
-                  STABLE_NETWORK
+                  All systems normal
                </div>
             </div>
          </div>
@@ -255,7 +255,7 @@ export default function SocialAds() {
                     </div>
                     <div className="md:col-span-2 flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
                        <button 
-                         onClick={() => notify('info', 'MANUAL_OVERRIDE', `Manual bias applied to node ${ad.id}.`)}
+                         onClick={() => notify('info', 'Manual override', `Manual settings applied to ad ${ad.id}.`)}
                          className="p-3 border border-white/10 hover:border-primary transition-all text-white/40 hover:text-primary"
                         >
                           <Settings className="w-4 h-4" />
@@ -287,7 +287,7 @@ export default function SocialAds() {
                 <header>
                   <div className="flex items-center gap-2 text-primary mb-3 font-mono">
                     <Plus className="w-4 h-4" />
-                    <span className="text-[10px] font-bold uppercase tracking-[0.3em] font-mono">Build_Campaign_Node</span>
+                    <span className="text-[10px] font-bold uppercase tracking-[0.3em] font-mono">New ad set</span>
                   </div>
                   <h2 className="text-4xl font-black italic font-mono uppercase tracking-tighter text-white">Ad Set Builder</h2>
                 </header>
@@ -363,7 +363,7 @@ export default function SocialAds() {
                     disabled={isCreating}
                     className="flex-[2] primary-button py-4 font-mono text-[10px] font-black uppercase tracking-[0.2em]"
                   >
-                    {isCreating ? 'Deploying Node...' : 'Launch Ad Set'}
+                    {isCreating ? 'Launching...' : 'Launch Ad Set'}
                   </button>
                 </div>
               </div>
