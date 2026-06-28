@@ -34,6 +34,7 @@ import { pushEvent, listEventsFor, markRead as markInboxRead } from "./_inbox.js
 import { listThreadsForViewer, listMessagesInThread, postMessage, markThreadRead, findThread, type Role as MsgRole } from "./_messages.js";
 import { rateLimit as customRateLimit, securityHeaders, listAuditEvents, logAudit } from "./_security.js";
 import { handleDataExport, handleDataDelete, handleDmcaNotice } from "./_compliance.js";
+import { runMuapi, muapiKeyFromReq, MuapiError } from "./_muapi.js";
 import { logger, httpLog } from "./_logger.js";
 import { getDb } from "../db/client.js";
 import { getDeliveryAdapter } from "./_dsp-delivery.js";
@@ -624,16 +625,56 @@ export function createApiApp() {
   });
 
   // --- Assets API ---
+  // Real image generation via the Muapi gateway (BYOK key from Connectors).
+  // body: { prompt, endpoint?, aspect_ratio?, resolution?, quality?, references?, count? }
   app.post("/api/assets/cover", async (req, res) => {
-    const { prompt } = req.body;
-    const images = await generateImage(prompt || "abstract music cover");
-    res.json({ images });
+    try {
+      const key = muapiKeyFromReq(req);
+      const { prompt, endpoint, aspect_ratio, resolution, quality, image_url, images_list, seed } = req.body || {};
+      const { outputs } = await runMuapi(
+        endpoint || "flux-pro",
+        { prompt: prompt || "abstract music cover", aspect_ratio, resolution, quality, image_url, images_list, seed },
+        key,
+      );
+      res.json({ images: outputs });
+    } catch (e: any) {
+      const status = e instanceof MuapiError ? e.status : 502;
+      res.status(status).json({ error: e?.message || "Image generation failed" });
+    }
   });
 
+  // Real video generation via Muapi (BYOK). body: { prompt, endpoint?, duration?, aspect_ratio?, image_url? }
   app.post("/api/assets/video", async (req, res) => {
-    const { prompt } = req.body;
-    const video = await generateVideo(prompt || "music video teaser");
-    res.json({ ...video, status: "done" });
+    try {
+      const key = muapiKeyFromReq(req);
+      const { prompt, endpoint, duration, aspect_ratio, image_url } = req.body || {};
+      const { outputs } = await runMuapi(
+        endpoint || "kling-video",
+        { prompt: prompt || "music video teaser", duration, aspect_ratio, image_url },
+        key,
+      );
+      res.json({ url: outputs[0], images: outputs, status: "done" });
+    } catch (e: any) {
+      const status = e instanceof MuapiError ? e.status : 502;
+      res.status(status).json({ error: e?.message || "Video generation failed" });
+    }
+  });
+
+  // Real lip-sync via Muapi (BYOK). body: { endpoint?, image_url, audio_url }
+  app.post("/api/assets/lipsync", async (req, res) => {
+    try {
+      const key = muapiKeyFromReq(req);
+      const { endpoint, image_url, audio_url, prompt } = req.body || {};
+      const { outputs } = await runMuapi(
+        endpoint || "lipsync",
+        { prompt: prompt || "", image_url, audio_url },
+        key,
+      );
+      res.json({ url: outputs[0], status: "done" });
+    } catch (e: any) {
+      const status = e instanceof MuapiError ? e.status : 502;
+      res.status(status).json({ error: e?.message || "Lip-sync generation failed" });
+    }
   });
 
   app.post("/api/assets/ugc", (_req, res) => {

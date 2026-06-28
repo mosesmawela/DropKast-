@@ -193,6 +193,20 @@ export const TEXT_PROVIDERS: ProviderModel[] = [
  * ========================================================================= */
 export const IMAGE_PROVIDERS: ProviderModel[] = [
   {
+    id: 'muapi-gateway',
+    name: 'Muapi Gateway (200+ models)',
+    kind: 'image',
+    vendor: 'Muapi.ai',
+    tier: 'paid',
+    envVar: 'MUAPI_API_KEY',
+    blurb: 'One key, one gateway — powers Cover, Promo Art, Video and LipSync studios (Flux, Kling, Seedance, GPT-Image and 200+ more). This is the engine DropKast generation routes through.',
+    pricing: ['Pay-per-generation via Muapi credits', 'Cost varies by model'],
+    signupUrl: 'https://muapi.ai',
+    bestFor: ['Cover art', 'Promo art', 'Video / b-roll', 'Lip-sync'],
+    endpoint: 'https://api.muapi.ai',
+    implemented: true,
+  },
+  {
     id: 'nano-banana-2',
     name: 'Nano Banana 2 (Gemini 3.1 Flash Image)',
     kind: 'image',

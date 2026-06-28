@@ -11,6 +11,22 @@
  */
 import type { OutputKind } from './types';
 
+/**
+ * Attach the user's BYOK keys (from the Connectors page) as per-request headers.
+ * The Muapi gateway key powers image/video/lip-sync generation. Keys live only
+ * in the browser and are forwarded per-request — never persisted server-side.
+ */
+function byokHeaders(): Record<string, string> {
+  try {
+    const keys = JSON.parse(localStorage.getItem('dropkast_byok_keys') || '{}');
+    const h: Record<string, string> = {};
+    if (keys.MUAPI_API_KEY) h['x-muapi-key'] = keys.MUAPI_API_KEY;
+    return h;
+  } catch {
+    return {};
+  }
+}
+
 export interface SubmitResult {
   /** The job identifier returned by the endpoint */
   id: string;
@@ -61,7 +77,7 @@ export async function submitJob(
 ): Promise<SubmitResult> {
   const res = await fetch(endpoint, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...byokHeaders() },
     body: JSON.stringify(body),
     signal: opts?.submit?.signal,
   });
