@@ -71,8 +71,7 @@ const SmartLink = lazy(() => import('./pages/SmartLink'));
 const SmartLinks = lazy(() => import('./pages/SmartLinks'));
 const Advances = lazy(() => import('./pages/Advances'));
 const Drafts = lazy(() => import('./pages/Drafts'));
-const Studios = lazy(() => import('./pages/Studios'));
-const Studio = lazy(() => import('./pages/Studio'));
+const AllInOneStudio = lazy(() => import('./pages/AllInOneStudio'));
 const Pricing = lazy(() => import('./pages/Pricing'));
 const Subscription = lazy(() => import('./pages/Subscription'));
 const CommandCenter = lazy(() => import('./pages/CommandCenter'));
@@ -195,8 +194,9 @@ export default function App() {
                   <Route path="/links" element={<ModuleGuard moduleId="smart-links"><SmartLinks /></ModuleGuard>} />
                   <Route path="/advances" element={<ModuleGuard moduleId="advances"><Advances /></ModuleGuard>} />
                   <Route path="/drafts" element={<Drafts />} />
-                  <Route path="/studios" element={<ModuleGuard moduleId="studios"><Studios /></ModuleGuard>} />
-                  <Route path="/studio/:id" element={<ModuleGuard moduleId="studios"><Studio /></ModuleGuard>} />
+                  <Route path="/studio" element={<ModuleGuard moduleId="studios"><AllInOneStudio /></ModuleGuard>} />
+                  <Route path="/studios" element={<Navigate to="/studio" replace />} />
+                  <Route path="/studio/:id" element={<Navigate to="/studio" replace />} />
                   <Route path="/subscription" element={<Subscription />} />
                   <Route path="/trending" element={<Trending />} />
                   <Route path="/admin" element={<AdminDashboard />} />
