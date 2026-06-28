@@ -9,7 +9,6 @@ import {
   Image as ImageIcon,
   Video,
   Sparkles,
-  ShieldCheck,
   Mic2,
   MessageSquare,
   Layers,
@@ -262,43 +261,6 @@ export const STUDIOS: StudioDef[] = [
     ],
   },
   {
-    id: 'lyrics',
-    name: 'Lyric Coach',
-    tagline: 'Topline feedback + revisions',
-    trust: 'ai-draft',
-    category: 'copy',
-    icon: Mic2,
-    accentColor: '#FF4D00',
-    outputKind: 'text',
-    modelId: 'chat-llm',
-    defaultPersona: 'lyric-coach',
-    endpoint: '/api/ai/chat',
-    estimatedRuntimeSec: 6,
-    description:
-      'Specific, line-level feedback on your lyrics. No "be more vulnerable" platitudes — actual rewrite suggestions per line.',
-    inputs: [
-      {
-        key: 'lyrics',
-        label: 'Paste your lyrics',
-        type: 'textarea',
-        placeholder: '[Verse 1]\n...',
-        required: true,
-      },
-      {
-        key: 'mode',
-        label: 'Mode',
-        type: 'select',
-        defaultValue: 'critique',
-        options: [
-          { value: 'critique', label: 'Critique (line by line)' },
-          { value: 'rewrite',  label: 'Rewrite suggestions' },
-          { value: 'finish',   label: 'Finish what I started' },
-        ],
-      },
-    ],
-  },
-
-  {
     id: 'promo-art',
     name: 'Promo Art Studio',
     tagline: 'One prompt → 5 platform sizes',
@@ -355,33 +317,6 @@ export const STUDIOS: StudioDef[] = [
   /* =====================================================================
    * STRATEGY
    * ===================================================================== */
-  {
-    id: 'anr',
-    name: 'A&R Studio',
-    tagline: 'AI track insight + human A&R verdict',
-    trust: 'ai-insight',
-    category: 'strategy',
-    icon: ShieldCheck,
-    accentColor: '#FF4D00',
-    outputKind: 'json',
-    modelId: 'ar-critique',
-    defaultPersona: 'ar-critic',
-    endpoint: '/api/anr',
-    estimatedRuntimeSec: 15,
-    pipeable: true,
-    description:
-      'Same critique a senior A&R gives in a label meeting — without the meeting. 1-10 score, lane clarity, hook density, replay floor, the one thing to fix first.',
-    inputs: [
-      { key: 'releaseId', label: 'Release', type: 'text', placeholder: 'Pick a release to critique' },
-      {
-        key: 'audioUrl',
-        label: 'Or paste an audio URL',
-        type: 'text',
-        placeholder: 'https://... (optional, if release isn\'t in the system yet)',
-      },
-      { key: 'context', label: 'Anything we should know?', type: 'textarea', placeholder: 'Genre, intended audience, ref tracks...' },
-    ],
-  },
   {
     id: 'strategy',
     name: 'Strategy Studio',
