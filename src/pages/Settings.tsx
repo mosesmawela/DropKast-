@@ -450,7 +450,7 @@ export default function Settings() {
           {activeTab === 'SECURITY' && (
             <Card title="Security" desc="Account-level security. More options arrive when Supabase Auth is fully configured.">
               <p className="text-xs text-[var(--text-main)]/40 italic">
-                Currently using {import.meta.env.VITE_SUPABASE_URL ? 'Supabase Auth' : 'mock localStorage auth (demo mode)'}.
+                Currently using {import.meta.env.VITE_SUPABASE_URL ? 'Supabase Auth' : 'local storage auth'}.
               </p>
             </Card>
           )}
@@ -496,7 +496,20 @@ export default function Settings() {
                         <p className="text-sm text-white/60 italic font-medium">Download a JSON archive of your releases, campaigns, and analytics. This may take a few moments.</p>
                         <div className="flex gap-4">
                           <button onClick={() => setShowExportModal(false)} className="flex-1 h-12 border border-white/10 text-white/60 text-[10px] font-mono font-black uppercase italic tracking-widest hover:border-white transition-all">Cancel</button>
-                          <button onClick={() => { notify('success', 'EXPORT_STARTED', 'Your data export is being prepared.'); setShowExportModal(false); }} className="flex-1 h-12 bg-primary text-white text-[10px] font-mono font-black uppercase italic tracking-widest hover:bg-white hover:text-black transition-all">Confirm Export</button>
+                          <button onClick={() => {
+                            const data = {
+                              releases: JSON.parse(localStorage.getItem('dropkast_releases') || '[]'),
+                              drafts: JSON.parse(localStorage.getItem('dropkast_release_draft') || 'null'),
+                              settings: { theme: localStorage.getItem('campaign-os-theme'), vibe: localStorage.getItem('campaign-os-vibe') },
+                              exportedAt: new Date().toISOString(),
+                            };
+                            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a'); a.href = url; a.download = `dropkast-export-${Date.now()}.json`; a.click();
+                            URL.revokeObjectURL(url);
+                            notify('success', 'EXPORT_COMPLETE', 'Your data has been downloaded.');
+                            setShowExportModal(false);
+                          }} className="flex-1 h-12 bg-primary text-white text-[10px] font-mono font-black uppercase italic tracking-widest hover:bg-white hover:text-black transition-all">Confirm Export</button>
                         </div>
                       </div>
                     </div>
@@ -518,13 +531,20 @@ export default function Settings() {
                         <p className="text-sm text-white/60 italic font-medium">This is permanent and irreversible. All your releases, campaigns, and data will be wiped. Type <strong className="text-red-500">DELETE</strong> to confirm.</p>
                         <input 
                           type="text" 
+                          id="delete-confirm-input"
                           placeholder='Type "DELETE" to confirm' 
                           className="w-full bg-white/5 border border-white/10 p-3 text-white font-mono text-xs outline-none focus:border-red-500 transition-all"
-                          onKeyDown={(e: any) => { if ((e.target as HTMLInputElement).value === 'DELETE' && e.key === 'Enter') { notify('error', 'ACCOUNT_DELETED', 'Your account has been deleted.'); setShowDeleteModal(false); } }}
                         />
                         <div className="flex gap-4">
                           <button onClick={() => setShowDeleteModal(false)} className="flex-1 h-12 border border-white/10 text-white/60 text-[10px] font-mono font-black uppercase italic tracking-widest hover:border-white transition-all">Cancel</button>
-                          <button onClick={() => { notify('error', 'ACCOUNT_DELETED', 'Your account has been scheduled for deletion.'); setShowDeleteModal(false); }} className="flex-1 h-12 bg-red-500 text-white text-[10px] font-mono font-black uppercase italic tracking-widest hover:bg-white hover:text-black transition-all">Delete Forever</button>
+                          <button onClick={() => {
+                            const input = document.getElementById('delete-confirm-input') as HTMLInputElement;
+                            if (input?.value !== 'DELETE') { notify('error', 'CONFIRM_REQUIRED', 'Type DELETE to confirm.'); return; }
+                            localStorage.clear();
+                            notify('error', 'ACCOUNT_DELETED', 'All local data has been cleared.');
+                            setShowDeleteModal(false);
+                            setTimeout(() => window.location.href = '/', 1500);
+                          }} className="flex-1 h-12 bg-red-500 text-white text-[10px] font-mono font-black uppercase italic tracking-widest hover:bg-white hover:text-black transition-all">Delete Forever</button>
                         </div>
                       </div>
                     </div>

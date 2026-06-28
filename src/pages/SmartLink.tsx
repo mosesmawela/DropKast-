@@ -66,34 +66,11 @@ const DSP_META: Record<keyof SmartLinkRecord['links'], { label: string; iconSlug
   bandcamp:       { label: 'Bandcamp',       iconSlug: 'bandcamp',       brandColor: '#629AA9' },
 };
 
-/** Synthesize a sample record from a slug — replaced with a real fetch when /api/links lands. */
 function loadSmartLink(slug: string): SmartLinkRecord | null {
-  // First, try localStorage where the artist may have generated this from the release page
   try {
     const raw = localStorage.getItem(`dropkast.smartlink.${slug}`);
     if (raw) return JSON.parse(raw);
   } catch {/* ignore */}
-
-  // Fallback demo record so /link/demo always works
-  if (slug === 'demo' || slug === 'sample') {
-    return {
-      id: slug,
-      title: 'Skyline',
-      artist: 'Aqua Pearl',
-      releaseDate: '2026-05-22',
-      tagline: 'Out everywhere May 22.',
-      links: {
-        spotify: 'https://open.spotify.com',
-        apple: 'https://music.apple.com',
-        amazon: 'https://music.amazon.com',
-        'youtube-music': 'https://music.youtube.com',
-        deezer: 'https://www.deezer.com',
-        tidal: 'https://tidal.com',
-      },
-      primaryColor: '#FF4D00',
-      socials: { instagram: 'https://instagram.com', tiktok: 'https://tiktok.com' },
-    };
-  }
   return null;
 }
 
@@ -114,13 +91,14 @@ export default function SmartLink() {
   }, [record?.primaryColor]);
 
   if (!record) {
+    const isDemo = slug === 'demo' || slug === 'sample';
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center p-6">
         <div className="text-center max-w-md">
           <Music className="w-12 h-12 text-white/20 mx-auto mb-6" />
-          <h1 className="text-3xl font-black italic mb-3">Link not found</h1>
+          <h1 className="text-3xl font-black italic mb-3">{isDemo ? 'Demo link not found' : 'Link not found'}</h1>
           <p className="text-white/40 italic mb-6">
-            This release link has expired or doesn't exist.
+            {isDemo ? 'No demo smart link has been created yet.' : 'This release link has expired or doesn\'t exist.'}
           </p>
           <Link to="/" className="text-primary hover:underline italic text-sm">
             Visit DropKast →

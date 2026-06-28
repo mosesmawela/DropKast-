@@ -64,6 +64,28 @@ export default function VideoIngestionWizard() {
   };
 
   const handleSubmit = async () => {
+    const release = {
+      id: `vid-${Date.now()}`,
+      type: 'video',
+      title: data.title,
+      artist: data.primaryArtist,
+      mainGenre: data.mainGenre,
+      secondaryGenre: data.secondaryGenre,
+      language: data.language,
+      label: data.label,
+      contributors: data.contributors,
+      platforms: data.platforms,
+      copyright: `${data.copyrightYear} ${data.copyrightOwner}`,
+      recording: `${data.recordingYear} ${data.recordingOwner}`,
+      upc: data.hasOwnUPC ? data.upc : 'Auto-generated',
+      fileName: data.videoFile?.name,
+      fileSize: data.videoFile?.size,
+      status: 'submitted',
+      submittedAt: new Date().toISOString(),
+    };
+    const existing = JSON.parse(localStorage.getItem('dropkast_releases') || '[]');
+    existing.unshift(release);
+    localStorage.setItem('dropkast_releases', JSON.stringify(existing));
     toast.success('Video submitted for distribution', {
       description: 'Your video is being processed for delivery to selected platforms.',
     });

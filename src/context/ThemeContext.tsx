@@ -10,7 +10,8 @@ const VIBE_COLORS: Record<Vibe, { hex: string; rgb: string }> = {
   TECHNICAL_ORANGE: { hex: '#FF4D00', rgb: '255, 77, 0' },
   NEON_PINK: { hex: '#ff00ff', rgb: '255, 0, 255' },
   CYBER_BLUE: { hex: '#00f2ff', rgb: '0, 242, 255' },
-  MONO_WHITE: { hex: '#ffffff', rgb: '255, 255, 255' }
+  MONO_WHITE: { hex: '#ffffff', rgb: '255, 255, 255' },
+  CUSTOM: { hex: '#FF4D00', rgb: '255, 77, 0' }
 };
 
 interface ThemeContextType {

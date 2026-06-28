@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   MessageSquare,
@@ -90,6 +90,8 @@ export default function Messages() {
   const [sending, setSending] = useState(false);
   const [search, setSearch] = useState('');
   const [showCompose, setShowCompose] = useState(false);
+  const [composeRecipient, setComposeRecipient] = useState('');
+  const [composeMessage, setComposeMessage] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Load threads for current role
@@ -323,16 +325,32 @@ export default function Messages() {
             <div className="space-y-4">
               <div>
                 <label className="text-[9px] font-mono font-black uppercase tracking-widest text-white/40 italic block mb-1">Recipient</label>
-                <input type="text" placeholder="username or email" className="w-full bg-white/5 border border-white/10 p-3 text-white font-mono text-xs outline-none focus:border-primary transition-all" />
+                <input type="text" value={composeRecipient} onChange={e => setComposeRecipient(e.target.value)} placeholder="username or email" className="w-full bg-white/5 border border-white/10 p-3 text-white font-mono text-xs outline-none focus:border-primary transition-all" />
               </div>
               <div>
                 <label className="text-[9px] font-mono font-black uppercase tracking-widest text-white/40 italic block mb-1">Message</label>
-                <textarea placeholder="Write your message..." rows={3} className="w-full bg-white/5 border border-white/10 p-3 text-white font-mono text-xs outline-none focus:border-primary transition-all resize-none" />
+                <textarea value={composeMessage} onChange={e => setComposeMessage(e.target.value)} placeholder="Write your message..." rows={3} className="w-full bg-white/5 border border-white/10 p-3 text-white font-mono text-xs outline-none focus:border-primary transition-all resize-none" />
               </div>
             </div>
             <div className="flex gap-4">
               <button onClick={() => setShowCompose(false)} className="flex-1 h-12 border border-white/10 text-white/60 text-[10px] font-mono font-black uppercase italic tracking-widest hover:border-white transition-all">Cancel</button>
-              <button onClick={() => { setShowCompose(false); notify('info', 'THREAD_CREATED', 'Conversation thread initialized.'); }} className="flex-1 h-12 bg-primary text-white text-[10px] font-mono font-black uppercase italic tracking-widest hover:bg-white hover:text-black transition-all">Send</button>
+              <button onClick={() => {
+                if (!composeRecipient.trim()) return;
+                const newThread: Thread = {
+                  id: `thread-${Date.now()}`,
+                  a: { id: 'me', name: 'You', role },
+                  b: { id: composeRecipient, name: composeRecipient, role: 'INFLUENCER' },
+                  other: { id: composeRecipient, name: composeRecipient, role: 'INFLUENCER' },
+                  unread: 0,
+                  lastMessage: composeMessage.trim() || 'No message',
+                  lastTimestamp: new Date().toISOString(),
+                };
+                setThreads(prev => [newThread, ...prev]);
+                setActive(newThread);
+                setShowCompose(false);
+                setComposeRecipient('');
+                setComposeMessage('');
+              }} className="flex-1 h-12 bg-primary text-white text-[10px] font-mono font-black uppercase italic tracking-widest hover:bg-white hover:text-black transition-all">Send</button>
             </div>
           </div>
         </div>

@@ -61,32 +61,30 @@ export default function SocialAds() {
   }, [adSets, activePlatform]);
 
   const handleLaunchAd = () => {
-    setIsCreating(true);
-    notify('ai', 'Generating', 'Analyzing your song to generate high-performing video hooks...');
-    setTimeout(() => {
-      const newAd = {
-        id: `ADS-00${adSets.length + 1}`,
-        name: newAdConfig.name || 'AI Generated Ad',
-        platform: newAdConfig.platform,
-        spend: `$0.00`,
-        cpc: '$0.00',
-        status: 'ACTIVE',
-        ctr: '0.0%'
-      };
-      setAdSets([newAd, ...adSets]);
-      notify('success', 'Ad set launched', 'Your ad set is live with AI-generated creatives.');
-      setIsCreating(false);
-      setShowBuilder(false);
-    }, 2500);
+    const newAd = {
+      id: `ADS-00${adSets.length + 1}`,
+      name: newAdConfig.name || 'AI Generated Ad',
+      platform: newAdConfig.platform,
+      spend: `$${newAdConfig.budget}.00`,
+      cpc: '$0.00',
+      status: 'ACTIVE',
+      ctr: '0.0%'
+    };
+    setAdSets([newAd, ...adSets]);
+    notify('success', 'Ad set launched', 'Your ad set is live with AI-generated creatives.');
+    setIsCreating(false);
+    setShowBuilder(false);
   };
 
   const handleOptimize = () => {
-    setIsOptimizing(true);
-    notify('ai', 'Rebalancing budget', 'Shifting budget from low-performing YouTube ads to high-performing Instagram ones...');
-    setTimeout(() => {
-      notify('success', 'Optimized', 'Return on ad spend projected to increase by 14% based on current growth.');
-      setIsOptimizing(false);
-    }, 3000);
+    const updated = adSets.map(ad => ({
+      ...ad,
+      ctr: `${(Math.random() * 5 + 1).toFixed(1)}%`,
+      spend: `$${(Math.random() * 200 + 50).toFixed(2)}`,
+    }));
+    setAdSets(updated);
+    notify('success', 'Optimized', 'Return on ad spend projected to increase by 14% based on current growth.');
+    setIsOptimizing(false);
   };
 
   return (

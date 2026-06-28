@@ -65,7 +65,6 @@ export default function Subscription() {
 
     setLoading(targetTier);
     try {
-      // Try real Stripe Checkout first
       const res = await fetch('/api/billing/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -77,22 +76,10 @@ export default function Subscription() {
           window.location.href = data.url;
           return;
         }
-        if (data.simulated) {
-          // Backend confirmed simulator mode — apply locally
-          sub.setLocalPlan(targetTier, period);
-          toast.success(`Upgraded to ${TIER_BY_ID[targetTier].name} (simulator)`, {
-            description: 'Wire STRIPE_SECRET_KEY to enable real billing.',
-          });
-          return;
-        }
       }
-      // Fallback to local demo upgrade
-      sub.setLocalPlan(targetTier, period);
-      toast.success(`Upgraded to ${TIER_BY_ID[targetTier].name}`);
+      toast.message('Online payments coming soon.');
     } catch {
-      // Network failure — local demo mode
-      sub.setLocalPlan(targetTier, period);
-      toast.success(`Upgraded to ${TIER_BY_ID[targetTier].name} (demo)`);
+      toast.message('Online payments coming soon.');
     } finally {
       setLoading(null);
     }

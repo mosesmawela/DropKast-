@@ -20,17 +20,18 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils';
-import { SEED_TRENDS, momentumColor, momentumLabel, type SubGenre, type TrendMomentum } from '../lib/trending';
+import { momentumColor, momentumLabel, type SubGenre, type TrendMomentum } from '../lib/trending';
 
 const MOMENTUM_FILTERS: Array<TrendMomentum | 'all'> = ['all', 'spiking', 'rising', 'steady', 'cooling'];
 
 export default function Trending() {
   const [momentum, setMomentum] = useState<TrendMomentum | 'all'>('all');
+  const [trends] = useState<SubGenre[]>([]);
   const [search, setSearch] = useState('');
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return SEED_TRENDS
+    return trends
       .filter((t) => (momentum === 'all' ? true : t.momentum === momentum))
       .filter((t) => {
         if (!q) return true;
@@ -46,7 +47,7 @@ export default function Trending() {
 
   const counts = useMemo(() => {
     const c = { spiking: 0, rising: 0, steady: 0, cooling: 0 };
-    for (const t of SEED_TRENDS) c[t.momentum]++;
+    for (const t of trends) c[t.momentum]++;
     return c;
   }, []);
 
@@ -129,10 +130,7 @@ export default function Trending() {
 
       {filtered.length === 0 && (
         <div className="text-center py-20 border border-dashed border-white/10">
-          <div className="text-white/40 italic mb-2">No trends match that filter.</div>
-          <button onClick={() => { setMomentum('all'); setSearch(''); }} className="text-primary hover:underline italic text-sm">
-            Reset filters
-          </button>
+          <div className="text-white/40 italic mb-2">No trending sub-genres yet. Check back when the community starts building.</div>
         </div>
       )}
 
@@ -157,7 +155,7 @@ export default function Trending() {
             If your community is building a sub-genre that's not here yet, send it to A&R.
           </p>
           <Link
-            to="/studio/anr"
+            to="/studio"
             className="inline-flex items-center gap-2 text-[10px] font-black text-primary hover:underline uppercase italic tracking-widest"
           >
             Submit to A&R <ChevronRight className="w-3 h-3" />

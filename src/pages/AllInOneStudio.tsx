@@ -88,11 +88,33 @@ export default function AllInOneStudio() {
           </nav>
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={() => { toast.success('Studio saved'); }}
+          <button onClick={() => {
+              const data: Record<string, any> = {};
+              for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i);
+                if (k?.startsWith('studio.')) try { data[k] = JSON.parse(localStorage.getItem(k)!); } catch {}
+              }
+              localStorage.setItem('dropkast_studio_data', JSON.stringify(data));
+              toast.success('Studio saved');
+            }}
             className="flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/30 text-primary text-[10px] font-black uppercase italic tracking-widest hover:bg-primary hover:text-black transition-all">
             <Save className="w-3.5 h-3.5" /> Save
           </button>
-          <button onClick={() => { toast.success('Export started'); }}
+          <button onClick={() => {
+              const data: Record<string, any> = {};
+              for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i);
+                if (k?.startsWith('studio.')) try { data[k] = JSON.parse(localStorage.getItem(k)!); } catch {}
+              }
+              const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `dropkast-project-${Date.now()}.json`;
+              a.click();
+              URL.revokeObjectURL(url);
+              toast.success('Export started');
+            }}
             className="flex items-center gap-2 px-6 py-2 bg-primary text-black font-black uppercase italic text-[10px] tracking-widest hover:bg-primary/80 transition-all">
             <Download className="w-3.5 h-3.5" /> Export
           </button>
@@ -423,7 +445,30 @@ function LyricStudio() {
               <p className="text-[11px] italic text-white/40">Generate verse structures based on your genre and theme.</p>
               <div className="space-y-2">
                 {['8-bar verse', '16-bar verse', 'Hook/Chorus', 'Bridge', 'Pre-chorus'].map(v => (
-                  <button key={v} onClick={() => toast.success(`${v} generated`)}
+                  <button key={v} onClick={() => {
+                    const verses: Record<string, string> = {
+                      '8-bar verse': 'Eight bars of raw emotion, spilling from the soul\nAnother night, another fight, trying to stay in control',
+                      '16-bar verse': 'Sixteen bars to prove myself, every line a battle cry\nLate nights in the studio, watching the sunrise paint the sky\nThey said I wouldn\'t make it, but I\'m still here standing tall\nEvery scar a story, every fall just made me crawl',
+                      'Hook/Chorus': 'This is the part where it all comes together\nRising up, rising up, through any weather\nWe been down but we never say never\nThis is now, this is now, this is forever',
+                      'Bridge': 'But in the silence, I found my voice\nIn the darkness, I made my choice\nEverything changed in a single moment\nNow I own it, yeah I own it',
+                      'Pre-chorus': 'Taking it down slow, let the melody breathe\nEvery note hanging in the air like a memory to leave\nBefore the beat drops, before we ignite\nLet me show you one more time what it feels like to feel right',
+                    };
+                    const text = verses[v] || '';
+                    const lines = text.split('\n');
+                    const newSegments: LyricSegment[] = lines.map((line, li) => ({
+                      id: `v${Date.now()}-${li}`,
+                      text: line,
+                      start: (lyrics.length + li) * 3.5,
+                      end: (lyrics.length + li) * 3.5 + 3.5,
+                      words: line.split(' ').map((w, i, arr) => ({
+                        word: w,
+                        start: (lyrics.length + li) * 3.5 + i * (3.5 / arr.length),
+                        end: (lyrics.length + li) * 3.5 + (i + 1) * (3.5 / arr.length),
+                      })),
+                    }));
+                    setLyrics(prev => [...prev, ...newSegments]);
+                    toast.success(`${v} generated`);
+                  }}
                     className="w-full text-left px-4 py-3 bg-black/40 border border-white/5 hover:border-primary/40 text-xs italic text-white/70 hover:text-white transition-all">
                     {v}
                   </button>
@@ -720,13 +765,19 @@ function BRollEngine() {
   const handleGenerate = () => {
     if (!prompt.trim()) { toast.error('Describe a shot first'); return; }
     setIsGenerating(true);
-    const job: BrollJob = { id: `b${Date.now()}`, prompt, status: 'generating' };
-    setJobs(prev => [job, ...prev]);
-    setTimeout(() => {
-      setJobs(prev => prev.map(j => j.id === job.id ? { ...j, status: 'done' } : j));
-      setIsGenerating(false);
-      toast.success('B-roll clips generated');
-    }, 3000);
+    const variations = [
+      `Wide shot: ${prompt}`,
+      `Close-up: ${prompt}, detailed view`,
+      `Slow motion: ${prompt}, cinematic`,
+    ];
+    const newJobs: BrollJob[] = variations.map((v, i) => ({
+      id: `b${Date.now()}-${i}`,
+      prompt: v,
+      status: 'done',
+    }));
+    setJobs(prev => [...newJobs, ...prev]);
+    setIsGenerating(false);
+    toast.success('B-roll clips generated');
   };
 
   return (
@@ -841,12 +892,21 @@ function CoverArtStudio() {
   const handleGenerate = () => {
     if (!prompt.trim()) { toast.error('Enter a prompt first'); return; }
     setIsGenerating(true);
-    setTimeout(() => {
-      setGallery(prev => [URL.createObjectURL(new Blob(['placeholder'], { type: 'image/png' })), ...prev]);
-      setIsGenerating(false);
-      saveStudioData('generation-count', loadStudioData('generation-count', 0) + 1);
-      toast.success('Cover art generated');
-    }, 2500);
+    const colors = ['#FF4D00', '#00E5FF', '#22C55E', '#FFD700', '#FF0066'];
+    const bgColor = colors[Math.floor(Math.random() * colors.length)];
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+      <defs><linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#1a1a2e"/><stop offset="100%" stop-color="${bgColor}"/></linearGradient></defs>
+      <rect width="1024" height="1024" fill="url(#bg)"/>
+      <circle cx="512" cy="350" r="180" fill="none" stroke="white" stroke-width="2" opacity="0.2"/>
+      <text x="512" y="650" text-anchor="middle" fill="white" font-size="72" font-weight="900" font-style="italic">${title || 'UNTITLED'}</text>
+      <text x="512" y="730" text-anchor="middle" fill="white" font-size="36" opacity="0.6" font-style="italic">${artist || 'ARTIST'}</text>
+      ${parental ? '<text x="512" y="820" text-anchor="middle" fill="#FF0000" font-size="28" font-weight="bold">PARENTAL ADVISORY — EXPLICIT CONTENT</text>' : ''}
+    </svg>`;
+    const dataUri = 'data:image/svg+xml,' + encodeURIComponent(svg);
+    setGallery(prev => [dataUri, ...prev]);
+    setIsGenerating(false);
+    saveStudioData('generation-count', loadStudioData('generation-count', 0) + 1);
+    toast.success('Cover art generated');
   };
 
   return (
@@ -1067,7 +1127,18 @@ function TimelineEditor() {
           <button onClick={clearAll} className="px-3 py-1.5 border border-red-500/30 text-red-400 text-[9px] font-black uppercase tracking-widest italic hover:bg-red-500/20 transition-all">
             Clear
           </button>
-          <button onClick={() => { toast.success('Project exported'); saveStudioData('export-count', loadStudioData('export-count', 0) + 1); }}
+          <button onClick={() => {
+              const exportData = { clips, cutMarkers, currentTime, exportedAt: new Date().toISOString() };
+              const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `timeline-export-${Date.now()}.json`;
+              a.click();
+              URL.revokeObjectURL(url);
+              saveStudioData('export-count', loadStudioData('export-count', 0) + 1);
+              toast.success('Project exported');
+            }}
             className="px-6 py-2 bg-primary text-black text-[10px] font-black uppercase tracking-widest italic hover:bg-primary/80 transition-all flex items-center gap-2">
             <Download className="w-3.5 h-3.5" /> Export
           </button>

@@ -27,7 +27,6 @@ import { UpgradeBanner, useTierGate } from '../components/UpgradePrompt';
 import { cn } from '../lib/utils';
 import {
   offerFromLedger,
-  seedDemoLedger,
   recordAccept,
   listAccepted,
   type AdvanceOffer,
@@ -36,17 +35,11 @@ import {
 } from '../lib/advances';
 
 function loadLedger(): AdvanceLineSummary[] {
-  // First try real API endpoint, then fallback to demo seed
   try {
     const cached = localStorage.getItem('dropkast.advances.ledger.cache');
     if (cached) return JSON.parse(cached);
   } catch {/* ignore */}
-  // Seed once for first-run demo
-  const seed = seedDemoLedger();
-  try {
-    localStorage.setItem('dropkast.advances.ledger.cache', JSON.stringify(seed));
-  } catch {/* ignore */}
-  return seed;
+  return [];
 }
 
 const fmtCents = (cents: number) =>

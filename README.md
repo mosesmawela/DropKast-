@@ -7,6 +7,7 @@
 Distribute · Generate · Promote · Get Paid
 
 [![Live demo](https://img.shields.io/badge/live-dropkast.vercel.app-FF4D00?style=for-the-badge)](https://dropkast.vercel.app)
+[![GitHub](https://img.shields.io/badge/github-mosesmawela/DropKast--181717?style=for-the-badge&logo=github)](https://github.com/mosesmawela/DropKast-)
 [![Vite](https://img.shields.io/badge/vite-6.x-646CFF?style=for-the-badge&logo=vite)](https://vitejs.dev)
 [![React](https://img.shields.io/badge/react-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
 [![Tailwind](https://img.shields.io/badge/tailwind-4.x-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
@@ -240,13 +241,10 @@ See [`IMPLEMENTATION_PLAN.md`](./IMPLEMENTATION_PLAN.md) for the full 8-week pla
 - Maintained by [Moses Mawela](https://github.com/mosesmawela)
 - Built for independent artists who refuse to be at the mercy of legacy tools
 - Engineered with [Claude Code](https://claude.com/claude-code) assistance
+- 🔗 **Live:** [dropkast.vercel.app](https://dropkast.vercel.app)
 
 ---
 
 ## License
 
-**Proprietary — All Rights Reserved.**
-
-This codebase is the private property of the company. It is **not open source**. Source code, designs, copy, and architecture are confidential. No part of this repository may be copied, modified, distributed, or used in any form without explicit written permission from the owner.
-
-If you are an authorized contributor, see internal onboarding for access procedures.
+MIT — see [LICENSE](./LICENSE) for details.

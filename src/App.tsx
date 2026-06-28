@@ -75,7 +75,8 @@ const AllInOneStudio = lazy(() => import('./pages/AllInOneStudio'));
 const Pricing = lazy(() => import('./pages/Pricing'));
 const Subscription = lazy(() => import('./pages/Subscription'));
 const CommandCenter = lazy(() => import('./pages/CommandCenter'));
-const Trending = lazy(() => import('./pages/Trending'));
+// Trending sub-genre discovery available at /trending/genres once mapped
+// import Trending from './pages/Trending';
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const MusicCharts = lazy(() => import('./pages/MusicCharts'));
 const AudienceInsights = lazy(() => import('./pages/AudienceInsights'));
@@ -161,9 +162,8 @@ export default function App() {
                   <Route path="/social" element={<ModuleGuard moduleId="social-ads"><SocialAds /></ModuleGuard>} />
                   <Route path="/splits" element={<ModuleGuard moduleId="splits"><Splits /></ModuleGuard>} />
                   {/* Legacy gen routes — redirect to consolidated /studios */}
-                  <Route path="/anr"          element={<Navigate to="/studio/anr" replace />} />
-                  <Route path="/promo"        element={<Navigate to="/studio/press" replace />} />
-                  <Route path="/ugc"          element={<Navigate to="/studio/ugc" replace />} />
+                  <Route path="/anr"          element={<Navigate to="/studio" replace />} />
+                  <Route path="/ugc"          element={<Navigate to="/studio" replace />} />
                   <Route path="/content-lab"  element={<Navigate to="/studios" replace />} />
                   <Route path="/pre-release" element={<ModuleGuard moduleId="pre-release"><PreReleaseList /></ModuleGuard>} />
                   <Route path="/pre-release/new" element={<ModuleGuard moduleId="pre-release"><PreReleaseCreate /></ModuleGuard>} />
@@ -203,7 +203,6 @@ export default function App() {
                   <Route path="/studios" element={<Navigate to="/studio" replace />} />
                   <Route path="/studio/:id" element={<Navigate to="/studio" replace />} />
                   <Route path="/subscription" element={<Subscription />} />
-                  <Route path="/trending" element={<Trending />} />
                   <Route path="/admin" element={<AdminDashboard />} />
                   <Route path="/analytics/charts" element={<ModuleGuard moduleId="analytics"><MusicCharts /></ModuleGuard>} />
                   <Route path="/analytics/audience" element={<ModuleGuard moduleId="analytics"><AudienceInsights /></ModuleGuard>} />

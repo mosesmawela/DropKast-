@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme, UserRole } from '../context/ThemeContext';
 import { cn } from '../lib/utils';
-import { isDevBypassActive } from '../lib/api';
+
 
 const PORTALS: {
   id: UserRole;
@@ -54,8 +54,6 @@ export default function Login() {
   const { login, updateUser } = useAuth();
   const { role, setRole } = useTheme();
 
-  const bypassActive = isDevBypassActive();
-
   // Always open on the portal step so the user confirms which side of DropKast
   // they're signing into. The selected portal is highlighted from their last
   // choice (persisted in theme), so a returning user just clicks through.
@@ -63,8 +61,8 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [form, setForm] = useState({
-    email: bypassActive ? import.meta.env.VITE_BYPASS_EMAIL || 'admin@dropkast.dev' : '',
-    password: bypassActive ? import.meta.env.VITE_BYPASS_PASSWORD || 'dropkast123' : '',
+    email: '',
+    password: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -207,29 +205,6 @@ export default function Login() {
               </button>
             </div>
 
-            {bypassActive && (
-              <div className="flex flex-col md:flex-row gap-4 max-w-2xl mx-auto mt-4">
-                <button
-                  onClick={async () => {
-                    setIsLoading(true);
-                    try {
-                      await login(form.email, form.password);
-                      updateUser({ role: selectedPortal.id as never });
-                      localStorage.setItem('dropkast_welcome_seen', 'true');
-                      navigate(selectedPortal.landing);
-                    } catch {}
-                  }}
-                  className="primary-button h-14 flex-1 border border-primary/40 bg-primary/[0.04] text-primary hover:bg-primary hover:text-black flex items-center justify-center gap-3 px-8 transition-all"
-                >
-                  <Shield className="w-4 h-4" />
-                  <span className="text-[11px] font-mono font-black tracking-widest uppercase italic">
-                    Dev Bypass — Log in instantly
-                  </span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
-            )}
-
             <div className="mt-10 text-center">
               <p className="text-white/30 text-[11px] font-mono font-black tracking-[0.1em] italic">
                 Don't have an account yet?{' '}
@@ -351,23 +326,19 @@ export default function Login() {
                 </button>
               </form>
 
-              {bypassActive ? (
+              {!import.meta.env.VITE_SUPABASE_URL ? (
                 <div className="mt-12 pt-8 border-t border-dotted border-white/10">
                   <div className="p-6 border border-primary/30 bg-primary/[0.03]">
                     <div className="flex items-center gap-3 mb-4">
                       <Shield className="w-5 h-5 text-primary" />
                       <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic">
-                        Demo Mode
+                        Authentication not configured
                       </span>
                     </div>
-                    <p className="text-white/60 text-xs mb-4 leading-relaxed">
-                      Supabase is not configured. You are in <strong className="text-white">demo mode</strong> with
-                      full admin access. The credentials above are pre-filled — click continue to log in.
+                    <p className="text-white/60 text-xs leading-relaxed">
+                      Set <code className="text-primary">VITE_SUPABASE_URL</code> and{' '}
+                      <code className="text-primary">VITE_SUPABASE_ANON_KEY</code> to enable login.
                     </p>
-                    <div className="space-y-1 text-[10px] font-mono text-white/30">
-                      <div><span className="text-primary">Email:</span> admin@dropkast.dev</div>
-                      <div><span className="text-primary">Password:</span> dropkast123</div>
-                    </div>
                   </div>
                 </div>
               ) : (
