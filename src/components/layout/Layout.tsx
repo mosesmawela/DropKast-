@@ -22,18 +22,18 @@ export default function Layout() {
     setSidebarOpen(false);
   }, [location.pathname]);
 
-  // Auto-start tutorial on first dashboard load (after layout mounts so
-  // the data-tour targets are present in the DOM).
+  // Tutorial is opt-in from Settings → Tutorial (no auto-start; it was firing a
+  // 21-step overlay on every dashboard visit, which read as the app being broken).
+  void maybeAutoStart;
+
+  // Keep the theme role in sync with the saved portal choice, once, on mount.
   useEffect(() => {
-    if (location.pathname === '/dashboard') {
-      maybeAutoStart();
-    }
-    // Ensure role is up to date from localStorage (for identity portal switch)
     const savedRole = localStorage.getItem('campaign-os-role');
     if (savedRole && savedRole !== role) {
       setRole(savedRole as any);
     }
-  }, [location.pathname, maybeAutoStart]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Set noindex on all authed (layout-wrapped) pages
   useEffect(() => {

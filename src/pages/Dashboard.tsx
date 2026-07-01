@@ -22,8 +22,6 @@ import {
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import ClaimArtistProfile from '../components/ClaimArtistProfile';
-import FinancialBalanceCard from '../components/financial/FinancialBalanceCard';
-import QuickActionGrid from '../components/financial/QuickActionGrid';
 import { useAuth } from '../context/AuthContext';
 import { useReleases } from '../context/ReleaseContext';
 import { useCampaigns } from '../context/CampaignContext';
@@ -65,7 +63,7 @@ export default function Dashboard() {
   })();
 
   const handleQuickCommand = (proto: string) => {
-    notify('ai', 'PROTO_ACTIVE', `Initializing ${proto} emergency directive...`);
+    notify('ai', 'Working on it', `Starting ${proto}...`);
   };
 
   const getRoleConfig = () => {
@@ -156,12 +154,6 @@ export default function Dashboard() {
       {/* Balance + payout strip — front-and-center money view */}
       <BalanceStrip />
 
-      {/* Module A: Financial Balance Command Ledger */}
-      <div className="space-y-6">
-        <FinancialBalanceCard />
-        <QuickActionGrid />
-      </div>
-
       <ClaimArtistProfile artistName={user?.artistName || 'your project'} />
       <ScrollReveal direction="down" variant="blur">
         <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-[var(--border-main)] pb-10 relative">
@@ -177,7 +169,7 @@ export default function Dashboard() {
               <div className="flex items-center gap-3 mb-3 font-mono">
                 <span className="text-[10px] font-bold text-[var(--text-main)]/30 tracking-[0.2em] font-mono uppercase italic">{config.title}</span>
                 <div className="w-8 h-[1px] bg-[var(--border-main)]"></div>
-                <span className="text-[10px] font-bold text-primary tracking-[0.2em] font-mono italic animate-pulse">All systems live</span>
+                <span className="text-[10px] font-bold text-primary tracking-[0.2em] font-mono italic animate-pulse">Online</span>
               </div>
               <h1 className="text-3xl md:text-5xl font-black tracking-tight text-[var(--text-main)] leading-none uppercase italic font-mono">
                 {config.greeting}
@@ -194,14 +186,14 @@ export default function Dashboard() {
                         className="primary-button h-12 flex items-center px-10 bg-primary text-white border-none relative overflow-hidden group shadow-[0_0_20px_rgba(255,77,0,0.15)] transition-all hover:scale-105 active:scale-95"
                       >
                         <Sparkles className="w-4 h-4 mr-3" />
-                        NEW_CAMPAIGN
+                        New campaign
                       </button>
                     </AnimatedBeam>
                     <button 
                       onClick={() => navigate('/releases/new')}
                       className="secondary-button h-12 flex items-center px-10 border-white/10 text-white hover:border-white bg-white/5 transition-all hover:scale-105 active:scale-95"
                     >
-                      INGEST_ASSET
+                      Upload music
                     </button>
                   </>
                 )}
@@ -211,7 +203,7 @@ export default function Dashboard() {
                     className="primary-button h-12 flex items-center px-10 bg-primary text-white border-none transition-all hover:scale-105 active:scale-95"
                   >
                     <Target className="w-4 h-4 mr-3" />
-                    BROWSE_MISSIONS
+                    Browse campaigns
                   </button>
                 )}
                 {role === 'DJ' && (
@@ -220,7 +212,7 @@ export default function Dashboard() {
                     className="primary-button h-12 flex items-center px-10 bg-primary text-white border-none transition-all hover:scale-105 active:scale-95"
                   >
                     <Download className="w-4 h-4 mr-3" />
-                    OPEN_PROMO_STACK
+                    Open DJ packs
                   </button>
                 )}
              </div>
@@ -329,7 +321,7 @@ export default function Dashboard() {
                 onClick={() => { setSignalFeed([]); notify('info', 'BUFFER_CLEARED', 'Signal buffer flushed.'); }}
                 className="w-full py-4 border border-white/5 text-[10px] font-black font-mono tracking-widest text-white/20 hover:text-white transition-all uppercase"
               >
-                Clear Signal Buffer
+                Clear notifications
               </button>
            </div>
 
@@ -371,11 +363,11 @@ export default function Dashboard() {
                 <Users className="w-10 h-10 group-hover:scale-110 transition-transform" />
               </div>
               <div className="text-left">
-                <span className="text-4xl font-black italic font-mono uppercase tracking-[0.2em] group-hover:tracking-[0.3em] transition-all block text-white">REBOOT_IDENTITY_PORTAL</span>
-                <span className="text-[10px] text-primary font-bold uppercase tracking-[0.5em] font-mono mt-2 block">Switch_Authorized_Access_Node</span>
+                <span className="text-4xl font-black italic font-mono uppercase tracking-[0.2em] group-hover:tracking-[0.3em] transition-all block text-white">Switch portal</span>
+                <span className="text-[10px] text-primary font-bold uppercase tracking-[0.5em] font-mono mt-2 block">Change your account type</span>
               </div>
             </div>
-            <div className="text-[9px] text-white/20 font-bold uppercase tracking-[0.6em] font-mono relative z-10">Current_Protocol: {role}</div>
+            <div className="text-[9px] text-white/20 font-bold uppercase tracking-[0.6em] font-mono relative z-10">Signed in as: {role}</div>
           </button>
         </div>
       </ScrollReveal>
