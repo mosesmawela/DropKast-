@@ -78,6 +78,28 @@ export default function Login() {
     return Object.keys(errs).length === 0;
   };
 
+  // One-click portal entry (no strict sign-in). Picks the role and drops
+  // straight into that portal — used for the portal cards on the sign-in screen.
+  const enterPortal = async (portalId: typeof PORTALS[number]['id']) => {
+    const portal = PORTALS.find((p) => p.id === portalId) ?? PORTALS[0];
+    setRole(portalId);
+    setIsLoading(true);
+    try {
+      await login(form.email || `${portalId.toLowerCase()}@dropkast.dev`, form.password || 'dropkast');
+      updateUser({
+        role: portalId as never,
+        ...(portalId === 'LABEL' ? { label: (form.email || 'Your Label').split('@')[0] } : {}),
+      });
+      try { localStorage.setItem('dropkast_welcome_seen', 'true'); } catch {/* ignore */}
+      navigate(portal.landing);
+    } catch (error) {
+      setErrors({ form: 'Sign in failed.' });
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
@@ -142,11 +164,8 @@ export default function Login() {
                 return (
                   <button
                     key={p.id}
-                    onClick={() => setRole(p.id)}
-                    onDoubleClick={() => {
-                      setRole(p.id);
-                      setStep('creds');
-                    }}
+                    onClick={() => enterPortal(p.id)}
+                    disabled={isLoading}
                     className={cn(
                       'manifest-card relative p-7 text-left flex flex-col gap-5 transition-all border bg-white/[0.02] hover:bg-white/[0.05] min-h-[300px] group',
                       active ? 'border-primary scale-[1.02]' : 'border-white/10',

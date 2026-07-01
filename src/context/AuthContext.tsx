@@ -106,17 +106,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const login = useCallback(async (email: string, password: string) => {
     setState((s) => ({ ...s, isLoading: true }));
 
-    // Bypass mode: accept hardcoded dev credentials
+    // Bypass mode: no strict sign-in. Accept any email (default if blank) and
+    // ignore the password entirely — pick a portal and you're in.
     if (bypassMode) {
-      const validEmail = BYPASS_EMAIL;
-      const validPassword = BYPASS_PASSWORD;
-
-      if (email.toLowerCase() !== validEmail.toLowerCase() || password !== validPassword) {
-        setState((s) => ({ ...s, isLoading: false }));
-        throw new Error(`Invalid credentials. Use ${validEmail} / ${validPassword}`);
-      }
-
-      const user = makeBypassUser(email);
+      void password;
+      const user = makeBypassUser(email || BYPASS_EMAIL);
       setBypassStoredUser(user);
       setState({ user, isAuthenticated: true, isLoading: false });
       return;
