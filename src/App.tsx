@@ -78,6 +78,7 @@ const CommandCenter = lazy(() => import('./pages/CommandCenter'));
 // Trending sub-genre discovery available at /trending/genres once mapped
 // import Trending from './pages/Trending';
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const Roadmap = lazy(() => import('./pages/Roadmap'));
 const MusicCharts = lazy(() => import('./pages/MusicCharts'));
 const AudienceInsights = lazy(() => import('./pages/AudienceInsights'));
 const Publishing = lazy(() => import('./pages/Publishing'));
@@ -141,6 +142,7 @@ export default function App() {
               <Route path="/link/:slug" element={<SmartLink />} />
               {/* Public pricing page — drives conversion from Landing CTA. */}
               <Route path="/pricing" element={<Pricing />} />
+              <Route path="/roadmap" element={<Roadmap />} />
               {/* Hidden Command Center — page handles its own admin gate. */}
               <Route path="/command" element={<CommandCenter />} />
               {/* NOTE: /admin is the operator oversight console (AdminDashboard),
