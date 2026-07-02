@@ -97,7 +97,6 @@ const treeSections: TreeSection[] = [
   {
     label: 'Publishing Hub',
     icon: FileText,
-    badge: 'NEW',
     children: [
       { label: 'Manage Compositions', path: '/publishing' },
       { label: 'Add Composition', path: '/publishing' },
@@ -121,7 +120,6 @@ const treeSections: TreeSection[] = [
   {
     label: 'Marketing Engine',
     icon: Megaphone,
-    badge: 'NEW',
     children: [
       { label: 'Amplifier Engine', path: '/campaigns' },
       { label: 'AI Studio', path: '/studio', icon: Sparkles },
@@ -135,10 +133,10 @@ const treeSections: TreeSection[] = [
         icon: Globe,
         path: '#',
         children: [
-          { label: 'Spotify for Artists', path: '/settings' },
-          { label: 'YouTube Official Artist Channel', path: '/settings' },
-          { label: 'Apple for Artists', path: '/settings' },
-          { label: 'Audiomack Artist Account', path: '/settings' },
+          { label: 'Spotify for Artists', path: '/settings?tab=GATEWAYS' },
+          { label: 'YouTube Official Artist Channel', path: '/settings?tab=GATEWAYS' },
+          { label: 'Apple for Artists', path: '/settings?tab=GATEWAYS' },
+          { label: 'Audiomack Artist Account', path: '/settings?tab=GATEWAYS' },
         ],
       },
     ],
@@ -163,21 +161,15 @@ const treeSections: TreeSection[] = [
     label: 'Account Settings',
     icon: Settings,
     children: [
-      { label: 'Payoneer Setup', path: '/settings' },
-      { label: 'Join YouTube Network', path: '/settings' },
-      { label: 'My Backups', path: '/settings' },
+      { label: 'Identity & Profile', path: '/settings?tab=IDENTITY' },
+      { label: 'Payouts & Billing', path: '/settings?tab=BILLING' },
+      { label: 'Backups & Data', path: '/settings?tab=DATA' },
+      { label: 'Change Password', path: '/settings?tab=SECURITY' },
     ],
   },
   {
-    label: 'Update Password',
-    icon: Lock,
-    children: [{ label: 'Change Password', path: '/settings' }],
-  },
-  {
-    label: 'ONE Community',
+    label: 'LVRN Community',
     icon: Globe,
-    badge: 'NEW',
-    badgeColor: 'bg-[#F05A28]',
     children: [
       { label: 'Academy', path: '/academy' },
       { label: 'Product Roadmap', path: '/roadmap' },

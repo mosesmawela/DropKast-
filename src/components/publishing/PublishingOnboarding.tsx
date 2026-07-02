@@ -65,7 +65,7 @@ export default function PublishingOnboarding() {
           className="inline-flex items-center gap-3 px-12 py-5 bg-[#F05A28] text-white text-xs font-black uppercase tracking-widest font-mono italic hover:bg-[#d94d20] transition-all"
         >
           <FileText className="w-5 h-5" />
-          JOIN ONE PUBLISHING
+          JOIN LVRN PUBLISHING
           <ArrowRight className="w-5 h-5" />
         </button>
       </div>

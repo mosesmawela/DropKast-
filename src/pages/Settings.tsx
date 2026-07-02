@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   User,
   Bell,
@@ -24,7 +24,7 @@ import {
   Building2,
 } from 'lucide-react';
 import { motion } from 'motion/react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { useTheme, VisualStyle } from '../context/ThemeContext';
 import { useAI } from '../context/AIContext';
@@ -89,7 +89,16 @@ export default function Settings() {
   const { enabled: enabledModules, toggle: toggleModule, setPreset: setWorkspacePreset } = useWorkspace();
   const { notify } = useNotify();
 
-  const [activeTab, setActiveTab] = useState<TabId>('IDENTITY');
+  const [searchParams] = useSearchParams();
+  const tabParam = (searchParams.get('tab') || '').toUpperCase();
+  const [activeTab, setActiveTab] = useState<TabId>(
+    (TABS.some((t) => t.id === tabParam) ? tabParam : 'IDENTITY') as TabId,
+  );
+  // Sync the active tab when the ?tab= param changes (e.g. sidebar deep-links
+  // while already on this page).
+  useEffect(() => {
+    if (tabParam && TABS.some((t) => t.id === tabParam)) setActiveTab(tabParam as TabId);
+  }, [tabParam]);
   const [showExportModal, setShowExportModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [customColor, setCustomColor] = useState('#FF4D00');
