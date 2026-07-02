@@ -154,7 +154,11 @@ export default function Dashboard() {
       {/* Balance + payout strip — front-and-center money view */}
       <BalanceStrip />
 
-      <ClaimArtistProfile artistName={user?.artistName || 'your project'} />
+      {/* Claiming DSP artist profiles only applies to artists & labels — not
+          influencers or DJs. Keep operations portal-appropriate. */}
+      {(role === 'ARTIST' || role === 'LABEL') && (
+        <ClaimArtistProfile artistName={user?.artistName || 'your project'} />
+      )}
       <ScrollReveal direction="down" variant="blur">
         <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-[var(--border-main)] pb-10 relative">
           <div className="flex items-start gap-8">

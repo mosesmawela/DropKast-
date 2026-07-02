@@ -79,6 +79,7 @@ const CommandCenter = lazy(() => import('./pages/CommandCenter'));
 // import Trending from './pages/Trending';
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const Roadmap = lazy(() => import('./pages/Roadmap'));
+const Playlists = lazy(() => import('./pages/Playlists'));
 const MusicCharts = lazy(() => import('./pages/MusicCharts'));
 const AudienceInsights = lazy(() => import('./pages/AudienceInsights'));
 const Publishing = lazy(() => import('./pages/Publishing'));
@@ -202,6 +203,7 @@ export default function App() {
                   <Route path="/advances" element={<ModuleGuard moduleId="advances"><Advances /></ModuleGuard>} />
                   <Route path="/drafts" element={<Drafts />} />
                   <Route path="/studio" element={<ModuleGuard moduleId="studios"><AllInOneStudio /></ModuleGuard>} />
+                  <Route path="/playlists" element={<Playlists />} />
                   <Route path="/studios" element={<Navigate to="/studio" replace />} />
                   <Route path="/studio/:id" element={<Navigate to="/studio" replace />} />
                   <Route path="/subscription" element={<Subscription />} />

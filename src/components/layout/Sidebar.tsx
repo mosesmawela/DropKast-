@@ -221,6 +221,9 @@ const influencerTree: TreeSection[] = [
     { label: 'Creator Assets', path: '/assets' },
     { label: 'AI Studio', path: '/studio' },
   ] },
+  { label: 'Playlists', icon: Music, defaultOpen: true, children: [
+    { label: 'My Playlists', path: '/playlists' },
+  ] },
   { label: 'Channels', icon: Share2, children: [
     { label: 'Connected Accounts', path: '/influencer/socials' },
   ] },
