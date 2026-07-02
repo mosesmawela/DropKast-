@@ -54,11 +54,11 @@ export default function PublishingSharesLedger() {
           <span className="w-1.5 h-1.5 bg-[#F05A28]" />
           <span className="text-[10px] font-bold tracking-widest uppercase font-mono">PUBLISHING SHARES LEDGER</span>
         </div>
-        <h1 className="text-3xl font-black tracking-tight text-[#ECECEF] uppercase font-mono">Share Requests</h1>
+        <h1 className="text-3xl font-black tracking-tight text-[var(--text-main)] uppercase font-mono">Share Requests</h1>
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-[#26262e]">
+      <div className="flex border-b border-[var(--border-main)]">
         <button
           onClick={() => setTab('received')}
           className={cn(
@@ -82,10 +82,10 @@ export default function PublishingSharesLedger() {
       </div>
 
       {/* Table */}
-      <div className="bg-[#15151b] border border-[#26262e] overflow-hidden">
+      <div className="bg-[var(--card-bg)] border border-[var(--border-main)] overflow-hidden">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b border-[#26262e] bg-black/20/50">
+            <tr className="border-b border-[var(--border-main)] bg-black/20/50">
               {columns.map((col) => (
                 <th key={col} className="px-6 py-4 text-[9px] font-bold text-[#8A8A93] tracking-widest uppercase font-mono">
                   {col}

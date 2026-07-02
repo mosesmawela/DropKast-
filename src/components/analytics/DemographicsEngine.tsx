@@ -21,15 +21,15 @@ export default function DemographicsEngine() {
   return (
     <div className="space-y-8">
       {/* Filter Hub */}
-      <div className="flex flex-wrap items-center gap-4 bg-black/20 border border-[#26262e] p-4">
+      <div className="flex flex-wrap items-center gap-4 bg-black/20 border border-[var(--border-main)] p-4">
         <select
           value={artistFilter}
           onChange={(e) => setArtistFilter(e.target.value)}
-          className="border border-[#26262e] px-4 py-3 text-[9px] font-bold text-[#9A9AA6] uppercase tracking-widest font-mono bg-[#15151b]"
+          className="border border-[var(--border-main)] px-4 py-3 text-[9px] font-bold text-[#9A9AA6] uppercase tracking-widest font-mono bg-[var(--card-bg)]"
         >
           <option value="">Select an artist to filter</option>
         </select>
-        <button className="flex items-center gap-1 px-4 py-3 border border-dashed border-[#33333d] text-[#6A6A75] hover:border-[#F05A28] hover:text-[#F05A28] transition-all text-[9px] font-bold uppercase tracking-widest font-mono">
+        <button className="flex items-center gap-1 px-4 py-3 border border-dashed border-[var(--border-main)] text-[#6A6A75] hover:border-[#F05A28] hover:text-[#F05A28] transition-all text-[9px] font-bold uppercase tracking-widest font-mono">
           <Plus className="w-3 h-3" />
           ADD FILTER
         </button>
@@ -44,13 +44,13 @@ export default function DemographicsEngine() {
       {/* Four-Quadrant Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* GENDER */}
-        <div className="bg-[#15151b] border border-[#26262e] p-6 space-y-4">
+        <div className="bg-[var(--card-bg)] border border-[var(--border-main)] p-6 space-y-4">
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4 text-[#F05A28]" />
             <span className="text-[9px] font-bold text-[#8A8A93] uppercase tracking-widest font-mono">Gender Distribution</span>
           </div>
           {genderData.length === 0 ? (
-            <div className="h-[200px] flex items-center justify-center border border-dashed border-[#26262e] bg-black/20">
+            <div className="h-[200px] flex items-center justify-center border border-dashed border-[var(--border-main)] bg-black/20">
               <span className="text-[9px] font-bold text-[#55555f] uppercase tracking-widest font-mono">No data</span>
             </div>
           ) : (
@@ -69,13 +69,13 @@ export default function DemographicsEngine() {
         </div>
 
         {/* AGE */}
-        <div className="bg-[#15151b] border border-[#26262e] p-6 space-y-4">
+        <div className="bg-[var(--card-bg)] border border-[var(--border-main)] p-6 space-y-4">
           <div className="flex items-center gap-2">
             <BarChart3 className="w-4 h-4 text-[#F05A28]" />
             <span className="text-[9px] font-bold text-[#8A8A93] uppercase tracking-widest font-mono">Age Brackets</span>
           </div>
           {ageData.length === 0 ? (
-            <div className="h-[200px] flex items-center justify-center border border-dashed border-[#26262e] bg-black/20">
+            <div className="h-[200px] flex items-center justify-center border border-dashed border-[var(--border-main)] bg-black/20">
               <span className="text-[9px] font-bold text-[#55555f] uppercase tracking-widest font-mono">No data</span>
             </div>
           ) : (
@@ -94,13 +94,13 @@ export default function DemographicsEngine() {
         </div>
 
         {/* SOURCE TYPE */}
-        <div className="bg-[#15151b] border border-[#26262e] p-6 space-y-4">
+        <div className="bg-[var(--card-bg)] border border-[var(--border-main)] p-6 space-y-4">
           <div className="flex items-center gap-2">
             <Globe className="w-4 h-4 text-[#F05A28]" />
             <span className="text-[9px] font-bold text-[#8A8A93] uppercase tracking-widest font-mono">Source Type</span>
           </div>
           {sourceData.length === 0 ? (
-            <div className="h-[200px] flex items-center justify-center border border-dashed border-[#26262e] bg-black/20">
+            <div className="h-[200px] flex items-center justify-center border border-dashed border-[var(--border-main)] bg-black/20">
               <span className="text-[9px] font-bold text-[#55555f] uppercase tracking-widest font-mono">No data</span>
             </div>
           ) : (
@@ -119,13 +119,13 @@ export default function DemographicsEngine() {
         </div>
 
         {/* SUBSCRIPTION TYPE */}
-        <div className="bg-[#15151b] border border-[#26262e] p-6 space-y-4">
+        <div className="bg-[var(--card-bg)] border border-[var(--border-main)] p-6 space-y-4">
           <div className="flex items-center gap-2">
             <CreditCard className="w-4 h-4 text-[#F05A28]" />
             <span className="text-[9px] font-bold text-[#8A8A93] uppercase tracking-widest font-mono">Listener Subscription Type</span>
           </div>
           {subData.length === 0 ? (
-            <div className="h-[200px] flex items-center justify-center border border-dashed border-[#26262e] bg-black/20">
+            <div className="h-[200px] flex items-center justify-center border border-dashed border-[var(--border-main)] bg-black/20">
               <span className="text-[9px] font-bold text-[#55555f] uppercase tracking-widest font-mono">No data</span>
             </div>
           ) : (
@@ -145,7 +145,7 @@ export default function DemographicsEngine() {
       </div>
 
       {/* Data Source Validation */}
-      <div className="text-[8px] text-[#6A6A75] font-mono italic text-right border-t border-[#26262e] pt-4">
+      <div className="text-[8px] text-[#6A6A75] font-mono italic text-right border-t border-[var(--border-main)] pt-4">
         Data provided by Apple Music
       </div>
     </div>

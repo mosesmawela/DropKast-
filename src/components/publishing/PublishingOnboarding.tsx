@@ -7,12 +7,12 @@ export default function PublishingOnboarding() {
   return (
     <div className="space-y-12 max-w-4xl mx-auto py-8">
       {/* Hero */}
-      <div className="text-center space-y-6 pb-8 border-b border-[#26262e]">
+      <div className="text-center space-y-6 pb-8 border-b border-[var(--border-main)]">
         <div className="flex items-center justify-center gap-2 text-[#F05A28] mb-4">
           <FileText className="w-5 h-5" />
           <span className="text-[10px] font-bold tracking-widest uppercase font-mono">PUBLISHING ADMINISTRATION</span>
         </div>
-        <h1 className="text-4xl font-black text-[#ECECEF] uppercase font-mono tracking-tight">
+        <h1 className="text-4xl font-black text-[var(--text-main)] uppercase font-mono tracking-tight">
           Would you like to use our publishing services?
         </h1>
         <p className="text-sm text-[#8A8A93] max-w-2xl mx-auto leading-relaxed">
