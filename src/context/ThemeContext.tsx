@@ -35,7 +35,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const [visualStyle, setVisualStyleState] = useState<VisualStyle>(() => {
     const saved = localStorage.getItem('campaign-os-visual-style');
-    return (saved as VisualStyle) || 'neumorphism';
+    // Technical ('default') is the clean, on-brand look — the default for everyone.
+    return (saved as VisualStyle) || 'default';
   });
 
   const [vibe, setVibeState] = useState<Vibe>(() => {
