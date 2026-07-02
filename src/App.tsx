@@ -195,7 +195,7 @@ export default function App() {
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/ai-providers" element={<ModuleGuard moduleId="ai-providers"><AIProviders /></ModuleGuard>} />
-                  <Route path="/academy" element={<ModuleGuard moduleId="academy"><Academy /></ModuleGuard>} />
+                  <Route path="/academy" element={<Academy />} />
                   <Route path="/messages" element={<ModuleGuard moduleId="messages"><Messages /></ModuleGuard>} />
                   <Route path="/roster" element={<Roster />} />
                   <Route path="/links" element={<ModuleGuard moduleId="smart-links"><SmartLinks /></ModuleGuard>} />

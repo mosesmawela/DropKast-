@@ -7,18 +7,18 @@ export default function PublishingOnboarding() {
   return (
     <div className="space-y-12 max-w-4xl mx-auto py-8">
       {/* Hero */}
-      <div className="text-center space-y-6 pb-8 border-b border-gray-200">
+      <div className="text-center space-y-6 pb-8 border-b border-[#26262e]">
         <div className="flex items-center justify-center gap-2 text-[#F05A28] mb-4">
           <FileText className="w-5 h-5" />
           <span className="text-[10px] font-bold tracking-widest uppercase font-mono">PUBLISHING ADMINISTRATION</span>
         </div>
-        <h1 className="text-4xl font-black text-gray-900 uppercase font-mono tracking-tight">
+        <h1 className="text-4xl font-black text-[#ECECEF] uppercase font-mono tracking-tight">
           Would you like to use our publishing services?
         </h1>
-        <p className="text-sm text-gray-500 max-w-2xl mx-auto leading-relaxed">
+        <p className="text-sm text-[#8A8A93] max-w-2xl mx-auto leading-relaxed">
           With our state-of-the-art publishing administration system, both writers and publishers can start collecting their royalties globally.
         </p>
-        <p className="text-xs text-gray-400 italic max-w-xl mx-auto">
+        <p className="text-xs text-[#6A6A75] italic max-w-xl mx-auto">
           By registering your songs and writer's information, you can now collect public performance and mechanical royalties from PRO's, CMO's, and DSP's around the world.
         </p>
       </div>
@@ -31,29 +31,29 @@ export default function PublishingOnboarding() {
             title: 'Original Content',
             desc: 'You can only register songs written or published by you.',
             color: 'text-blue-600',
-            bg: 'bg-blue-50 border-blue-200',
+            bg: 'bg-blue-500/10 border-blue-200',
           },
           {
             icon: ShieldCheck,
             title: 'PRO Affiliation / IPI',
             desc: 'You should be currently affiliated with a Performing Rights Organization (PRO) and have a valid IPI number.',
             color: 'text-emerald-600',
-            bg: 'bg-emerald-50 border-emerald-200',
+            bg: 'bg-emerald-500/10 border-emerald-200',
           },
           {
             icon: TrendingUp,
             title: 'DSP Traction',
             desc: 'Only songs with traction on DSPs will be allowed.',
             color: 'text-purple-600',
-            bg: 'bg-purple-50 border-purple-200',
+            bg: 'bg-purple-500/10 border-purple-200',
           },
         ].map((pillar) => (
           <div key={pillar.title} className={`${pillar.bg} border p-8 text-center space-y-5`}>
             <div className={`w-14 h-14 mx-auto border ${pillar.bg} flex items-center justify-center`}>
               <pillar.icon className={`w-6 h-6 ${pillar.color}`} />
             </div>
-            <h3 className="text-sm font-black text-gray-800 uppercase font-mono tracking-tight">{pillar.title}</h3>
-            <p className="text-[10px] text-gray-500 font-mono leading-relaxed">{pillar.desc}</p>
+            <h3 className="text-sm font-black text-[#C9C9CF] uppercase font-mono tracking-tight">{pillar.title}</h3>
+            <p className="text-[10px] text-[#8A8A93] font-mono leading-relaxed">{pillar.desc}</p>
           </div>
         ))}
       </div>

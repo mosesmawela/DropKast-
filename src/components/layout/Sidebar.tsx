@@ -151,10 +151,11 @@ const treeSections: TreeSection[] = [
     ],
   },
   {
-    label: 'Support Workspace',
+    label: 'Help & Support',
     icon: Headphones,
     children: [
-      { label: 'Support Tickets', path: '#' },
+      { label: 'Academy & Guides', path: '/academy' },
+      { label: 'Account & Settings', path: '/settings' },
     ],
   },
   {
