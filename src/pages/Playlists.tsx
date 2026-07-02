@@ -47,17 +47,17 @@ export default function Playlists() {
   const catalogue: Track[] = allReleases.map((r) => ({ id: r.id, title: r.title, artist: r.artist }));
 
   return (
-    <div className="max-w-5xl mx-auto py-10 px-2 font-sans">
+    <div className="max-w-5xl mx-auto py-8 sm:py-10 px-4 sm:px-2 font-sans">
       <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 border-b border-[var(--border-main)] pb-8 mb-8">
         <div>
           <div className="flex items-center gap-2 text-primary mb-2">
             <ListMusic className="w-4 h-4" />
             <span className="text-[11px] font-black uppercase tracking-[0.3em] italic font-mono">Playlists</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-black italic uppercase tracking-tighter text-[var(--text-main)]">Build a playlist</h1>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black italic uppercase tracking-tighter text-[var(--text-main)]">Build a playlist</h1>
           <p className="text-[var(--text-main)]/50 text-sm italic mt-2 max-w-xl">Curate tracks into playlists you can share and pitch. Feature the artists you love.</p>
         </div>
-        <button onClick={() => setCreating((c) => !c)} className="h-12 px-6 bg-primary text-white text-[10px] font-black uppercase italic tracking-widest hover:opacity-90 transition-all flex items-center gap-2 self-start">
+        <button onClick={() => setCreating((c) => !c)} className="beam h-12 px-6 bg-primary text-white text-[10px] font-black uppercase italic tracking-widest transition-all flex items-center gap-2 self-start">
           <Plus className="w-4 h-4" /> New playlist
         </button>
       </header>
@@ -69,8 +69,8 @@ export default function Playlists() {
           <input value={draft.description} onChange={(e) => setDraft({ ...draft, description: e.target.value })} placeholder="Description — what's the vibe? (optional)"
             className="w-full h-11 px-3 bg-[var(--card-bg)] border border-[var(--border-main)] text-[var(--text-main)] text-sm italic outline-none focus:border-primary" />
           <div className="flex gap-2">
-            <button onClick={create} disabled={!draft.name.trim()} className="h-10 px-5 bg-white text-black text-[10px] font-black uppercase italic tracking-widest hover:bg-primary hover:text-white disabled:opacity-30 transition-all">Create</button>
-            <button onClick={() => setCreating(false)} className="h-10 px-5 border border-[var(--border-main)] text-[var(--text-main)]/60 text-[10px] font-black uppercase italic tracking-widest hover:text-[var(--text-main)] transition-all">Cancel</button>
+            <button onClick={create} disabled={!draft.name.trim()} className="h-10 px-5 bg-white text-black text-[10px] font-black uppercase italic tracking-widest disabled:opacity-30 transition-all">Create</button>
+            <button onClick={() => setCreating(false)} className="h-10 px-5 border border-[var(--border-main)] text-[var(--text-main)]/60 text-[10px] font-black uppercase italic tracking-widest transition-all">Cancel</button>
           </div>
         </div>
       )}
@@ -90,7 +90,7 @@ export default function Playlists() {
                   <div className="text-base font-black italic uppercase text-[var(--text-main)] truncate">{pl.name}</div>
                   <div className="text-[11px] text-[var(--text-main)]/50 italic">{pl.tracks.length} track{pl.tracks.length !== 1 ? 's' : ''}{pl.description ? ` · ${pl.description}` : ''}</div>
                 </div>
-                <button onClick={(e) => { e.stopPropagation(); remove(pl.id); }} className="text-[var(--text-main)]/30 hover:text-red-400 transition-colors shrink-0"><Trash2 className="w-4 h-4" /></button>
+                <button onClick={(e) => { e.stopPropagation(); remove(pl.id); }} className="text-[var(--text-main)]/30 transition-colors shrink-0"><Trash2 className="w-4 h-4" /></button>
               </button>
 
               {openId === pl.id && (
@@ -103,7 +103,7 @@ export default function Playlists() {
                           <Music className="w-3.5 h-3.5 text-primary shrink-0" />
                           <span className="text-[var(--text-main)] italic font-black truncate">{t.title}</span>
                           <span className="text-[var(--text-main)]/40 italic truncate">· {t.artist}</span>
-                          <button onClick={() => removeTrack(pl.id, t.id)} className="ml-auto text-[var(--text-main)]/30 hover:text-red-400"><X className="w-3.5 h-3.5" /></button>
+                          <button onClick={() => removeTrack(pl.id, t.id)} className="ml-auto text-[var(--text-main)]/30"><X className="w-3.5 h-3.5" /></button>
                         </div>
                       ))}
                     </div>
@@ -115,7 +115,7 @@ export default function Playlists() {
                     ) : (
                       <div className="flex flex-wrap gap-2">
                         {catalogue.filter((t) => !pl.tracks.some((x) => x.id === t.id)).map((t) => (
-                          <button key={t.id} onClick={() => addTrack(pl.id, t)} className={cn('text-[10px] font-black uppercase italic tracking-widest px-3 py-1.5 border border-[var(--border-main)] text-[var(--text-main)]/60 hover:border-primary hover:text-primary transition-all')}>
+                          <button key={t.id} onClick={() => addTrack(pl.id, t)} className={cn('text-[10px] font-black uppercase italic tracking-widest px-3 py-1.5 border border-[var(--border-main)] text-[var(--text-main)]/60 transition-all')}>
                             + {t.title}
                           </button>
                         ))}

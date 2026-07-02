@@ -18,7 +18,7 @@ export default function ThemeToggle() {
     <div className="flex items-center border border-white/10 bg-black/20 backdrop-blur-sm shadow-2xl">
       <button
         onClick={toggleTheme}
-        className="w-10 h-10 flex items-center justify-center hover:bg-white/5 transition-all group"
+        className="w-10 h-10 flex items-center justify-center transition-all group"
         aria-label="Toggle Mode"
       >
         <AnimatePresence mode="wait">
@@ -30,7 +30,7 @@ export default function ThemeToggle() {
               exit={{ rotate: 90, opacity: 0 }}
               transition={{ duration: 0.2 }}
             >
-              <Moon className="w-4 h-4 text-white/40 group-hover:text-white transition-colors" />
+              <Moon className="w-4 h-4 text-white transition-colors" />
             </motion.div>
           ) : (
             <motion.div

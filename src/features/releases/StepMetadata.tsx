@@ -13,7 +13,7 @@ export default function StepMetadata({ data, update, next, back }: StepMetadataP
   return (
     <div className="space-y-12">
       <div className="space-y-4">
-        <h2 className="text-4xl font-black text-white italic uppercase tracking-tighter font-mono">Metadata Node</h2>
+        <h2 className="text-3xl sm:text-4xl font-black text-white italic uppercase tracking-tighter font-mono">Metadata Node</h2>
         <p className="text-white/30 text-xs font-bold uppercase tracking-[0.2em] font-mono italic">
           Configure transmission identifiers.
         </p>
@@ -66,15 +66,15 @@ export default function StepMetadata({ data, update, next, back }: StepMetadataP
       <div className="flex justify-between pt-12 items-center">
         <button 
           onClick={back}
-          className="flex items-center gap-3 text-white/20 hover:text-white transition-colors text-[10px] font-black uppercase tracking-[0.3em] font-mono italic"
+          className="flex items-center gap-3 text-white/20 transition-colors text-[10px] font-black uppercase tracking-[0.3em] font-mono italic"
         >
           <ChevronLeft className="w-4 h-4" />
           Previous_Entry
         </button>
-        <button 
+        <button
           onClick={next}
           disabled={!data.title || !data.artist || !data.genre}
-          className="h-16 px-14 bg-white text-black hover:bg-primary hover:text-white font-mono font-black italic tracking-widest uppercase text-xs transition-all active:scale-95 disabled:opacity-20 flex items-center gap-4"
+          className="beam h-16 px-14 bg-white text-black font-mono font-black italic tracking-widest uppercase text-xs transition-all active:scale-95 disabled:opacity-20 flex items-center gap-4"
         >
           Proceed to Art
           <ChevronRight className="w-4 h-4" />

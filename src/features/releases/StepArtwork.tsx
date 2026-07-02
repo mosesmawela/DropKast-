@@ -25,7 +25,7 @@ export default function StepArtwork({ data, update, next, back }: StepArtworkPro
   return (
     <div className="space-y-12">
       <div className="space-y-4">
-        <h2 className="text-4xl font-black text-white italic uppercase tracking-tighter font-mono">Visual Identity</h2>
+        <h2 className="text-3xl sm:text-4xl font-black text-white italic uppercase tracking-tighter font-mono">Visual Identity</h2>
         <p className="text-white/30 text-xs font-bold uppercase tracking-[0.2em] font-mono italic">
           Upload 3000x3000px master artwork nodes.
         </p>
@@ -33,7 +33,7 @@ export default function StepArtwork({ data, update, next, back }: StepArtworkPro
 
       <div className="flex flex-col lg:flex-row gap-12">
         <div className="flex-1">
-          <div className="relative aspect-square border-2 border-dashed border-white/5 bg-white/[0.01] flex items-center justify-center group overflow-hidden">
+          <div className="beam relative aspect-square border-2 border-dashed border-white/5 bg-white/[0.01] flex items-center justify-center group overflow-hidden">
             <input 
               type="file" 
               accept="image/jpeg,image/png"
@@ -46,15 +46,15 @@ export default function StepArtwork({ data, update, next, back }: StepArtworkPro
             
             {preview ? (
               <>
-                <img src={preview} alt="Artwork" className="absolute inset-0 w-full h-full object-cover grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700" />
-                <div className="relative z-10 p-6 bg-black/60 backdrop-blur-md border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
+                <img src={preview} alt="Artwork" className="absolute inset-0 w-full h-full object-cover opacity-100 transition-all duration-700" />
+                <div className="relative z-10 p-6 bg-black/60 backdrop-blur-md border border-white/10 opacity-100 transition-opacity">
                    <p className="text-[10px] font-black text-white uppercase italic tracking-widest">Update Artwork Node</p>
                 </div>
               </>
             ) : (
-              <div className="text-center group-hover:scale-110 transition-transform duration-500">
-                <div className="w-20 h-20 border border-white/10 flex items-center justify-center mx-auto mb-6 group-hover:border-primary transition-colors">
-                  <ImageIcon className="w-8 h-8 text-white/10 group-hover:text-primary transition-colors" />
+              <div className="text-center transition-transform duration-500">
+                <div className="w-20 h-20 border border-white/10 flex items-center justify-center mx-auto mb-6 transition-colors">
+                  <ImageIcon className="w-8 h-8 text-white/10 transition-colors" />
                 </div>
                 <p className="text-xs font-bold text-white/20 uppercase tracking-[0.3em] font-mono italic">Upload 1:1 Coverage</p>
               </div>
@@ -96,15 +96,15 @@ export default function StepArtwork({ data, update, next, back }: StepArtworkPro
       <div className="flex justify-between pt-12 items-center">
         <button 
           onClick={back}
-          className="flex items-center gap-3 text-white/20 hover:text-white transition-colors text-[10px] font-black uppercase tracking-[0.3em] font-mono italic"
+          className="flex items-center gap-3 text-white/20 transition-colors text-[10px] font-black uppercase tracking-[0.3em] font-mono italic"
         >
           <ChevronLeft className="w-4 h-4" />
           Previous_Entry
         </button>
-        <button 
+        <button
           onClick={next}
           disabled={!data.artwork}
-          className="h-16 px-14 bg-white text-black hover:bg-primary hover:text-white font-mono font-black italic tracking-widest uppercase text-xs transition-all active:scale-95 disabled:opacity-20 flex items-center gap-4"
+          className="beam h-16 px-14 bg-white text-black font-mono font-black italic tracking-widest uppercase text-xs transition-all active:scale-95 disabled:opacity-20 flex items-center gap-4"
         >
           Sync Distribution
           <ChevronRight className="w-4 h-4" />

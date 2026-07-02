@@ -66,7 +66,7 @@ The "trick" is that the AI assistant in the bottom-right has live tool access to
 **Creator Relay** — you make content. Accept paid missions from artists, post, get paid.
 **Vibe Selecta (DJ)** — you spin. Get exclusive packs, send feedback, shape what charts.
 
-Your account can have multiple roles — switch via "Portal Reboot" in the sidebar footer. Notifications cross over: an artist sending a campaign creates a "NEW_MISSION" event in the influencer's inbox, etc.`,
+Your account can have multiple roles — switch via "Switch Role" in the sidebar footer. Notifications cross over: an artist sending a campaign creates a "New Mission" alert in the creator's inbox, etc.`,
       },
       {
         id: 'navigation',
@@ -282,6 +282,24 @@ DropKast Analytics tracks all four per-release. Chat with Claude in the assistan
     level: 'advanced',
     lessons: [
       {
+        id: 'two-copyrights',
+        title: 'The two copyrights in every song',
+        duration: '5 min',
+        body: `Here's the single most important fact in the entire music business: every song is actually **two separate copyrights**, owned separately, that earn money separately.
+
+**1. The composition (the "song" / "musical work")** — this is the underlying songwriting: the melody, the chords, the lyrics. It exists before anyone records anything. If ten artists cover it, it's still one composition. Owned by the **songwriter(s)** and their **publisher(s)**. Its earnings are called **publishing royalties**.
+
+**2. The master (the "sound recording" / "master recording")** — this is the specific recorded performance you actually hear. Owned by whoever paid for / made the recording — historically the record label, but for an independent artist, **you**. Its earnings are called **master royalties**.
+
+A quick way to remember it: on a vinyl label, the composition is the song credit ("written by…") and the master is the ℗ (phonogram) line ("℗ 2026 Your Label"). The composition uses the © symbol; the master uses the ℗ symbol.
+
+**Why this matters for your money:** when your song streams on Spotify, BOTH copyrights get paid, through completely different pipes:
+- The **master** side is paid to your distributor (DropKast) → you.
+- The **composition** side is paid to your PRO and mechanical collector → your publisher → you.
+
+If you only set up the master side (distribution) and skip the composition side (publishing registration), you are literally leaving the second cheque uncollected. Most independent artists collect 100% of their master money and 0% of their publishing money for years without realizing it.`,
+      },
+      {
         id: 'splits',
         title: 'Split sheets are non-negotiable',
         duration: '3 min',
@@ -293,31 +311,117 @@ Standard splits for a vocal-led song:
 - Featured artist: 5-15%
 - Co-writer / additional production: 5-10%
 
+A split sheet is the one-page document that records this. It should name every contributor and their **role** — composer (melody/chords), lyricist (words), producer (beat/production), performer (vocals/instrumentation), publisher, and master owner — and the exact percentage each holds. Critically: **all percentages must total 100%.** A split sheet that adds up to 90% or 110% will bounce when you try to register the work with a PRO. Note too that splits can differ across the two copyrights — the composition split (writers) and the master split (recording owners) don't have to match.
+
+Sign it **before release**, while everyone is still friendly and remembers who did what. Chasing a signature after a song blows up is how careers end in lawsuits.
+
 Two common mistakes:
 1. "We'll figure it out later." Translate: "I'll figure it out in court."
 2. "I produced it AND wrote it" — combine the share but be explicit. Producers without contracts often claim 50% post-success.
 
-DropKast's Split Sheet page generates a written agreement, signed by all parties via email, stored on file. When royalties land, Stripe Connect (Phase 3) splits them automatically — no quarterly reconciliation, no fights.`,
+DropKast's Split Sheet page (\`/splits\`) generates a written agreement, signed by all parties via email, stored on file, and enforces the 100% total for you. When royalties land, Stripe Connect (Phase 3) splits them automatically — no quarterly reconciliation, no fights.`,
         cta: { label: 'Open Split Sheets', href: '/splits' },
       },
       {
         id: 'royalty-types',
-        title: 'The 4 types of royalties (and where they come from)',
+        title: 'The 5 types of royalties (and where they come from)',
+        duration: '6 min',
+        body: `Most artists only know about streaming royalties. There are five distinct income streams:
+
+1. **Master streaming/sales royalties** — paid by DSPs for streams of YOUR recording. Collected by your distributor (DropKast → you / your splits). On Spotify the payout works out to roughly **$0.003-$0.005 per stream** (Spotify does not pay a fixed per-stream rate — it's a pro-rata share of the revenue pool, so the effective rate moves). Apple Music runs a bit higher (~$0.007-$0.01), YouTube much lower.
+
+2. **Performance royalties** — part of the COMPOSITION side. Paid whenever the song is *performed publicly*: terrestrial/online radio, streaming, live venues, bars, TV, in-store music. Collected by a **PRO** (Performing Rights Org): ASCAP, BMI, SESAC or GMR in the US; PRS for Music in the UK; SAMRO in South Africa. Split into a writer's share (paid straight to you, always) and a publisher's share.
+
+3. **Mechanical royalties** — the other half of the COMPOSITION side. Paid whenever the song is *reproduced*: physical (vinyl/CD), permanent downloads, and interactive streams. In the US the **statutory mechanical rate** for physical + downloads is **12.4¢ per copy** for a song of 5 minutes or less (this is the 2023-2027 rate set by the Copyright Royalty Board); longer songs are 2.39¢ per minute. Streaming mechanicals in the US are collected by **The MLC** (The Mechanical Licensing Collective); physical/download mechanicals via **HFA** (Harry Fox Agency). UK/most of the world: MCPS (via PRS), CAPASSO in South Africa.
+
+4. **Neighbouring / needletime rights** — paid for the MASTER being *performed publicly* (radio play, TV, venues) — completely separate from publishing, and separate from streaming. Split between the master owner and the featured/session performers. Collected by **SoundExchange** in the US (digital radio only, e.g. SiriusXM, Pandora), **PPL** in the UK, and **SAMPRA** in South Africa. This is big money in Europe and routinely missed by US-focused artists.
+
+5. **Sync royalties** — a negotiated fee (not a pooled royalty) paid when your music is placed in TV, film, ads, trailers, or video games. A sync deal licenses BOTH copyrights, so you typically get a **master fee + a publishing (sync) fee**. Range is enormous: a small indie-film placement might be a few hundred dollars; a national ad or major-film spot can be **$5,000-$50,000+**. The EPK you build in DropKast is what sync agents review.
+
+Bottom line: a single release can be earning in **all five** places at once. Registering the master (distribution) only captures #1. Setting up publishing (#2, #3) and neighbouring rights (#4) is the difference between collecting one cheque and collecting four.`,
+      },
+    ],
+  },
+  {
+    id: 'rights',
+    title: 'Publishing, PROs & Getting Paid',
+    blurb: 'Set up the collection side once. Collect for the rest of your life.',
+    icon: Wallet,
+    level: 'advanced',
+    lessons: [
+      {
+        id: 'publishing-explained',
+        title: 'Publishing explained: writer share vs publisher share',
         duration: '5 min',
-        body: `Most artists only know about streaming royalties. There are four:
+        body: `"Publishing" scares people because it sounds like something only rich people have. It isn't — if you wrote the song, you already own the publishing. The question is just whether you're *collecting* it.
 
-1. **Master royalties** — paid by DSPs for streams of YOUR recording. Distributed via your distro (DropKast → you/your splits). ~$0.003-$0.005 per stream on Spotify.
+The composition's earnings are split into two classic halves:
 
-2. **Publishing royalties** — paid for the COMPOSITION (lyrics + melody) being used. Two halves:
-   - **Performance royalties** (BMI/ASCAP/SESAC) when the song is played publicly — radio, streams, live, in stores.
-   - **Mechanical royalties** (Harry Fox / MLC) when the song is reproduced — physical sales, downloads, on-demand streams.
-   Sign up with a PRO + register the composition. DropKast doesn't auto-do this yet (Phase 4 plan).
+**Writer's share (50%)** — belongs to the human songwriter(s), forever. It cannot be signed away in most deals; your PRO pays it directly to you. If you and a co-writer split the writing 50/50, you each own half of this 50%.
 
-3. **Sync royalties** — paid when your music is in TV, film, ads, video games. Pitch through a sync agent or directly. Single placements = $1K-$50K. The EPK you build in DropKast is what sync agents review.
+**Publisher's share (50%)** — belongs to whoever "publishes" the work. If you have no publisher, **you own this too** (you're self-published). A traditional publishing deal is essentially you giving up some/all of this half in exchange for advances and admin work.
 
-4. **Neighbouring rights** — paid for the master being played publicly (separate from publishing). Especially big in Europe. Sign up with SoundExchange (US) and a neighbouring rights org (PPL/UK, GVL/DE etc).
+So the phrase "a 50/50 publishing deal" means: the publisher takes the publisher's share (50% of the composition), you keep the writer's share (the other 50%).
 
-Bottom line: registering your song in 4 places minimum is the difference between earning $X/year and $5X/year on the same release.`,
+**Who does what:**
+- **Publishing administrator (admin deal)** — the light-touch option. They register your works everywhere, chase down royalties globally, and collect for a fee of roughly **10-25%**. You keep ownership of your copyrights. Best for most indies. Examples: Songtrust, Sentric, CD Baby Pro, TuneCore Publishing.
+- **Co-publishing deal** — you and a publisher co-own the publisher's share (often 75/25 in your favour after the writer's share) in exchange for an advance and active song-plugging/sync-pitching.
+- **Full publishing deal** — the publisher takes the whole publisher's share (and sometimes more). Big advance, least ownership. Rare for new artists and usually not worth it unless the advance is life-changing.
+
+Rule of thumb for a new artist: start with a **publishing admin** (or self-administer via a PRO + The MLC). Don't sign a co-pub/full deal until a publisher is offering real money for a real reason.`,
+      },
+      {
+        id: 'pros-cmos',
+        title: 'PROs & CMOs by region — who to register with',
+        duration: '6 min',
+        body: `Collection societies (PROs for performance, CMOs generally) are non-profit-ish organizations that license your music to businesses and pay you. You register **once per society**, then every registered work earns automatically. You generally join the society in your home country; they have reciprocal deals to collect worldwide.
+
+**United States**
+- **ASCAP** and **BMI** — the two big performing rights orgs. Free (BMI) or low one-time fee (ASCAP) to join as a writer. Pick one; you can't be in both simultaneously as a writer.
+- **SESAC** and **GMR** — invite-only boutique PROs. You don't apply here as a newcomer.
+- **The MLC** — collects US *streaming mechanical* royalties. Free to join, and if you self-publish you MUST register here or that money sits unclaimed.
+- **HFA (Harry Fox Agency)** — handles physical/download mechanical licensing.
+- **SoundExchange** — collects *digital performance / neighbouring* royalties for the master (SiriusXM, Pandora, webcasters). Free. Register as both the recording artist AND the rights owner if you own your masters.
+
+**United Kingdom**
+- **PRS for Music** — performance royalties (the ASCAP/BMI equivalent).
+- **MCPS** — mechanical royalties (usually joined together with PRS).
+- **PPL** — neighbouring rights for the master (the SoundExchange equivalent) plus session-musician payments.
+
+**South Africa**
+- **SAMRO** — performance royalties for the composition (the PRO). Register here as a songwriter.
+- **CAPASSO** — mechanical royalties (streaming + reproduction) for the composition.
+- **SAMPRA** — needletime / neighbouring rights for the master recording (the PPL/SoundExchange equivalent).
+
+**Who should register with what:**
+- Wrote the song? → your local **PRO** (ASCAP/BMI, PRS, SAMRO) for performance, **+ a mechanical collector** (The MLC, MCPS, CAPASSO) for mechanicals.
+- Own the master? → a **neighbouring-rights org** (SoundExchange, PPL, SAMPRA).
+- Most indies end up registered with 3 organizations minimum. A publishing admin (previous lesson) can register you with most of these in one go instead of doing each manually.`,
+      },
+      {
+        id: 'getting-paid',
+        title: 'Getting paid: ISRC, ISWC & registering your works',
+        duration: '5 min',
+        body: `Royalties don't find you — they're matched to codes and registrations. Miss the setup and the money literally cannot be routed to you. It piles up in a "black box" and is eventually redistributed to *other* rightsholders. Billions of dollars sit unmatched globally every year.
+
+**The two codes you must know (one per copyright):**
+
+**ISRC — International Standard Recording Code.** Identifies the **master** (the specific recording). Format looks like \`US-ABC-25-00001\`. A brand-new ISRC is minted for every distinct recording (a remix or a re-record needs its own). DropKast / your distributor auto-assigns this at upload — never reuse an old one.
+
+**ISWC — International Standard Musical Work Code.** Identifies the **composition** (the underlying song). Format looks like \`T-123.456.789-0\`. It's assigned by your PRO when you register the work. One composition = one ISWC, even across covers, live versions and remixes.
+
+Easy way to keep them straight: **ISRC = the Recording, ISWC = the Written work.**
+
+**The registration checklist for every release:**
+1. **Distribute the master** (DropKast) → gets ISRC, starts master streaming royalties.
+2. **Register the composition with your PRO** (ASCAP/BMI/PRS/SAMRO) → gets ISWC, starts performance royalties. Add all co-writers with their exact splits — splits must total **100%**.
+3. **Register mechanicals** (The MLC / MCPS / CAPASSO, or let a publishing admin do it) → starts streaming + reproduction mechanicals.
+4. **Register the master for neighbouring rights** (SoundExchange / PPL / SAMPRA) → starts digital-radio + public-performance master money.
+
+**Why unregistered works lose money — a concrete example:** a self-published track does 1,000,000 Spotify streams. The master side pays out via the distributor no matter what. But the **streaming mechanical** portion (paid via The MLC) and the **performance** portion (paid via your PRO) only pay if the composition is registered and the writer splits are on file. Skip those and you can silently forfeit a meaningful slice of the total earnings on that same million streams — money that was generated but never claimed.
+
+The fix is boring and permanent: register once, per work, before or right at release. Do it every time and the pipes stay connected for the life of the copyright.`,
+        cta: { label: 'Set up your splits', href: '/splits' },
       },
     ],
   },
@@ -380,6 +484,7 @@ const ICON_BY_MODULE: Record<string, any> = {
   ar: MessageSquare,
   campaign: Target,
   monetize: Wallet,
+  rights: Wallet,
   platform: Sparkles,
 };
 
@@ -439,8 +544,8 @@ export default function Academy() {
               Mini-Course: Release, A&R, Campaign, Platform
             </h1>
             <p className="text-[var(--text-main)]/40 mt-1 text-xs max-w-2xl">
-              Six modules. {totalLessons} lessons total, ~60 minutes end-to-end. Built for indie artists who want to
-              run their career like a label without hiring one.
+              {MODULES.length} modules. {totalLessons} lessons total, ~75 minutes end-to-end. Built for indie artists who
+              want to run their career like a label without hiring one.
             </p>
           </div>
           <div className="manifest-card border border-[var(--border-main)] bg-[var(--card-bg)] px-4 py-2 min-w-[180px]">
@@ -468,7 +573,7 @@ export default function Academy() {
               <div key={m.id} className="manifest-card border border-[var(--border-main)] bg-[var(--card-bg)]">
                 <button
                   onClick={() => setOpen(isOpen ? null : m.id)}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-white/[0.03] transition-colors"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors"
                 >
                   <Icon className="w-4 h-4 text-primary shrink-0" />
                   <div className="flex-1 min-w-0">
@@ -502,7 +607,7 @@ export default function Academy() {
                               onClick={() => setActiveLesson({ moduleId: m.id, lessonId: l.id })}
                               className={cn(
                                 'w-full flex items-center gap-2 px-3 py-2 text-left transition-colors text-[11px]',
-                                isActive ? 'bg-primary/10 text-primary' : 'text-[var(--text-main)]/60 hover:bg-white/[0.03] hover:text-[var(--text-main)]',
+                                isActive ? 'bg-primary/10 text-primary' : 'text-[var(--text-main)]/60',
                               )}
                             >
                               {isDone ? (
@@ -589,7 +694,7 @@ function LessonView({
             'flex items-center gap-2 px-4 py-2 text-[10px] font-mono font-black uppercase italic tracking-widest transition-all',
             isComplete
               ? 'border border-green-500/40 text-green-500'
-              : 'bg-primary text-white hover:scale-[1.03] active:scale-95',
+              : 'bg-primary text-white active:scale-95',
           )}
         >
           {isComplete ? <Check className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
@@ -598,7 +703,7 @@ function LessonView({
         {lesson.cta && (
           <button
             onClick={() => onCta(lesson.cta!.href)}
-            className="flex items-center gap-2 px-4 py-2 border border-primary/40 text-primary text-[10px] font-mono font-black uppercase italic tracking-widest hover:bg-primary/10 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 border border-primary/40 text-primary text-[10px] font-mono font-black uppercase italic tracking-widest transition-colors"
           >
             {lesson.cta.label}
             <ChevronRight className="w-3.5 h-3.5" />

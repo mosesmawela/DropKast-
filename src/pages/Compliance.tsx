@@ -20,7 +20,7 @@ export default function Compliance() {
   };
 
   const requirements = [
-    { id: 'rights', title: 'Full Rights Ownership', desc: 'You confirm that you own 100% of the mechanical and publishing rights to all uploaded nodes.', icon: ShieldCheck },
+    { id: 'rights', title: 'Full Rights Ownership', desc: 'You confirm that you own 100% of the mechanical and publishing rights to every track you upload.', icon: ShieldCheck },
     { id: 'samples', title: 'Sample Clearances', desc: 'You certify that all samples, loops, and vocal stems have been cleared for commercial distribution.', icon: FileText },
     { id: 'content', title: 'Content Integrity', desc: 'You confirm the release does not infringe on existing trademarks or contain unauthorized remixes.', icon: Scale },
     { id: 'explicit', title: 'Metadata Accuracy', desc: 'You agree that any explicit content has been flagged and titles are free of emojis or placeholder text.', icon: AlertOctagon }
@@ -30,11 +30,11 @@ export default function Compliance() {
     <div className="max-w-5xl mx-auto py-12 px-6 font-mono">
       <div className="mb-20">
         <div className="flex items-center gap-4 mb-6">
-           <Lock className="w-6 h-6 text-primary" />
-           <span className="text-[11px] font-black text-primary uppercase tracking-[0.4em] italic">Rights_&_Clearance_Layer</span>
+           <Lock className="w-6 h-6 text-primary shrink-0" />
+           <span className="text-[11px] font-black text-primary uppercase tracking-[0.4em] italic">Rights & Clearance</span>
         </div>
-        <h1 className="text-8xl font-black text-white italic uppercase tracking-tighter leading-none mb-6">Compliance</h1>
-        <p className="text-white/30 text-lg font-bold italic tracking-widest uppercase max-w-2xl">Ensuring your music meets global node safety standards before deployment.</p>
+        <h1 className="text-5xl sm:text-7xl md:text-8xl font-black text-white italic uppercase tracking-tighter leading-none mb-6 break-words">Compliance</h1>
+        <p className="text-white/30 text-lg font-bold italic tracking-widest uppercase max-w-2xl">Make sure your music is cleared and ready before it goes live.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
@@ -43,14 +43,14 @@ export default function Compliance() {
              key={req.id} 
              onClick={() => toggleAgree(req.id)}
              className={cn(
-               "p-10 border transition-all cursor-pointer group flex flex-col justify-between",
-               agreed.includes(req.id) ? "bg-white/[0.03] border-primary" : "bg-dark border-white/5 hover:border-white/20"
+               "beam p-6 md:p-10 border transition-all cursor-pointer group flex flex-col justify-between",
+               agreed.includes(req.id) ? "bg-white/[0.03] border-primary" : "bg-dark border-white/5"
              )}
            >
               <div className="space-y-6">
                  <div className={cn(
                    "w-14 h-14 border flex items-center justify-center transition-colors",
-                   agreed.includes(req.id) ? "border-primary text-primary" : "border-white/10 text-white/20 group-hover:border-white"
+                   agreed.includes(req.id) ? "border-primary text-primary" : "border-white/10 text-white/20"
                  )}>
                     <req.icon className="w-6 h-6" />
                  </div>
@@ -71,19 +71,19 @@ export default function Compliance() {
                    "text-[10px] font-black uppercase tracking-widest italic transition-colors",
                    agreed.includes(req.id) ? "text-primary" : "text-white/20"
                  )}>
-                   {agreed.includes(req.id) ? 'AGREEMENT_CONFIRMED' : 'REVIEWS_PENDING'}
+                   {agreed.includes(req.id) ? 'Confirmed' : 'Review pending'}
                  </span>
               </div>
            </div>
          ))}
       </div>
 
-      <div className="manifest-card p-12 bg-white text-black mb-12">
-         <div className="flex flex-col md:flex-row gap-12">
-            <div className="flex-1 space-y-6">
-               <h2 className="text-4xl font-black italic uppercase tracking-tighter leading-none mb-2 text-black">Master Distribution Warrant</h2>
+      <div className="manifest-card p-6 md:p-12 bg-white text-black mb-12">
+         <div className="flex flex-col md:flex-row gap-8 md:gap-12">
+            <div className="flex-1 min-w-0 space-y-6">
+               <h2 className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter leading-none mb-2 text-black break-words">Distribution Agreement</h2>
                <p className="text-sm font-sans italic font-bold uppercase tracking-tight opacity-60 leading-relaxed">
-                 By proceeding, you verify your identity and grant DROPKAST global license to distribute, monetize and sub-license your master audio files across the Relay Node Network. This warrant is irrevocable until a takedown notice is filed through the official compliance terminal.
+                 By proceeding, you verify your identity and grant DROPKAST a global license to distribute, monetize, and sub-license your master recordings across every store and platform you've selected. This stays in place until you file a takedown from your release status page.
                </p>
             </div>
             <div className="flex flex-col gap-4 shrink-0">
@@ -96,21 +96,21 @@ export default function Compliance() {
                </div>
                <button 
                   disabled={agreed.length < requirements.length}
-                  className="h-20 px-12 bg-black text-white font-black italic uppercase tracking-widest text-xs flex items-center justify-center gap-4 disabled:opacity-20 hover:bg-primary transition-all group"
+                  className="beam h-20 px-12 bg-black text-white font-black italic uppercase tracking-widest text-xs flex items-center justify-center gap-4 disabled:opacity-20 transition-all group"
                >
-                  Authorize Relay Protocol
-                  <ChevronRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
+                  Authorize Distribution
+                  <ChevronRight className="w-5 h-5 transition-transform shrink-0" />
                </button>
             </div>
          </div>
       </div>
 
-      <div className="flex gap-8 p-10 border border-white/5 bg-dark opacity-40">
+      <div className="flex gap-6 md:gap-8 p-6 md:p-10 border border-white/5 bg-dark opacity-40">
          <div className="shrink-0 pt-1">
             <Info className="w-6 h-6 text-white" />
          </div>
          <p className="text-[11px] font-bold text-white/50 italic leading-relaxed uppercase tracking-widest">
-            Takedowns: If you need to remove a release from distribution, visit the release status page and select "Initiate Termination". Takedowns take 48-72 hours to propagate across all nodes.
+            Takedowns: If you need to pull a release from distribution, head to the release status page and select "Request Takedown". Takedowns take 48-72 hours to roll out across all stores.
          </p>
       </div>
     </div>

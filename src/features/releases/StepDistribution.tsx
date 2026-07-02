@@ -111,7 +111,7 @@ export default function StepDistribution({ data, update, next, back }: StepDistr
   return (
     <div className="space-y-10">
       <div className="space-y-3">
-        <h2 className="text-4xl font-black text-white italic uppercase tracking-tighter">
+        <h2 className="text-3xl sm:text-4xl font-black text-white italic uppercase tracking-tighter">
           Where should this drop?
         </h2>
         <p className="text-white/40 text-sm font-medium leading-relaxed max-w-2xl">
@@ -120,7 +120,7 @@ export default function StepDistribution({ data, update, next, back }: StepDistr
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {/* LEFT: schedule + presets */}
         <div className="lg:col-span-1 space-y-6">
           <div className="space-y-3">
@@ -147,21 +147,21 @@ export default function StepDistribution({ data, update, next, back }: StepDistr
             <button
               type="button"
               onClick={() => setPreset('all')}
-              className="w-full h-11 bg-primary text-white text-[10px] font-black uppercase tracking-widest italic hover:bg-white hover:text-black transition-all flex items-center justify-center gap-2"
+              className="beam w-full h-11 bg-primary text-white text-[10px] font-black uppercase tracking-widest italic transition-all flex items-center justify-center gap-2"
             >
               <Check className="w-3 h-3" /> All {ALL_DSP_IDS.length} platforms
             </button>
             <button
               type="button"
               onClick={() => setPreset('recommended')}
-              className="w-full h-11 bg-white text-black text-[10px] font-black uppercase tracking-widest italic hover:bg-white/80 transition-all flex items-center justify-center gap-2"
+              className="beam w-full h-11 bg-white text-black text-[10px] font-black uppercase tracking-widest italic transition-all flex items-center justify-center gap-2"
             >
               <Star className="w-3 h-3" /> Recommended ({RECOMMENDED_DSP_IDS.length})
             </button>
             <button
               type="button"
               onClick={() => setPreset('tier1')}
-              className="w-full h-11 border border-white/20 text-white/80 text-[10px] font-black uppercase tracking-widest italic hover:bg-white hover:text-black transition-all"
+              className="beam w-full h-11 border border-white/20 text-white/80 text-[10px] font-black uppercase tracking-widest italic transition-all"
             >
               Major streaming only
             </button>
@@ -201,7 +201,7 @@ export default function StepDistribution({ data, update, next, back }: StepDistr
                 <button
                   type="button"
                   onClick={() => setOpenCategory(isOpen ? ('' as any) : cat)}
-                  className="w-full px-5 py-4 flex items-center justify-between hover:bg-white/[0.02] transition-colors"
+                  className="beam w-full px-5 py-4 flex items-center justify-between transition-colors"
                 >
                   <div className="flex items-center gap-4">
                     <div
@@ -241,8 +241,8 @@ export default function StepDistribution({ data, update, next, back }: StepDistr
                           type="button"
                           onClick={() => toggleOne(d.id)}
                           className={cn(
-                            'flex items-center gap-3 p-3 border transition-all text-left',
-                            isOn ? 'border-primary bg-primary/5' : 'border-white/5 hover:border-white/20',
+                            'beam flex items-center gap-3 p-3 border transition-all text-left',
+                            isOn ? 'border-primary bg-primary/5' : 'border-white/5',
                           )}
                         >
                           <div
@@ -283,7 +283,7 @@ export default function StepDistribution({ data, update, next, back }: StepDistr
         <button
           type="button"
           onClick={back}
-          className="flex items-center gap-2 text-white/40 hover:text-white transition-colors text-[10px] font-black uppercase tracking-[0.3em] italic"
+          className="flex items-center gap-2 text-white/40 transition-colors text-[10px] font-black uppercase tracking-[0.3em] italic"
         >
           <ChevronLeft className="w-3 h-3" />
           Back
@@ -292,7 +292,7 @@ export default function StepDistribution({ data, update, next, back }: StepDistr
           type="button"
           onClick={next}
           disabled={!data.releaseDate || total === 0}
-          className="h-14 px-10 bg-white text-black hover:bg-primary hover:text-white font-black italic tracking-widest uppercase text-[11px] transition-all active:scale-95 disabled:opacity-20 flex items-center gap-3"
+          className="beam h-14 px-10 bg-white text-black font-black italic tracking-widest uppercase text-[11px] transition-all active:scale-95 disabled:opacity-20 flex items-center gap-3"
         >
           Review &amp; submit
           <ChevronRight className="w-4 h-4" />

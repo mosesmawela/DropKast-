@@ -1,24 +1,18 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { 
-  Users, 
-  Search, 
-  Filter, 
-  Send, 
-  TrendingUp, 
-  Globe2, 
-  Zap, 
-  Sparkles, 
-  Cpu, 
-  Music, 
-  Instagram, 
-  Youtube,
+  Users,
+  Search,
+  Filter,
+  Send,
+  Sparkles,
+  Cpu,
+  Music,
+  Instagram,
   SearchCheck,
   UserPlus,
   Trash2,
   CheckCircle2,
-  X,
-  LayoutGrid,
-  LayoutList
+  X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import ScrollReveal from '../components/animations/ScrollReveal';
@@ -160,12 +154,12 @@ export default function Influencers() {
               <Users className="w-4 h-4" />
               <span className="text-[11px] font-bold uppercase tracking-widest italic font-mono">Creator Network</span>
             </div>
-            <h1 className="text-5xl font-black tracking-tighter text-white italic font-mono uppercase">Creators</h1>
+            <h1 className="text-4xl sm:text-5xl font-black tracking-tighter text-white italic font-mono uppercase">Creators</h1>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4">
              <button 
                onClick={() => setShowAddModal(true)}
-               className="secondary-button h-14 flex items-center gap-3 px-8 border-white/10 hover:border-white font-mono uppercase italic tracking-widest text-[10px]"
+               className="secondary-button h-14 flex items-center gap-3 px-8 border-white/10 font-mono uppercase italic tracking-widest text-[10px]"
              >
                <UserPlus className="w-4 h-4" />
                Add creator
@@ -175,19 +169,19 @@ export default function Influencers() {
                   onClick={() => setViewMode('GRID')}
                   className={cn(
                     "px-4 py-2 text-[10px] font-black uppercase tracking-widest italic font-mono transition-all",
-                    viewMode === 'GRID' ? "bg-white text-black" : "text-white/40 hover:text-white"
+                    viewMode === 'GRID' ? "bg-white text-black" : "text-white/40"
                   )}
                 >
                   Grid
                 </button>
                 <button 
-                  onClick={() => setViewMode('SWIPE')}
+                  onClick={() => setViewMode('LIST')}
                   className={cn(
                     "px-4 py-2 text-[10px] font-black uppercase tracking-widest italic font-mono transition-all",
-                    viewMode === 'SWIPE' ? "bg-white text-black" : "text-white/40 hover:text-white"
+                    viewMode === 'LIST' ? "bg-white text-black" : "text-white/40"
                   )}
                 >
-                  Discovery
+                  List
                 </button>
              </div>
              <AnimatedBeam containerClassName="w-fit">
@@ -200,7 +194,7 @@ export default function Influencers() {
                 )}
               >
                 {isSending ? <Cpu className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                {isSending ? 'Sending...' : `Send Outreach (${selectedInfluencers.length})`}
+                {isSending ? 'Sending...' : `Reach Out (${selectedInfluencers.length})`}
               </button>
             </AnimatedBeam>
           </div>
@@ -217,7 +211,7 @@ export default function Influencers() {
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               className="w-full max-w-xl bg-dark border border-white/10 p-12 space-y-10 relative overflow-hidden"
             >
-              <button onClick={() => setShowAddModal(false)} className="absolute top-8 right-8 text-white/20 hover:text-white">
+              <button onClick={() => setShowAddModal(false)} className="absolute top-8 right-8 text-white/20">
                 <X className="w-6 h-6" />
               </button>
               <h3 className="text-3xl font-black italic font-mono uppercase tracking-tighter text-white">Add a Creator</h3>
@@ -270,7 +264,7 @@ export default function Influencers() {
                     className="w-full bg-white/5 border border-white/10 p-4 text-white font-mono uppercase italic text-xs outline-none focus:border-primary transition-all"
                   />
                 </div>
-                <button type="submit" className="w-full h-14 bg-white text-black font-black uppercase font-mono italic tracking-widest hover:bg-primary hover:text-white transition-all shadow-[0_10px_40px_rgba(255,255,255,0.1)]">
+                <button type="submit" className="beam w-full h-14 bg-white text-black font-black uppercase font-mono italic tracking-widest transition-all shadow-[0_10px_40px_rgba(255,255,255,0.1)]">
                   Add creator
                 </button>
               </form>
@@ -279,12 +273,10 @@ export default function Influencers() {
         )}
       </AnimatePresence>
 
-      {/* Matching Algorithm Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Roster stat */}
+      <div className="grid grid-cols-1">
         {[
           { label: 'Creators on roster', value: influencers.length.toString(), icon: Cpu },
-          { label: 'Avg Acceptance Rate', value: '—', icon: TrendingUp },
-          { label: 'Network Reach', value: '—', icon: Globe2 },
         ].map((stat, i) => (
           <ScrollReveal key={i} delay={i * 0.1} direction="up">
             <div className="manifest-card p-10 space-y-4 group">
@@ -324,7 +316,7 @@ export default function Influencers() {
                         onClick={() => setActiveFilter(f.val)}
                         className={cn(
                           "text-[10px] font-bold font-mono tracking-widest transition-all px-4 py-2 border",
-                          activeFilter === f.val ? "border-primary text-primary bg-primary/5" : "text-white/40 hover:text-white border-transparent"
+                          activeFilter === f.val ? "border-primary text-primary bg-primary/5" : "text-white/40 border-transparent"
                         )}
                       >
                         {f.label}
@@ -334,13 +326,13 @@ export default function Influencers() {
                </div>
                <button 
                   onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                  className="p-2 hover:bg-white/5 transition-colors"
+                  className="p-2 transition-colors"
                 >
                   <Filter className="w-4 h-4 text-white/20" />
                 </button>
                 {showAdvancedFilters && (
                   <div className="absolute right-0 top-full mt-2 w-72 bg-black border border-white/10 p-6 z-50 shadow-2xl">
-                    <div className="text-[10px] font-black font-mono tracking-widest uppercase text-white/20 italic mb-4">Advanced Filters</div>
+                    <div className="text-[10px] font-black font-mono tracking-widest uppercase text-white/20 italic mb-4">More Filters</div>
                     <div className="space-y-4">
                       <div className="space-y-2">
                         <label className="text-[9px] font-mono uppercase tracking-widest text-white/30">Min. Reach</label>
@@ -370,18 +362,18 @@ export default function Influencers() {
                      onClick={() => toggleInfluencer(inf.id, inf.name)}
                      className={cn(
                       "manifest-card p-0 bg-black overflow-hidden group text-left transition-all w-full",
-                      selectedInfluencers.includes(inf.id) ? "border-primary ring-1 ring-primary" : "border-white/5 hover:border-white/20"
+                      selectedInfluencers.includes(inf.id) ? "border-primary ring-1 ring-primary" : "border-white/5"
                      )}
                    >
                      <div className="aspect-[4/5] relative overflow-hidden">
-                       <img src={inf.avatar} alt={inf.name} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 grayscale group-hover:grayscale-0" />
+                       <img src={inf.avatar} alt={inf.name} className="w-full h-full object-cover transition-transform duration-1000 grayscale" />
                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-60" />
                        <div className="absolute top-4 left-4 flex gap-2">
                          {inf.platform === 'TikTok' ? <Music className="w-4 h-4 text-white" /> : <Instagram className="w-4 h-4 text-white" />}
                          <span className="text-[9px] font-black tracking-widest uppercase text-white drop-shadow-lg">{inf.platform}</span>
                        </div>
                        <div className="absolute top-4 right-4">
-                          <div className="px-2 py-1 bg-primary text-white text-[8px] font-black font-mono tracking-widest italic">{inf.match || '—'} MATCH</div>
+                          <div className="px-2 py-1 bg-primary text-white text-[8px] font-black font-mono tracking-widest italic">{inf.match || '—'} Match</div>
                        </div>
                        <div className="absolute bottom-6 left-6 right-6">
                          <div className="text-2xl font-black text-white italic font-mono uppercase tracking-tight mb-1">{inf.name}</div>
@@ -399,10 +391,10 @@ export default function Influencers() {
                          <span className="text-primary uppercase">{inf.genre}</span>
                        </div>
                        <div className="pt-4 border-t border-white/5 flex items-center justify-between">
-                          <span className="text-[9px] font-bold text-white/20 uppercase tracking-widest">Outreach Status</span>
+                          <span className="text-[9px] font-bold text-white/20 uppercase tracking-widest">Status</span>
                           <div className="flex items-center gap-2">
                             <div className={cn("w-1.5 h-1.5 rounded-full", inf.status === 'READY' || !inf.status ? "bg-green-500" : "bg-yellow-500")} />
-                            <span className="text-[9px] font-bold text-white/60 font-mono tracking-widest">{inf.status || 'READY'}</span>
+                            <span className="text-[9px] font-bold text-white/60 font-mono tracking-widest">{inf.status || 'Ready'}</span>
                           </div>
                        </div>
                      </div>
@@ -459,15 +451,15 @@ export default function Influencers() {
                              <div className="flex gap-4">
                                 <button 
                                   onClick={() => handleSwipe('left')}
-                                  className="flex-1 h-20 border border-white/10 bg-black/40 backdrop-blur-md text-white hover:bg-white hover:text-black transition-all flex items-center justify-center group"
+                                  className="beam flex-1 h-20 border border-white/10 bg-black/40 backdrop-blur-md text-white transition-all flex items-center justify-center group"
                                 >
-                                   <Trash2 className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                                   <Trash2 className="w-6 h-6 transition-transform" />
                                 </button>
                                 <button 
                                   onClick={() => handleSwipe('right')}
-                                  className="flex-[2] h-20 bg-white text-black hover:bg-primary hover:text-white transition-all flex items-center justify-center font-black italic uppercase text-xs gap-4 group"
+                                  className="beam flex-[2] h-20 bg-white text-black transition-all flex items-center justify-center font-black italic uppercase text-xs gap-4 group"
                                 >
-                                   Connect <Send className="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
+                                   Connect <Send className="w-5 h-5 transition-all" />
                                 </button>
                              </div>
                           </div>
@@ -479,7 +471,7 @@ export default function Influencers() {
                             <p className="text-[11px] font-black text-white/60 uppercase tracking-[0.5em] italic">All caught up</p>
                             <p className="text-[9px] font-medium text-white/20 uppercase tracking-[0.2em]">You've reviewed every creator.</p>
                           </div>
-                          <button onClick={() => setCurrentIndex(0)} className="w-full py-5 bg-white text-black font-black italic uppercase tracking-widest text-[10px] hover:bg-primary hover:text-white transition-all">Start over</button>
+                          <button onClick={() => setCurrentIndex(0)} className="beam w-full py-5 bg-white text-black font-black italic uppercase tracking-widest text-[10px] transition-all">Start over</button>
                        </div>
                     )}
                  </AnimatePresence>
@@ -489,11 +481,11 @@ export default function Influencers() {
       </div>
 
       <div className="manifest-card p-12 !border-primary/20 bg-primary/5 flex flex-col md:flex-row items-center justify-between gap-8 mt-12">
-        <div className="flex items-center gap-6">
-          <div className="w-16 h-16 border border-primary/40 flex items-center justify-center">
+        <div className="flex items-center gap-6 min-w-0">
+          <div className="w-16 h-16 border border-primary/40 flex items-center justify-center shrink-0">
             <Sparkles className="w-8 h-8 text-primary" />
           </div>
-          <div>
+          <div className="min-w-0">
             <h4 className="text-2xl font-black italic font-mono uppercase tracking-tight text-white mb-2">Automated Pitching</h4>
             <p className="text-sm text-white/40 italic font-medium max-w-lg leading-relaxed">
               Our AI writes personalized DMs and emails for each creator based on their history and your song profile. Higher engagement, zero effort.
@@ -502,7 +494,7 @@ export default function Influencers() {
         </div>
         <button 
           onClick={() => notify('ai', 'Loading templates', 'Loading pitch templates for your song...')}
-          className="secondary-button py-5 px-12 font-mono uppercase tracking-widest text-[11px] font-black"
+          className="secondary-button py-5 px-12 shrink-0 font-mono uppercase tracking-widest text-[11px] font-black"
         >
           Configure Templates
         </button>

@@ -10,11 +10,7 @@ import {
   Clock,
   CheckCircle2,
   AlertCircle,
-  Sparkles,
-  PieChart as PieChartIcon,
-  ChevronRight,
-  Target,
-  DollarSign
+  Sparkles
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { cn } from '../lib/utils';
@@ -70,9 +66,9 @@ export default function Earnings() {
           <div>
             <div className="flex items-center gap-2 text-primary mb-3 font-mono">
               <Sparkles className="w-4 h-4" />
-              <span className="text-[11px] font-bold uppercase tracking-widest italic font-mono">Earnings AI</span>
+              <span className="text-[11px] font-bold uppercase tracking-widest italic font-mono">Earnings</span>
             </div>
-            <h1 className="text-5xl font-black tracking-tighter text-white italic font-mono uppercase">Earnings</h1>
+            <h1 className="text-3xl sm:text-5xl font-black tracking-tighter text-white italic font-mono uppercase">Earnings</h1>
           </div>
           <div className="flex items-center gap-4">
             <AnimatedBeam containerClassName="w-fit">
@@ -86,7 +82,7 @@ export default function Earnings() {
                 className="primary-button h-14 flex items-center gap-3 px-10"
               >
                 <ArrowUpRight className="w-4 h-4" />
-                Request Payout
+                Request payout
               </button>
             </AnimatedBeam>
           </div>
@@ -95,7 +91,7 @@ export default function Earnings() {
 
       {/* Primary Balance Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-        <div className="lg:col-span-2 manifest-card p-12 flex flex-col justify-between min-h-[450px]">
+        <div className="lg:col-span-2 manifest-card p-5 sm:p-12 flex flex-col justify-between min-h-[450px]">
           <div>
             <div className="flex items-center gap-4 mb-20 font-mono">
               <div className="w-8 h-8 border border-primary flex items-center justify-center p-1">
@@ -103,7 +99,7 @@ export default function Earnings() {
               </div>
               <span className="text-[11px] font-bold tracking-widest text-primary italic uppercase">Available Balance</span>
             </div>
-            <div className="text-7xl md:text-[110px] font-black leading-none tracking-tighter italic flex items-baseline gap-4 font-mono">
+            <div className="text-5xl sm:text-7xl md:text-[110px] font-black leading-none tracking-tighter italic flex items-baseline gap-4 font-mono">
               <span className="text-white">{earningsData?.summary?.totalCents ? `$${(earningsData.summary.totalCents / 100).toLocaleString()}` : '$0.00'}</span>
             </div>
           </div>
@@ -122,12 +118,11 @@ export default function Earnings() {
           </div>
         </div>
 
-        {/* AI Projection Sidebar */}
+        {/* Projected earnings sidebar */}
         <div className="space-y-8">
-          <div className="manifest-card p-10 space-y-8 font-mono">
-             <div className="flex justify-between items-center">
-                <h3 className="text-[11px] font-bold text-white/30 uppercase tracking-widest italic">Proj. Earnings</h3>
-                <span className="text-[10px] font-bold text-primary uppercase animate-pulse">High Potential</span>
+          <div className="manifest-card p-5 sm:p-10 space-y-8 font-mono">
+             <div className="flex justify-between items-center gap-3">
+                <h3 className="text-[11px] font-bold text-white/30 uppercase tracking-widest italic min-w-0 truncate">Projected Earnings</h3>
              </div>
              {platformProjections.length === 0 ? (
                <div className="h-[200px] w-full flex items-center justify-center text-[10px] font-bold text-white/20 uppercase tracking-widest italic text-center">No projections yet</div>
@@ -165,51 +160,19 @@ export default function Earnings() {
              </>
              )}
           </div>
-          
-          <div className="manifest-card !bg-white/5 p-8 space-y-5">
-            <div className="flex items-center gap-2 text-primary font-bold uppercase tracking-widest text-[11px] font-mono italic">
-              <Target className="w-4 h-4" />
-              Growth Tip
-            </div>
-            <p className="text-sm font-sans leading-relaxed text-white/60 italic font-medium">
-              "We suggested moving your ad budget to YouTube discovery ads targeting 'Melodic House' fans. Your projected return is 4.2x higher than Instagram."
-            </p>
-            <button className="w-full primary-button py-4 text-[10px] uppercase font-mono tracking-widest">Update Ads</button>
-          </div>
         </div>
       </div>
 
-      {/* Revenue Optimization Blocks */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {[
-          { label: 'Sync Licensing', text: "Your track matches the vibe for a major automotive commercial. Our AI is pitching it now.", btn: 'View Pitch', icon: DollarSign },
-          { label: 'Revenue Check', text: "4% of your songs found on YouTube shorts aren't claimed. You could earn an extra $240/week.", btn: 'Claim Revenue', icon: PieChartIcon },
-          { label: 'Global Growth', text: "Your sound is trending in Japan. High ROI expected if we launch localized ads there.", btn: 'Launch Ads', icon: ArrowUpRight }
-        ].map((block) => (
-          <div key={block.label} className="manifest-card p-8 space-y-6 group cursor-pointer">
-            <div className="flex items-center gap-3 font-mono">
-              <block.icon className="w-4 h-4 text-primary" />
-              <span className="text-[11px] font-bold uppercase tracking-widest italic">{block.label}</span>
-            </div>
-            <p className="text-sm font-sans text-white/40 italic font-medium leading-relaxed">"{block.text}"</p>
-            <div className="flex items-center justify-between pt-6 border-t border-white/5 opacity-0 group-hover:opacity-100 transition-opacity font-mono">
-              <span className="text-[10px] font-bold uppercase text-primary tracking-widest italic">{block.btn}</span>
-              <ChevronRight className="w-4 h-4 text-primary" />
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Financial Transparency Layer */}
+      {/* Earnings by store */}
       <div className="space-y-12 pt-16 border-t border-white/5 font-mono">
-         <div className="flex items-center justify-between">
-            <h2 className="text-3xl font-black text-white italic tracking-tighter uppercase whitespace-nowrap">Distro Node Returns</h2>
-            <div className="w-full ml-12 h-[1px] bg-white/5" />
+         <div className="flex items-center justify-between gap-6">
+            <h2 className="text-3xl font-black text-white italic tracking-tighter uppercase whitespace-nowrap shrink-0">Earnings by Store</h2>
+            <div className="w-full h-[1px] bg-white/5" />
          </div>
 
          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="manifest-card p-10 bg-dark border-white/5 space-y-8 shadow-2xl">
-               <h3 className="text-[11px] font-black text-white/30 uppercase tracking-[0.4em] italic font-mono">Platform Royalty Density</h3>
+            <div className="manifest-card p-5 sm:p-10 bg-dark border-white/5 space-y-8 shadow-2xl">
+               <h3 className="text-[11px] font-black text-white/30 uppercase tracking-[0.4em] italic font-mono">Royalties by Store</h3>
                <div className="space-y-6">
                   {([] as { node: string; amount: string; streams: string; color: string }[]).map((p, i) => (
                     <div key={i} className="flex flex-col gap-3">
@@ -224,11 +187,11 @@ export default function Earnings() {
                </div>
             </div>
 
-            <div className="manifest-card p-10 bg-dark border-white/5 space-y-8 shadow-2xl">
-               <h3 className="text-[11px] font-black text-white/30 uppercase tracking-[0.4em] italic font-mono">Release Performance vs Costs</h3>
+            <div className="manifest-card p-5 sm:p-10 bg-dark border-white/5 space-y-8 shadow-2xl">
+               <h3 className="text-[11px] font-black text-white/30 uppercase tracking-[0.4em] italic font-mono">Release Performance</h3>
                <div className="space-y-6">
                   {([] as { release: string; revenue: string; cost: string; margin: string }[]).map((r, i) => (
-                    <div key={i} className="flex items-center justify-between p-6 border border-white/5 bg-white/[0.01] hover:bg-white/5 transition-all">
+                    <div key={i} className="flex items-center justify-between p-6 border border-white/5 bg-white/[0.01] transition-all">
                        <div className="flex flex-col">
                           <span className="text-xs font-black text-white uppercase italic tracking-tight">{r.release}</span>
                           <span className="text-[9px] font-black text-white/30 uppercase tracking-widest mt-1">Cost Pool: {r.cost}</span>
@@ -247,9 +210,9 @@ export default function Earnings() {
 
       {/* Payout History Ledger */}
       <section className="space-y-8 pt-16 border-t border-white/5 font-mono">
-        <div className="flex items-center justify-between">
-          <h2 className="text-3xl font-black text-white italic tracking-tighter uppercase whitespace-nowrap">Payout History</h2>
-          <div className="w-full ml-12 h-[1px] bg-white/5" />
+        <div className="flex items-center justify-between gap-6">
+          <h2 className="text-3xl font-black text-white italic tracking-tighter uppercase whitespace-nowrap shrink-0">Payout History</h2>
+          <div className="w-full h-[1px] bg-white/5" />
         </div>
         <div className="manifest-card !p-0 overflow-x-auto shadow-2xl">
           <table className="w-full min-w-[640px] text-left border-collapse">
@@ -268,7 +231,7 @@ export default function Earnings() {
                 </tr>
               )}
               {payoutHistory.map((p) => (
-                <tr key={p.id} className="hover:bg-white/[0.01] transition-colors group">
+                <tr key={p.id} className="transition-colors group">
                   <td className="px-8 py-6 text-[11px] text-white/20 tracking-widest uppercase font-mono">{p.date.replace(/-/g, '/')}</td>
                   <td className="px-8 py-6 text-base font-bold text-white font-mono">{p.amount}</td>
                   <td className="px-8 py-6">
@@ -280,7 +243,7 @@ export default function Earnings() {
                     </div>
                   </td>
                   <td className="px-8 py-6 text-right">
-                    <button className="p-2 text-white/10 hover:text-white transition-colors bg-white/5">
+                    <button className="p-2 text-white/10 transition-colors bg-white/5">
                       <Download className="w-4 h-4" />
                     </button>
                   </td>

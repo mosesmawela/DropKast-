@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Play, Music, Video, Loader2, Sparkles, Wand2 } from "lucide-react";
+import { Play, Music, Loader2, Sparkles, Wand2 } from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "../../../lib/utils";
 
@@ -22,13 +22,13 @@ export default function VideoGenerator() {
 
   return (
     <div className="space-y-8 h-full flex flex-col">
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {modes.map((m) => (
           <button
             key={m.id}
             onClick={() => setMode(m.id)}
             className={cn(
-              "p-6 border text-left transition-all relative group",
+              "beam p-6 border text-left transition-all relative group",
               mode === m.id ? "border-primary bg-primary/5" : "border-white/5 bg-black"
             )}
           >
@@ -39,7 +39,7 @@ export default function VideoGenerator() {
         ))}
       </div>
 
-      <div className="flex-1 flex gap-8">
+      <div className="flex-1 flex flex-col lg:flex-row gap-8">
         <div className="flex-1 space-y-6">
            <div className="space-y-4">
               <label className="text-[9px] font-black text-white/40 uppercase tracking-[0.4em] font-mono italic">Source_Audio_Node</label>
@@ -53,7 +53,7 @@ export default function VideoGenerator() {
                        <div className="text-[8px] text-white/20 uppercase tracking-widest">WAV // 44.1kHz // STEREO</div>
                     </div>
                  </div>
-                 <button className="text-[9px] font-black text-primary hover:text-white transition-colors uppercase italic font-mono tracking-widest">Change_Source</button>
+                 <button className="beam text-[9px] font-black text-primary transition-colors uppercase italic font-mono tracking-widest">Change_Source</button>
               </div>
            </div>
 
@@ -79,7 +79,7 @@ export default function VideoGenerator() {
            <button
              onClick={generate}
              disabled={loading}
-             className="w-full h-16 bg-primary text-white text-[11px] font-black uppercase italic tracking-widest flex items-center justify-center gap-4 hover:bg-white hover:text-black transition-all disabled:opacity-50"
+             className="beam w-full h-16 bg-primary text-white text-[11px] font-black uppercase italic tracking-widest flex items-center justify-center gap-4 transition-all disabled:opacity-50"
            >
              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
              {loading ? "Rendering_Motion_Nodes..." : "Synthesize_Video_Asset"}
@@ -87,10 +87,10 @@ export default function VideoGenerator() {
         </div>
 
         {/* Preview Panel */}
-        <div className="w-72 border border-white/10 bg-black relative overflow-hidden flex flex-col">
+        <div className="w-full lg:w-72 border border-white/10 bg-black relative overflow-hidden flex flex-col">
            <div className="aspect-[9/16] bg-zinc-900 relative">
               <div className="absolute inset-0 flex items-center justify-center">
-                 <Play className="w-12 h-12 text-white/10 group-hover:text-primary transition-colors cursor-pointer" />
+                 <Play className="w-12 h-12 text-white/10 transition-colors cursor-pointer" />
               </div>
               <div className="absolute bottom-12 left-0 right-0 px-6 space-y-4">
                  <div className="h-1 bg-white/10 rounded-full overflow-hidden">

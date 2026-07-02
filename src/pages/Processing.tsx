@@ -5,11 +5,11 @@ import { Loader2, CheckCircle2, Shield, Activity, Database, Cpu } from "lucide-r
 import { cn } from "../lib/utils";
 
 const processingSteps = [
-  { label: "UPLOADING_AUDIO_NODE", icon: Activity, detail: "Initializing master stream encryption..." },
-  { label: "VALIDATING_METADATA", icon: Database, detail: "Cross-referencing global identifier databases..." },
-  { label: "ANALYZING_VISUAL_IDENTITY", icon: Shield, detail: "Auditing artwork for DSP compliance..." },
-  { label: "ASSIGNING_ISRC_IDENTIFIER", icon: Cpu, detail: "Generating unique master recording trace ID..." },
-  { label: "DELIVERING_TO_RELAY_PLATFORMS", icon: CheckCircle2, detail: "Synchronizing nodes with global DSP clusters..." },
+  { label: "Uploading Your Audio", icon: Activity, detail: "Securing your master upload..." },
+  { label: "Checking Your Details", icon: Database, detail: "Double-checking your release info..." },
+  { label: "Reviewing Your Artwork", icon: Shield, detail: "Making sure your cover meets store guidelines..." },
+  { label: "Assigning Your ISRC", icon: Cpu, detail: "Creating a unique ID for your track..." },
+  { label: "Sending to Stores", icon: CheckCircle2, detail: "Delivering your music to every platform..." },
 ];
 
 export default function Processing() {
@@ -34,12 +34,12 @@ export default function Processing() {
 
   return (
     <div className="min-h-screen bg-black flex items-center justify-center p-6 font-mono overflow-hidden relative">
-      {/* Background Matrix Effect */}
+      {/* Background text texture */}
       <div className="absolute inset-0 opacity-[0.03] select-none pointer-events-none">
          {Array.from({ length: 20 }).map((_, i) => (
            <div key={i} className="whitespace-nowrap text-[8px] leading-tight flex gap-4">
               {Array.from({ length: 10 }).map((_, j) => (
-                <span key={j}>NEWDISTRO_NODE_DEPLOYMENT_SEQUENCE_VERSION_3.0_RELEASE_ID_{id}</span>
+                <span key={j}>DROPKAST · DELIVERING YOUR RELEASE · {id}</span>
               ))}
            </div>
          ))}
@@ -49,9 +49,9 @@ export default function Processing() {
         <div className="text-center space-y-4">
            <div className="inline-flex items-center gap-3 px-4 py-1.5 bg-primary/10 border border-primary/20 text-primary text-[9px] font-black uppercase tracking-[0.4em] italic mb-4">
               <Loader2 className="w-3 h-3 animate-spin" />
-              Deployment_In_Progress
+              Delivery in Progress
            </div>
-           <h2 className="text-5xl font-black text-white italic uppercase tracking-tighter leading-none">Processing <span className="text-primary italic">Transmission</span></h2>
+           <h2 className="text-4xl sm:text-5xl font-black text-white italic uppercase tracking-tighter leading-none">Sending Your <span className="text-primary italic">Release</span></h2>
         </div>
 
         <div className="manifest-card p-10 bg-dark border-white/5 space-y-8 relative">
@@ -97,7 +97,7 @@ export default function Processing() {
 
            <div className="pt-8 border-t border-white/5">
               <div className="flex justify-between items-center mb-3">
-                 <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] font-mono italic">Cluster_Sync_Progress</span>
+                 <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] font-mono italic">Delivery Progress</span>
                  <span className="text-[10px] font-black text-primary font-mono">{Math.min(Math.round(((currentStep) / processingSteps.length) * 100), 100)}%</span>
               </div>
               <div className="w-full h-1 bg-white/5 relative overflow-hidden">
@@ -110,10 +110,10 @@ export default function Processing() {
            </div>
         </div>
 
-        <div className="flex items-center justify-center gap-12 opacity-10 text-[8px] font-black uppercase tracking-[0.4em] font-mono italic">
-           <span>ENCRYPTING_AES_256</span>
-           <span>PARSING_JSON_SCHEMA</span>
-           <span>RELAY_READY_0.02ms</span>
+        <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-12 opacity-10 text-[8px] font-black uppercase tracking-[0.4em] font-mono italic">
+           <span>Secure Upload</span>
+           <span>All Stores</span>
+           <span>Fast Delivery</span>
         </div>
       </div>
     </div>

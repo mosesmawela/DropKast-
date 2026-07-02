@@ -33,21 +33,21 @@ export default function Pricing() {
     <div className="min-h-screen bg-black text-white technical-grid">
       {/* Top nav */}
       <div className="max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 text-white hover:text-primary transition-colors">
+        <Link to="/" className="flex items-center gap-2 text-white transition-colors">
           <ChevronLeft className="w-4 h-4" />
           <span className="text-[11px] font-black tracking-widest uppercase italic">DropKast</span>
         </Link>
         {user ? (
           <Link
             to="/dashboard"
-            className="text-[10px] font-black tracking-widest uppercase italic text-white/50 hover:text-white"
+            className="text-[10px] font-black tracking-widest uppercase italic text-white/50"
           >
             Dashboard →
           </Link>
         ) : (
           <Link
             to="/login"
-            className="text-[10px] font-black tracking-widest uppercase italic text-white/50 hover:text-white"
+            className="text-[10px] font-black tracking-widest uppercase italic text-white/50"
           >
             Sign in →
           </Link>
@@ -77,7 +77,7 @@ export default function Pricing() {
               onClick={() => setPeriod(p)}
               className={cn(
                 'h-10 px-6 text-[10px] font-black uppercase italic tracking-widest transition-all',
-                period === p ? 'bg-white text-black' : 'text-white/50 hover:text-white',
+                period === p ? 'bg-white text-black' : 'text-white/50',
               )}
             >
               {p === 'yearly' ? 'Yearly · Save 30%' : 'Monthly'}
@@ -126,7 +126,7 @@ export default function Pricing() {
             </thead>
             <tbody>
               {FEATURE_MATRIX.map((row) => (
-                <tr key={row.key} className="border-b border-white/5 hover:bg-white/[0.02]">
+                <tr key={row.key} className="border-b border-white/5">
                   <td className="px-6 py-3.5 text-sm text-white/80 italic">{row.label}</td>
                   {TIERS.map((t) => {
                     const v = row.values[t.id];
@@ -189,7 +189,7 @@ export default function Pricing() {
                 <td className="px-6 py-4 text-primary">10 / 10 + advances + smart-links + splits</td>
               </tr>
               {COMPETITORS.map((c) => (
-                <tr key={c.name} className="border-b border-white/5 hover:bg-white/[0.02]">
+                <tr key={c.name} className="border-b border-white/5">
                   <td className="px-6 py-3.5 text-white/80 italic">{c.name}</td>
                   <td className="px-6 py-3.5 text-white/60 text-sm">
                     {c.cheapestPaidYearlyCents === 0
@@ -269,7 +269,7 @@ export default function Pricing() {
           </p>
           <Link
             to={user ? '/subscription' : '/signup'}
-            className="inline-flex items-center gap-3 h-14 px-10 bg-white text-black hover:bg-primary hover:text-white text-[12px] font-black uppercase italic tracking-widest transition-all"
+            className="beam inline-flex items-center gap-3 h-14 px-10 bg-white text-black text-[12px] font-black uppercase italic tracking-widest transition-all"
           >
             Get started
             <ArrowRight className="w-4 h-4" />
@@ -376,12 +376,12 @@ function TierCard({ tier, period, idx, loggedIn }: { tier: Tier; period: Billing
       <Link
         to={loggedIn ? `/subscription?upgrade=${tier.id}` : `/signup?tier=${tier.id}`}
         className={cn(
-          'w-full h-12 flex items-center justify-center gap-2 text-[10px] font-black uppercase italic tracking-widest transition-all',
+          'beam w-full h-12 flex items-center justify-center gap-2 text-[10px] font-black uppercase italic tracking-widest transition-all',
           tier.popular
-            ? 'bg-primary text-white hover:bg-white hover:text-black'
+            ? 'bg-primary text-white'
             : tier.id === 'free'
-            ? 'border border-white/20 text-white hover:bg-white hover:text-black'
-            : 'bg-white text-black hover:bg-primary hover:text-white',
+            ? 'border border-white/20 text-white'
+            : 'bg-white text-black',
         )}
       >
         {tier.id === 'free' ? 'Start free' : `Get ${tier.name}`}

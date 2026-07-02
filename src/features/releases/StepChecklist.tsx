@@ -106,9 +106,9 @@ export default function StepChecklist({ data, update, next, back }: StepChecklis
 
   return (
     <div className="space-y-12">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap gap-4 items-center justify-between">
         <div className="space-y-4">
-          <h2 className="text-4xl font-black text-white italic uppercase tracking-tighter font-mono flex items-center gap-4">
+          <h2 className="text-3xl sm:text-4xl font-black text-white italic uppercase tracking-tighter font-mono flex flex-wrap items-center gap-4">
             <ListTodo className="w-10 h-10 text-primary" />
             Release details
           </h2>
@@ -210,14 +210,14 @@ export default function StepChecklist({ data, update, next, back }: StepChecklis
       <div className="flex justify-between pt-12 items-center border-t border-white/5">
         <button
           onClick={back}
-          className="flex items-center gap-3 text-white/40 hover:text-white transition-colors text-[10px] font-black uppercase tracking-[0.3em] font-mono italic"
+          className="flex items-center gap-3 text-white/40 transition-colors text-[10px] font-black uppercase tracking-[0.3em] font-mono italic"
         >
           <ChevronLeft className="w-4 h-4" />
           Back
         </button>
         <button
           onClick={next}
-          className="h-14 px-10 bg-white text-black hover:bg-primary hover:text-white font-black italic tracking-widest uppercase text-[11px] transition-all active:scale-95 flex items-center gap-3"
+          className="beam h-14 px-10 bg-white text-black font-black italic tracking-widest uppercase text-[11px] transition-all active:scale-95 flex items-center gap-3"
         >
           Continue to artwork
           <ChevronRight className="w-4 h-4" />

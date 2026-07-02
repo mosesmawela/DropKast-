@@ -47,23 +47,23 @@ export default function PublishingSharesLedger() {
   const requests = tab === 'received' ? mockReceived : mockSent;
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto py-8">
+    <div className="space-y-8 max-w-7xl mx-auto py-8 px-4 sm:px-0">
       {/* Header */}
       <div>
         <div className="flex items-center gap-2 text-[#6A6A75] mb-2">
           <span className="w-1.5 h-1.5 bg-[#F05A28]" />
           <span className="text-[10px] font-bold tracking-widest uppercase font-mono">PUBLISHING SHARES LEDGER</span>
         </div>
-        <h1 className="text-3xl font-black tracking-tight text-[var(--text-main)] uppercase font-mono">Share Requests</h1>
+        <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-[var(--text-main)] uppercase font-mono">Share Requests</h1>
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-[var(--border-main)]">
+      <div className="flex border-b border-[var(--border-main)] overflow-x-auto">
         <button
           onClick={() => setTab('received')}
           className={cn(
-            'px-8 py-4 text-[10px] font-black uppercase tracking-widest font-mono transition-all flex items-center gap-2',
-            tab === 'received' ? 'text-[#F05A28] border-b-2 border-[#F05A28]' : 'text-[#6A6A75] hover:text-[#9A9AA6]',
+            'px-6 sm:px-8 py-4 text-[10px] font-black uppercase tracking-widest font-mono transition-all flex items-center gap-2 whitespace-nowrap',
+            tab === 'received' ? 'text-[#F05A28] border-b-2 border-[#F05A28]' : 'text-[#6A6A75]',
           )}
         >
           <ArrowDownLeft className="w-4 h-4" />
@@ -72,8 +72,8 @@ export default function PublishingSharesLedger() {
         <button
           onClick={() => setTab('sent')}
           className={cn(
-            'px-8 py-4 text-[10px] font-black uppercase tracking-widest font-mono transition-all flex items-center gap-2',
-            tab === 'sent' ? 'text-[#F05A28] border-b-2 border-[#F05A28]' : 'text-[#6A6A75] hover:text-[#9A9AA6]',
+            'px-6 sm:px-8 py-4 text-[10px] font-black uppercase tracking-widest font-mono transition-all flex items-center gap-2 whitespace-nowrap',
+            tab === 'sent' ? 'text-[#F05A28] border-b-2 border-[#F05A28]' : 'text-[#6A6A75]',
           )}
         >
           <ArrowUpRight className="w-4 h-4" />
@@ -82,8 +82,8 @@ export default function PublishingSharesLedger() {
       </div>
 
       {/* Table */}
-      <div className="bg-[var(--card-bg)] border border-[var(--border-main)] overflow-hidden">
-        <table className="w-full text-left border-collapse">
+      <div className="bg-[var(--card-bg)] border border-[var(--border-main)] overflow-x-auto">
+        <table className="w-full min-w-[700px] text-left border-collapse">
           <thead>
             <tr className="border-b border-[var(--border-main)] bg-black/20/50">
               {columns.map((col) => (
@@ -114,7 +114,7 @@ export default function PublishingSharesLedger() {
                   key={req.id}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="hover:bg-black/20 transition-colors"
+                  className="transition-colors"
                 >
                   <td className="px-6 py-5">
                     <span className="text-xs font-bold text-[#C9C9CF] font-mono">{req.compositionTitle}</span>

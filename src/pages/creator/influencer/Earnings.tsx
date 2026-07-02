@@ -23,13 +23,13 @@ export default function InfluencerEarnings() {
             <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
             <span className="text-[10px] font-black text-primary uppercase tracking-[0.4em] font-mono italic">Earnings</span>
           </div>
-          <h1 className="text-6xl md:text-8xl font-black italic text-white uppercase tracking-tighter leading-[0.8]">Your wallet</h1>
+          <h1 className="text-5xl sm:text-6xl md:text-8xl font-black italic text-white uppercase tracking-tighter leading-[0.8]">Your wallet</h1>
           <p className="text-[11px] font-bold text-white/30 uppercase tracking-[0.2em] font-mono italic">Track your earnings and request payouts.</p>
         </div>
 
-        <button className="h-16 bg-white text-black hover:bg-primary hover:text-white px-10 flex items-center gap-4 group transition-all font-mono font-black italic text-[11px] tracking-widest shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+        <button className="beam h-16 bg-white text-black px-10 flex items-center justify-center gap-4 group transition-all font-mono font-black italic text-[11px] tracking-widest shadow-[0_10px_30px_rgba(0,0,0,0.5)] shrink-0">
           <span>Withdraw</span>
-          <ArrowUpRight className="w-5 h-5 group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform" />
+          <ArrowUpRight className="w-5 h-5 transition-transform" />
         </button>
       </header>
 
@@ -53,11 +53,11 @@ export default function InfluencerEarnings() {
 
       <div className="space-y-8">
         <div className="flex items-center justify-between border-b border-white/5 pb-4">
-          <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter flex items-center gap-3">
-            <History className="w-5 h-5 text-primary" />
-            <span>TRANSACTION_LOG</span>
+          <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter flex items-center gap-3 min-w-0">
+            <History className="w-5 h-5 text-primary shrink-0" />
+            <span className="truncate">Transaction history</span>
           </h2>
-          <div className="text-[8px] font-black text-white/20 uppercase tracking-[0.3em] font-mono">Real-time settlement sync active</div>
+          <div className="text-[8px] font-black text-white/20 uppercase tracking-[0.3em] font-mono shrink-0">Updates in real time</div>
         </div>
 
         <div className="space-y-4">
@@ -65,26 +65,26 @@ export default function InfluencerEarnings() {
             <div className="manifest-card p-12 bg-white/[0.02] border-white/5 text-center text-[11px] font-black text-white/20 uppercase tracking-widest italic font-mono">No transactions yet</div>
           )}
           {transactions.map((t) => (
-            <div key={t.id} className="manifest-card p-8 bg-white/[0.02] border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:border-white/20 transition-all group">
-              <div className="flex items-center gap-6">
+            <div key={t.id} className="manifest-card p-8 bg-white/[0.02] border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-6 transition-all group">
+              <div className="flex items-center gap-6 min-w-0">
                 <div className={cn(
-                  "w-14 h-14 border flex items-center justify-center italic text-[10px] font-mono font-black",
+                  "w-14 h-14 border flex items-center justify-center italic text-[10px] font-mono font-black shrink-0",
                   t.status === 'Completed' ? "border-primary text-primary" : "border-white/10 text-white/20"
                 )}>
                   {t.type[0]}
                 </div>
                 <div className="space-y-1">
-                   <div className="text-[9px] font-black text-white/20 uppercase tracking-widest font-mono italic">{t.date} // {t.status}</div>
-                   <h4 className="text-xl font-black italic text-white lowercase tracking-tight group-hover:text-primary transition-colors">{t.mission}</h4>
+                   <div className="text-[9px] font-black text-white/20 uppercase tracking-widest font-mono italic">{t.date} · {t.status}</div>
+                   <h4 className="text-xl font-black italic text-white lowercase tracking-tight transition-colors">{t.mission}</h4>
                 </div>
               </div>
               
               <div className="flex items-center gap-10">
                 <div className="text-right">
                    <div className="text-2xl font-black text-white font-mono lowercase tracking-tighter">{t.amount}</div>
-                   <div className="text-[8px] font-black text-white/20 uppercase tracking-widest font-mono italic">SETTLED_VALUE</div>
+                   <div className="text-[8px] font-black text-white/20 uppercase tracking-widest font-mono italic">Paid out</div>
                 </div>
-                <div className="w-12 h-12 border border-white/5 flex items-center justify-center text-white/10 group-hover:text-white transition-all">
+                <div className="w-12 h-12 border border-white/5 flex items-center justify-center text-white/10 transition-all">
                    <CheckCircle2 className="w-4 h-4" />
                 </div>
               </div>

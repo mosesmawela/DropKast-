@@ -39,13 +39,13 @@ export default function QuickActionGrid() {
         <button
           key={action.label}
           onClick={() => navigate(action.path)}
-          className="bg-white border border-gray-200 hover:border-[#F05A28] hover:shadow-sm transition-all p-6 flex flex-col items-center justify-center gap-4 group text-center"
+          className="beam bg-white border border-gray-200 transition-all p-6 flex flex-col items-center justify-center gap-4 group text-center"
         >
-          <div className="w-12 h-12 border border-gray-200 flex items-center justify-center group-hover:border-[#F05A28] group-hover:bg-[#F05A28]/5 transition-all">
-            <action.icon className="w-5 h-5 text-gray-600 group-hover:text-[#F05A28]" />
+          <div className="w-12 h-12 border border-gray-200 flex items-center justify-center transition-all">
+            <action.icon className="w-5 h-5 text-gray-600" />
           </div>
           <div>
-            <span className="text-[10px] font-black text-gray-800 uppercase tracking-widest font-mono block group-hover:text-[#F05A28] transition-colors">
+            <span className="text-[10px] font-black text-gray-800 uppercase tracking-widest font-mono block transition-colors">
               {action.label}
             </span>
             <span className="text-[8px] text-gray-400 font-mono mt-1 block">

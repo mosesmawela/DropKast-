@@ -10,9 +10,7 @@ import {
   TrendingUp, 
   Clock,
   Zap,
-  BarChart2,
   ArrowUpRight,
-  Sparkles,
   Trash2
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -36,7 +34,7 @@ export default function Campaigns() {
   });
 
   const handleDelete = (id: string, title: string) => {
-    if (confirm(`Are you sure you want to terminate campaign "${title}"?`)) {
+    if (confirm(`Are you sure you want to delete the campaign "${title}"?`)) {
       deleteCampaign(id);
       notify('error', 'Campaign deleted', `Campaign ${id} has been removed.`);
     }
@@ -51,7 +49,7 @@ export default function Campaigns() {
               <Target className="w-4 h-4" />
               <span className="text-[11px] font-bold uppercase tracking-widest italic font-mono">Campaigns</span>
             </div>
-            <h1 className="text-5xl font-black tracking-tighter text-white italic font-mono uppercase">Campaigns</h1>
+            <h1 className="text-3xl sm:text-5xl font-black tracking-tighter text-white italic font-mono uppercase">Campaigns</h1>
           </div>
           <div className="flex items-center gap-4">
             <AnimatedBeam containerClassName="w-fit">
@@ -60,7 +58,7 @@ export default function Campaigns() {
                 className="primary-button h-14 flex items-center gap-3 px-10"
               >
                 <Plus className="w-4 h-4" />
-                Create Campaign
+                Create campaign
               </Link>
             </AnimatedBeam>
           </div>
@@ -68,18 +66,18 @@ export default function Campaigns() {
       </ScrollReveal>
 
       {/* Stats Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
           { label: 'Active Campaigns', value: campaigns.filter(c => c.status === 'ACTIVE').length.toString().padStart(2, '0'), icon: Zap, color: 'text-primary' },
-          { label: 'Total Reach', value: '—', icon: Users, color: 'text-white' },
-          { label: 'Avg Engagement', value: '—', icon: TrendingUp, color: 'text-white' },
-          { label: 'Market ROI', value: '—', icon: BarChart2, color: 'text-primary' },
+          { label: 'Total Campaigns', value: campaigns.length.toString().padStart(2, '0'), icon: Target, color: 'text-white' },
+          { label: 'Scheduled', value: campaigns.filter(c => c.status === 'SCHEDULED').length.toString().padStart(2, '0'), icon: Clock, color: 'text-white' },
+          { label: 'Completed', value: campaigns.filter(c => c.status === 'COMPLETED').length.toString().padStart(2, '0'), icon: TrendingUp, color: 'text-primary' },
         ].map((stat, i) => (
           <ScrollReveal key={i} delay={i * 0.1} direction="up">
             <div className="manifest-card p-8 space-y-4 group">
-              <div className="flex items-center gap-3 font-mono opacity-40">
-                <stat.icon className="w-3.5 h-3.5" />
-                <span className="text-[10px] font-bold uppercase tracking-widest italic">{stat.label}</span>
+              <div className="flex items-center gap-3 font-mono opacity-40 min-w-0">
+                <stat.icon className="w-3.5 h-3.5 shrink-0" />
+                <span className="text-[10px] font-bold uppercase tracking-widest italic truncate">{stat.label}</span>
               </div>
               <div className={cn("text-4xl font-black italic font-mono tracking-tighter", stat.color)}>{stat.value}</div>
             </div>
@@ -90,25 +88,25 @@ export default function Campaigns() {
       {/* Filter Bar */}
       <div className="manifest-card !p-0 !bg-white/5 border border-white/5">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-6 p-6">
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-4">
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
-            <input 
-              type="text" 
-              placeholder="Search campaigns..." 
+            <input
+              type="text"
+              placeholder="Search campaigns..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-black border border-white/10 pl-12 pr-6 py-3 text-xs font-mono tracking-widest text-white outline-none focus:border-primary transition-all w-64 uppercase"
+              className="bg-black border border-white/10 pl-12 pr-6 py-3 text-xs font-mono tracking-widest text-white outline-none focus:border-primary transition-all w-full sm:w-64 uppercase"
             />
           </div>
-          <div className="flex items-center bg-black border border-white/10 p-1">
+          <div className="flex flex-wrap items-center bg-black border border-white/10 p-1">
             {['ALL', 'ACTIVE', 'SCHEDULED', 'COMPLETED'].map((f) => (
-              <button 
+              <button
                 key={f}
                 onClick={() => setFilter(f)}
                 className={cn(
                   "px-4 py-2 text-[10px] font-bold tracking-widest font-mono transition-all",
-                  filter === f ? "bg-primary text-white" : "text-white/30 hover:text-white"
+                  filter === f ? "bg-primary text-white" : "text-white/30"
                 )}
               >
                 {f}
@@ -116,9 +114,9 @@ export default function Campaigns() {
             ))}
           </div>
         </div>
-        <button 
+        <button
           onClick={() => navigate('/campaigns/new')}
-          className="flex items-center gap-2 text-[10px] font-bold font-mono tracking-widest text-white/40 hover:text-primary transition-colors"
+          className="flex items-center gap-2 text-[10px] font-bold font-mono tracking-widest text-white/40 transition-colors"
         >
           <Filter className="w-3.5 h-3.5" />
           Create campaign
@@ -138,13 +136,13 @@ export default function Campaigns() {
           filteredCampaigns.map((camp, i) => (
             <ScrollReveal key={camp.id} delay={i * 0.1} direction="up">
               <div className="manifest-card p-8 group relative overflow-hidden">
-                <div className="absolute right-0 top-0 bottom-0 w-1 bg-white/10 group-hover:bg-primary transition-colors" />
+                <div className="absolute right-0 top-0 bottom-0 w-1 bg-white/10 transition-colors" />
                 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center text-left">
                   <div className="lg:col-span-4 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <span className="text-[10px] font-bold text-white/20 font-mono tracking-widest">{camp.id}</span>
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-4 min-w-0">
+                        <span className="text-[10px] font-bold text-white/20 font-mono tracking-widest truncate">{camp.id}</span>
                         <div className={cn(
                           "px-3 py-1 text-[9px] font-black tracking-widest font-mono uppercase border",
                           camp.status === 'ACTIVE' ? 'border-primary text-primary bg-primary/5' : 'border-white/10 text-white/30'
@@ -152,14 +150,14 @@ export default function Campaigns() {
                           {camp.status}
                         </div>
                       </div>
-                      <button 
+                      <button
                         onClick={() => handleDelete(camp.id, camp.title)}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:text-red-500"
+                        className="opacity-70 transition-opacity p-2 shrink-0"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
-                    <h3 className="text-2xl font-black text-white italic font-mono uppercase tracking-tight group-hover:text-primary transition-colors">
+                    <h3 className="text-2xl font-black text-white italic font-mono uppercase tracking-tight transition-colors break-words">
                       {camp.title}
                     </h3>
                     <div className="flex flex-wrap gap-2">
@@ -172,11 +170,11 @@ export default function Campaigns() {
                   </div>
 
                   <div className="lg:col-span-3 space-y-4">
-                    <div className="text-[10px] font-bold text-white/20 uppercase tracking-widest font-mono italic">AI Progress Report</div>
+                    <div className="text-[10px] font-bold text-white/20 uppercase tracking-widest font-mono italic">Progress</div>
                     <div className="space-y-2">
-                      <div className="flex justify-between text-[11px] font-bold font-mono italic">
-                        <span className="text-white/40 tracking-widest">PROGRESS</span>
-                        <span className="text-white">{camp.progress}%</span>
+                      <div className="flex justify-between gap-3 text-[11px] font-bold font-mono italic">
+                        <span className="text-white/40 tracking-widest min-w-0 truncate">Progress</span>
+                        <span className="text-white shrink-0">{camp.progress}%</span>
                       </div>
                       <div className="h-1 bg-white/5">
                         <div 
@@ -209,27 +207,20 @@ export default function Campaigns() {
                        to={`/campaigns/${camp.id}`}
                        className="secondary-button w-14 h-14 !p-0 flex items-center justify-center group/btn"
                      >
-                       <ArrowUpRight className="w-5 h-5 group-hover/btn:scale-110 transition-transform" />
+                       <ArrowUpRight className="w-5 h-5 transition-transform" />
                      </Link>
                   </div>
                 </div>
 
                 {/* Goal Highlight */}
-                <div className="mt-8 pt-8 border-t border-white/5 flex items-center justify-between">
-                  <div className="flex items-center gap-6">
-                    <div className="flex flex-col">
+                <div className="mt-8 pt-8 border-t border-white/5 flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-6 min-w-0">
+                    <div className="flex flex-col min-w-0">
                       <span className="text-[9px] font-bold text-white/20 uppercase tracking-widest font-mono">Campaign Goal</span>
-                      <span className="text-[11px] font-bold text-white uppercase italic tracking-[0.2em]">{camp.goal.replace(/_/g, ' ')}</span>
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-[9px] font-bold text-white/20 uppercase tracking-widest font-mono">AI Strategy</span>
-                      <div className="flex items-center gap-2">
-                         <Sparkles className="w-3 h-3 text-primary" />
-                         <span className="text-[11px] font-bold text-primary uppercase italic tracking-[0.2em]">Aggressive Growth</span>
-                      </div>
+                      <span className="text-[11px] font-bold text-white uppercase italic tracking-[0.2em] truncate">{camp.goal.replace(/_/g, ' ')}</span>
                     </div>
                   </div>
-                  <div className="text-[10px] font-bold text-white/20 font-mono tracking-widest uppercase">
+                  <div className="text-[10px] font-bold text-white/20 font-mono tracking-widest uppercase shrink-0">
                     Started {new Date(camp.startDate).toLocaleDateString()}
                   </div>
                 </div>

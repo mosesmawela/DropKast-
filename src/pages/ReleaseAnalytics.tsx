@@ -1,13 +1,11 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { 
-  TrendingUp, 
-  Users, 
-  MapPin, 
-  Globe2, 
-  Play, 
+  TrendingUp,
+  Users,
+  MapPin,
+  Play,
   ChevronLeft,
-  ArrowUpRight,
   Monitor,
   Smartphone,
   BarChart3
@@ -36,30 +34,30 @@ export default function ReleaseAnalytics() {
   return (
     <div className="max-w-7xl mx-auto py-12 px-6 font-mono">
       <div className="mb-16 flex flex-col md:flex-row md:items-end justify-between gap-8">
-        <div className="space-y-6">
-          <button 
+        <div className="space-y-6 min-w-0">
+          <button
             onClick={() => navigate(`/releases/${id}/status`)}
-            className="flex items-center gap-2 text-white/20 hover:text-primary transition-colors text-[10px] font-black uppercase tracking-[0.3em] italic"
+            className="beam flex items-center gap-2 min-h-[40px] text-white/20 transition-colors text-[10px] font-black uppercase tracking-[0.3em] italic"
           >
             <ChevronLeft className="w-3 h-3" />
-            BACK_TO_STATUS
+            Back to status
           </button>
           <div>
-            <div className="flex items-center gap-3 mb-4">
-              <span className="px-3 py-1 bg-primary text-white text-[9px] font-black uppercase tracking-[0.2em] italic">DEEP_NODE_ANALYSIS</span>
-              <span className="text-white/20 text-[9px] font-black uppercase tracking-[0.2em]">NODE_ID: {id}</span>
+            <div className="flex items-center gap-3 mb-4 flex-wrap">
+              <span className="px-3 py-1 bg-primary text-white text-[9px] font-black uppercase tracking-[0.2em] italic">Deep Analysis</span>
+              <span className="text-white/20 text-[9px] font-black uppercase tracking-[0.2em]">Release ID: {id}</span>
             </div>
-            <h1 className="text-7xl font-black text-white italic uppercase tracking-tighter leading-none mb-4">{release.title}</h1>
-            <p className="text-white/40 uppercase font-bold italic tracking-[0.2em]">Stream Distribution Metric Dashboard</p>
+            <h1 className="text-4xl sm:text-6xl md:text-7xl font-black text-white italic uppercase tracking-tighter leading-none mb-4 break-words">{release.title}</h1>
+            <p className="text-white/40 uppercase font-bold italic tracking-[0.2em]">Your streaming dashboard</p>
           </div>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
            {[
-             { label: 'TOTAL_STREAMS', val: '—', icon: Play, trend: '' },
-             { label: 'UNIQUE_LISTENERS', val: '—', icon: Users, trend: '' },
-             { label: 'PLAYLIST_NODES', val: '—', icon: BarChart3, trend: '' },
-             { label: 'SAVE_RATIO', val: '—', icon: TrendingUp, trend: '' },
+             { label: 'Total Streams', val: '—', icon: Play, trend: '' },
+             { label: 'Unique Listeners', val: '—', icon: Users, trend: '' },
+             { label: 'Playlist Adds', val: '—', icon: BarChart3, trend: '' },
+             { label: 'Save Rate', val: '—', icon: TrendingUp, trend: '' },
            ].map((stat, i) => (
              <div key={i} className="p-6 border border-white/5 bg-dark space-y-4">
                 <div className="flex items-center justify-between">
@@ -76,9 +74,9 @@ export default function ReleaseAnalytics() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-        <div className="lg:col-span-2 manifest-card p-10 bg-dark border-white/5">
-           <div className="flex items-center justify-between mb-10">
-              <h3 className="text-[11px] font-black text-white/30 uppercase tracking-[0.4em] italic font-mono">Stream Velocity Pattern</h3>
+        <div className="lg:col-span-2 manifest-card p-6 md:p-10 bg-dark border-white/5">
+           <div className="flex items-center justify-between flex-wrap gap-4 mb-10">
+              <h3 className="text-[11px] font-black text-white/30 uppercase tracking-[0.4em] italic font-mono">Streams Over Time</h3>
               <div className="flex items-center gap-6">
                  {['Spotify', 'Apple', 'Tidal'].map((n) => (
                    <div key={n} className="flex items-center gap-2">
@@ -123,8 +121,8 @@ export default function ReleaseAnalytics() {
            )}
         </div>
 
-        <div className="manifest-card p-10 bg-dark border-white/5 flex flex-col">
-           <h3 className="text-[11px] font-black text-white/30 uppercase tracking-[0.4em] italic font-mono mb-10">Regional Node Density</h3>
+        <div className="manifest-card p-6 md:p-10 bg-dark border-white/5 flex flex-col">
+           <h3 className="text-[11px] font-black text-white/30 uppercase tracking-[0.4em] italic font-mono mb-10">Where People Are Listening</h3>
            {countryData.length === 0 ? (
              <div className="flex-1 flex items-center justify-center text-[11px] font-black text-white/20 uppercase tracking-widest italic">No regional data yet</div>
            ) : (
@@ -165,23 +163,23 @@ export default function ReleaseAnalytics() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-         <div className="manifest-card p-10 bg-dark border-white/5 space-y-8">
-            <h3 className="text-[11px] font-black text-white/30 uppercase tracking-[0.4em] italic font-mono">Top Node Locations</h3>
+         <div className="manifest-card p-6 md:p-10 bg-dark border-white/5 space-y-8">
+            <h3 className="text-[11px] font-black text-white/30 uppercase tracking-[0.4em] italic font-mono">Top Cities</h3>
             <div className="space-y-6">
-               {([] as { city: string; country: string; nodes: string; growth: string }[]).length === 0 && (
+               {([] as { city: string; country: string; listeners: string; growth: string }[]).length === 0 && (
                  <div className="text-[11px] font-black text-white/20 uppercase tracking-widest italic text-center py-8">No location data yet</div>
                )}
-               {([] as { city: string; country: string; nodes: string; growth: string }[]).map((loc, i) => (
-                 <div key={i} className="flex items-center justify-between border-b border-white/5 pb-6 last:border-0 last:pb-0">
-                    <div className="flex items-center gap-4">
-                       <MapPin className="w-4 h-4 text-primary" />
-                       <div>
-                          <div className="text-xs font-black text-white uppercase italic">{loc.city}</div>
-                          <div className="text-[8px] font-black text-white/20 uppercase tracking-widest">{loc.country}</div>
+               {([] as { city: string; country: string; listeners: string; growth: string }[]).map((loc, i) => (
+                 <div key={i} className="flex items-center justify-between gap-3 border-b border-white/5 pb-6 last:border-0 last:pb-0">
+                    <div className="flex items-center gap-4 min-w-0">
+                       <MapPin className="w-4 h-4 text-primary shrink-0" />
+                       <div className="min-w-0">
+                          <div className="text-xs font-black text-white uppercase italic truncate">{loc.city}</div>
+                          <div className="text-[8px] font-black text-white/20 uppercase tracking-widest truncate">{loc.country}</div>
                        </div>
                     </div>
-                    <div className="text-right">
-                       <div className="text-xs font-black text-white font-mono">{loc.nodes}</div>
+                    <div className="text-right shrink-0">
+                       <div className="text-xs font-black text-white font-mono">{loc.listeners}</div>
                        <div className="text-[8px] font-black text-green-500 uppercase italic">{loc.growth}</div>
                     </div>
                  </div>
@@ -189,38 +187,24 @@ export default function ReleaseAnalytics() {
             </div>
          </div>
 
-         <div className="manifest-card p-10 bg-dark border-white/5 space-y-8">
-            <h3 className="text-[11px] font-black text-white/30 uppercase tracking-[0.4em] italic font-mono">Terminal Usage</h3>
+         <div className="manifest-card p-6 md:p-10 bg-dark border-white/5 space-y-8">
+            <h3 className="text-[11px] font-black text-white/30 uppercase tracking-[0.4em] italic font-mono">Devices</h3>
             <div className="space-y-10">
                <div className="space-y-4">
-                  <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest italic">
-                     <div className="flex items-center gap-3 text-white"><Smartphone className="w-4 h-4" /> HANDHELD</div>
-                     <div className="text-white">—</div>
+                  <div className="flex items-center justify-between gap-3 text-[10px] font-black uppercase tracking-widest italic">
+                     <div className="flex items-center gap-3 text-white min-w-0"><Smartphone className="w-4 h-4 shrink-0" /> Mobile</div>
+                     <div className="text-white shrink-0">—</div>
                   </div>
                   <div className="h-1 bg-white/5 p-0.5"><motion.div initial={{ width: 0 }} animate={{ width: '0%' }} className="h-full bg-primary" /></div>
                </div>
                <div className="space-y-4">
-                  <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest italic">
-                     <div className="flex items-center gap-3 text-white/40"><Monitor className="w-4 h-4" /> CROSS_TERMINAL</div>
-                     <div className="text-white/40">—</div>
+                  <div className="flex items-center justify-between gap-3 text-[10px] font-black uppercase tracking-widest italic">
+                     <div className="flex items-center gap-3 text-white/40 min-w-0"><Monitor className="w-4 h-4 shrink-0" /> Desktop</div>
+                     <div className="text-white/40 shrink-0">—</div>
                   </div>
                   <div className="h-1 bg-white/5 p-0.5"><motion.div initial={{ width: 0 }} animate={{ width: '0%' }} className="h-full bg-white/10" /></div>
                </div>
             </div>
-         </div>
-
-         <div className="manifest-card p-10 bg-primary border-primary space-y-8 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-10 opacity-10 group-hover:scale-125 transition-transform duration-700">
-               <Globe2 className="w-24 h-24 text-white" />
-            </div>
-            <h3 className="text-[11px] font-black text-white uppercase tracking-[0.4em] italic font-mono">Campaign Resonance</h3>
-            <p className="text-base text-white font-black italic tracking-tight leading-relaxed uppercase">
-               High-frequency sentiment detected in European nodes. Initiation of localized ad-layer recommended.
-            </p>
-            <button className="w-full h-14 bg-black text-white font-black italic uppercase tracking-widest text-[11px] flex items-center justify-center gap-4 hover:bg-white hover:text-black transition-all">
-               Localize Campaign
-               <ArrowUpRight className="w-4 h-4" />
-            </button>
          </div>
       </div>
     </div>

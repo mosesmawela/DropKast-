@@ -75,11 +75,11 @@ export default function Advances() {
     <div className="max-w-7xl mx-auto py-12 px-6">
       {/* Header */}
       <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-8">
-        <div className="space-y-4">
+        <div className="space-y-4 min-w-0">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-[0.4em] italic">
-            <Wallet className="w-3 h-3" /> Royalty Advances
+            <Wallet className="w-3 h-3 shrink-0" /> Royalty Advances
           </div>
-          <h1 className="text-6xl md:text-7xl font-black text-white italic uppercase tracking-tighter leading-none">
+          <h1 className="text-4xl sm:text-6xl md:text-7xl font-black text-white italic uppercase tracking-tighter leading-none break-words">
             Cash up <span className="text-primary">front</span>
           </h1>
           {!advancesUnlocked && (
@@ -97,7 +97,7 @@ export default function Advances() {
           </p>
         </div>
 
-        <div className="manifest-card p-6 bg-dark border-primary/20 min-w-[260px]">
+        <div className="manifest-card p-6 bg-dark border-primary/20 w-full md:w-auto md:min-w-[260px] shrink-0">
           <div className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic mb-2">
             Trailing 6-mo
           </div>
@@ -113,7 +113,7 @@ export default function Advances() {
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          className="manifest-card p-10 bg-gradient-to-br from-primary/15 via-dark to-dark border border-primary/30 relative overflow-hidden mb-8"
+          className="manifest-card p-5 sm:p-10 bg-gradient-to-br from-primary/15 via-dark to-dark border border-primary/30 relative overflow-hidden mb-8"
         >
           <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
           <div className="relative grid grid-cols-1 lg:grid-cols-3 gap-10">
@@ -126,7 +126,7 @@ export default function Advances() {
               </div>
               <div>
                 <div className="text-[12px] text-white/40 italic mb-2">You're approved for</div>
-                <div className="text-7xl md:text-8xl font-black italic text-white tracking-tighter leading-none">
+                <div className="text-5xl sm:text-7xl md:text-8xl font-black italic text-white tracking-tighter leading-none">
                   {fmtCents(offer.offerCents)}
                 </div>
                 <div className="text-[12px] text-white/50 italic mt-3">
@@ -166,7 +166,7 @@ export default function Advances() {
             <div className="space-y-4">
               <button
                 onClick={() => setConfirming(true)}
-                className="w-full h-16 bg-white text-black hover:bg-primary hover:text-white text-[12px] font-black uppercase italic tracking-widest transition-all flex items-center justify-center gap-3"
+                className="beam w-full h-16 bg-white text-black text-[12px] font-black uppercase italic tracking-widest transition-all flex items-center justify-center gap-3"
               >
                 Accept advance <ArrowRight className="w-4 h-4" />
               </button>
@@ -191,7 +191,7 @@ export default function Advances() {
           </div>
         </motion.div>
       ) : (
-        <div className="manifest-card p-10 bg-dark border border-white/10 mb-8">
+        <div className="manifest-card p-5 sm:p-10 bg-dark border border-white/10 mb-8">
           <div className="flex items-center gap-3 mb-4">
             <Clock className="w-5 h-5 text-white/40" />
             <h3 className="text-xl font-black italic text-white">Not eligible yet</h3>
@@ -337,7 +337,7 @@ export default function Advances() {
               <button
                 onClick={() => setConfirming(false)}
                 aria-label="Close"
-                className="text-white/40 hover:text-white"
+                className="text-white/40"
               >
                 <XIcon className="w-5 h-5" />
               </button>
@@ -361,13 +361,13 @@ export default function Advances() {
             <div className="flex gap-3">
               <button
                 onClick={() => setConfirming(false)}
-                className="h-12 px-6 border border-white/10 text-white/60 text-[10px] font-black uppercase italic tracking-widest hover:border-white hover:text-white transition-all"
+                className="beam h-12 px-6 border border-white/10 text-white/60 text-[10px] font-black uppercase italic tracking-widest transition-all"
               >
                 Cancel
               </button>
               <button
                 onClick={handleAccept}
-                className="flex-1 h-12 bg-white text-black hover:bg-primary hover:text-white text-[10px] font-black uppercase italic tracking-widest transition-all flex items-center justify-center gap-3"
+                className="beam flex-1 h-12 bg-white text-black text-[10px] font-black uppercase italic tracking-widest transition-all flex items-center justify-center gap-3"
               >
                 Confirm — accept {fmtCents(offer.offerCents)}
               </button>

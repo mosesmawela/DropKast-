@@ -121,14 +121,28 @@ export default function ModelPicker({ recommendation, value, onChange, variant =
   const freemium = items.filter((m) => m.tier === 'freemium' && m.id !== recommended.id);
   const paid = items.filter((m) => m.tier === 'paid' && m.id !== recommended.id);
 
-  const panel = open && panelPos && (
+  // Resolve panel coordinates. Prefer the memoized panelPos from the layout
+  // effect; if it hasn't committed yet (first open), fall back to a fresh
+  // measurement so the panel always mounts on the very first click.
+  const pos = panelPos ?? (() => {
+    const r = triggerRef.current?.getBoundingClientRect();
+    if (!r) return { top: 100, left: 100, width: 320 };
+    const PANEL_W = 320;
+    let left = r.right - PANEL_W;
+    if (left < 8) left = 8;
+    if (left + PANEL_W > window.innerWidth - 8) left = window.innerWidth - PANEL_W - 8;
+    return { top: r.bottom + 4, left, width: PANEL_W };
+  })();
+
+  const panel = open && (
     <motion.div
+      key="mp-panel"
       ref={panelRef}
       initial={{ opacity: 0, y: -6, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -6, scale: 0.97 }}
       transition={{ duration: 0.15 }}
-      style={{ position: 'fixed', top: panelPos.top, left: panelPos.left, width: panelPos.width, zIndex: 1000 }}
+      style={{ position: 'fixed', top: pos.top, left: pos.left, width: pos.width, zIndex: 1000 }}
       className="bg-black border border-white/10 shadow-[0_30px_80px_rgba(0,0,0,0.85)] overflow-hidden"
     >
       <div className="flex items-center justify-between px-3 py-2 border-b border-white/5 bg-white/[0.02]">
@@ -137,7 +151,7 @@ export default function ModelPicker({ recommendation, value, onChange, variant =
         </span>
         <button
           onClick={() => setOpen(false)}
-          className="text-white/40 hover:text-white shrink-0"
+          className="text-white/40 shrink-0"
           aria-label="Close"
         >
           <X className="w-3 h-3" />
@@ -192,7 +206,7 @@ export default function ModelPicker({ recommendation, value, onChange, variant =
         onClick={() => setOpen((v) => !v)}
         className={cn(
           'flex items-center gap-2 border transition-all px-3 py-1.5',
-          'border-[var(--border-main)] hover:border-primary bg-[var(--card-bg)] text-[var(--text-main)]',
+          'border-[var(--border-main)] bg-[var(--card-bg)] text-[var(--text-main)]',
           variant === 'compact' ? 'text-[10px]' : 'text-[11px]',
         )}
       >
@@ -208,7 +222,7 @@ export default function ModelPicker({ recommendation, value, onChange, variant =
         <ChevronDown className={cn('w-3 h-3 transition-transform shrink-0', open && 'rotate-180')} />
       </button>
 
-      <AnimatePresence>{panel ? createPortal(panel, document.body) : null}</AnimatePresence>
+      {createPortal(<AnimatePresence>{panel}</AnimatePresence>, document.body)}
     </div>
   );
 }
@@ -236,7 +250,7 @@ function Row({ m, active, recommended, onPick }: { m: ProviderModel; active: boo
       onClick={() => onPick(m.id)}
       className={cn(
         'w-full flex items-center gap-3 px-3 py-2 text-left transition-colors',
-        active ? 'bg-primary/10' : 'hover:bg-white/[0.03]',
+        active ? 'bg-primary/10' : '',
       )}
     >
       <div className="flex-1 min-w-0">

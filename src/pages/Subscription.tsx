@@ -155,7 +155,7 @@ export default function Subscription() {
               onClick={() => setPeriod(p)}
               className={cn(
                 'h-10 px-6 text-[10px] font-black uppercase italic tracking-widest transition-all',
-                period === p ? 'bg-white text-black' : 'text-white/50 hover:text-white',
+                period === p ? 'bg-white text-black' : 'text-white/50',
               )}
             >
               {p === 'yearly' ? 'Yearly · save 30%' : 'Monthly'}
@@ -221,12 +221,12 @@ export default function Subscription() {
                 onClick={() => handleUpgrade(t.id)}
                 disabled={isCurrent || loading === t.id}
                 className={cn(
-                  'h-11 text-[10px] font-black uppercase italic tracking-widest transition-all flex items-center justify-center gap-2',
+                  'beam h-11 text-[10px] font-black uppercase italic tracking-widest transition-all flex items-center justify-center gap-2',
                   isCurrent
                     ? 'bg-white/5 text-white/40 border border-white/10 cursor-default'
                     : t.popular
-                    ? 'bg-primary text-white hover:bg-white hover:text-black'
-                    : 'bg-white text-black hover:bg-primary hover:text-white',
+                    ? 'bg-primary text-white'
+                    : 'bg-white text-black',
                 )}
               >
                 {loading === t.id ? 'Working...' : tierBtnLabel}
@@ -242,7 +242,7 @@ export default function Subscription() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
           <button
             onClick={handleManageBilling}
-            className="manifest-card p-5 bg-dark border border-white/10 hover:border-primary transition-all flex items-center justify-between text-left group"
+            className="manifest-card p-5 bg-dark border border-white/10 transition-all flex items-center justify-between text-left group"
           >
             <div>
               <div className="flex items-center gap-2 text-[10px] font-black text-primary uppercase tracking-[0.3em] italic mb-1">
@@ -253,7 +253,7 @@ export default function Subscription() {
                 Update card, change email, download receipts
               </div>
             </div>
-            <ExternalLink className="w-4 h-4 text-white/30 group-hover:text-white" />
+            <ExternalLink className="w-4 h-4 text-white/30" />
           </button>
 
           <button
@@ -262,7 +262,7 @@ export default function Subscription() {
               sub.setLocalPlan('free', sub.period);
               toast.message('Subscription cancelled — back on Free tier.');
             }}
-            className="manifest-card p-5 bg-dark border border-white/10 hover:border-red-500/40 transition-all flex items-center justify-between text-left"
+            className="manifest-card p-5 bg-dark border border-white/10 transition-all flex items-center justify-between text-left"
           >
             <div>
               <div className="flex items-center gap-2 text-[10px] font-black text-red-400 uppercase tracking-[0.3em] italic mb-1">

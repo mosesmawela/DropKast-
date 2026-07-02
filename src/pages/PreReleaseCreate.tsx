@@ -94,7 +94,7 @@ export default function PreReleaseCreate() {
       setAiIdeas(data.ideas);
       setCurrentStep(prev => prev + 1);
     } catch (err) {
-      notify('error', 'AI_SYNC_FAILED', 'Neural activation bridge failed.');
+      notify('error', 'Couldn\'t generate ideas', 'Something went wrong. Please try again.');
     } finally {
       setIsProcessing(false);
     }
@@ -116,7 +116,7 @@ export default function PreReleaseCreate() {
       });
       
       if (response.ok) {
-        notify('success', 'ACTIVATED', 'Signal broadcast sequence initiated.');
+        notify('success', 'Pre-release scheduled', 'Your pre-release is live and ready to go.');
         navigate('/pre-release');
       }
     } catch (err) {
@@ -132,18 +132,18 @@ export default function PreReleaseCreate() {
         <div className="space-y-4">
           <div className="flex items-center gap-4">
             <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-            <span className="text-[10px] font-black text-primary uppercase tracking-[0.4em] font-mono italic">Pre-release engine</span>
+            <span className="text-[10px] font-black text-primary uppercase tracking-[0.4em] font-mono italic">Pre-release</span>
           </div>
-          <h1 className="text-6xl md:text-8xl font-black italic text-white uppercase tracking-tighter leading-[0.8]">Pre-release plan</h1>
-          <p className="text-[11px] font-bold text-white/30 uppercase tracking-[0.2em] font-mono italic">Configure viral payload for global signal injection.</p>
+          <h1 className="text-5xl sm:text-6xl md:text-8xl font-black italic text-white uppercase tracking-tighter leading-[0.8]">Pre-release plan</h1>
+          <p className="text-[11px] font-bold text-white/30 uppercase tracking-[0.2em] font-mono italic">Set up your track to build buzz before it drops.</p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 overflow-x-auto max-w-full pb-1 shrink-0">
           {STEPS.map((step, i) => (
             <React.Fragment key={step.id}>
-              <div 
+              <div
                 className={cn(
-                  "w-10 h-10 border flex items-center justify-center transition-all duration-500",
+                  "w-10 h-10 border flex items-center justify-center transition-all duration-500 shrink-0",
                   i <= currentStep ? "border-primary bg-primary/10 text-primary shadow-[0_0_15px_rgba(255,77,0,0.3)]" : "border-white/5 text-white/20"
                 )}
                 title={step.label}
@@ -152,7 +152,7 @@ export default function PreReleaseCreate() {
               </div>
               {i < STEPS.length - 1 && (
                 <div className={cn(
-                  "w-4 h-[1px]",
+                  "w-4 h-[1px] shrink-0",
                   i < currentStep ? "bg-primary" : "bg-white/10"
                 )} />
               )}
@@ -174,16 +174,16 @@ export default function PreReleaseCreate() {
                 className="space-y-10"
               >
                 <div className="space-y-6">
-                  <h2 className="text-4xl font-black italic text-white uppercase tracking-tighter font-mono">Select_Source_Node</h2>
+                  <h2 className="text-4xl font-black italic text-white uppercase tracking-tighter font-mono">Upload your audio</h2>
                   <p className="text-[11px] font-bold text-white/40 uppercase tracking-widest italic font-sans leading-relaxed">
-                    Upload the 30-60 second high-fidelity snippet intended for viral exploitation.
+                    Upload a 30-60 second high-quality snippet of your track.
                   </p>
                 </div>
 
                 <div 
                   onClick={() => fileInputRef.current?.click()}
                   className={cn(
-                    "manifest-card p-20 border-dashed border-white/10 hover:border-primary/50 bg-white/[0.02] flex flex-col items-center justify-center gap-8 cursor-pointer transition-all group",
+                    "manifest-card p-12 sm:p-20 border-dashed border-white/10 bg-white/[0.02] flex flex-col items-center justify-center gap-8 cursor-pointer transition-all group",
                     file && "border-primary/30 bg-primary/5"
                   )}
                 >
@@ -206,7 +206,7 @@ export default function PreReleaseCreate() {
                     </>
                   ) : (
                     <>
-                      <div className="w-20 h-20 border border-white/5 flex items-center justify-center text-white/10 group-hover:text-primary group-hover:border-primary transition-all">
+                      <div className="w-20 h-20 border border-white/5 flex items-center justify-center text-white/10 transition-all">
                         <Upload className="w-8 h-8" />
                       </div>
                       <div className="text-center space-y-2">
@@ -218,7 +218,7 @@ export default function PreReleaseCreate() {
                 </div>
 
                 <div className="space-y-4">
-                  <span className="text-[10px] font-black text-white/40 uppercase tracking-widest font-mono italic">Signal_Label</span>
+                  <span className="text-[10px] font-black text-white/40 uppercase tracking-widest font-mono italic">Track title</span>
                   <input 
                     type="text" 
                     value={title}
@@ -239,7 +239,7 @@ export default function PreReleaseCreate() {
                 className="space-y-12"
               >
                 <div className="space-y-6">
-                  <h2 className="text-4xl font-black italic text-white uppercase tracking-tighter font-mono">Isolate_Viral_Hook</h2>
+                  <h2 className="text-4xl font-black italic text-white uppercase tracking-tighter font-mono">Pick the hook</h2>
                   <p className="text-[11px] font-bold text-white/40 uppercase tracking-widest italic font-sans leading-relaxed">
                     Pick the 15-30 second slice fans will hear on TikTok and Reels.
                   </p>
@@ -276,7 +276,7 @@ export default function PreReleaseCreate() {
                   <div className="grid grid-cols-2 gap-8">
                     <div className="space-y-4">
                       <div className="flex justify-between items-center pr-2">
-                        <span className="text-[10px] font-black text-white/40 uppercase tracking-widest font-mono italic">Start_Marker</span>
+                        <span className="text-[10px] font-black text-white/40 uppercase tracking-widest font-mono italic">Start</span>
                         <span className="text-[10px] font-black text-primary font-mono">{hookStart}s</span>
                       </div>
                       <input 
@@ -290,7 +290,7 @@ export default function PreReleaseCreate() {
                     </div>
                     <div className="space-y-4">
                       <div className="flex justify-between items-center pr-2">
-                        <span className="text-[10px] font-black text-white/40 uppercase tracking-widest font-mono italic">End_Marker</span>
+                        <span className="text-[10px] font-black text-white/40 uppercase tracking-widest font-mono italic">End</span>
                         <span className="text-[10px] font-black text-primary font-mono">{hookEnd}s</span>
                       </div>
                       <input 
@@ -305,7 +305,7 @@ export default function PreReleaseCreate() {
                   </div>
 
                   <div className="flex items-center justify-center">
-                    <button className="w-16 h-16 rounded-full border border-primary/30 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all group active:scale-90">
+                    <button className="beam w-16 h-16 rounded-full border border-primary/30 flex items-center justify-center text-primary transition-all group active:scale-90">
                       <Play className="w-5 h-5 fill-current" />
                     </button>
                   </div>
@@ -315,19 +315,19 @@ export default function PreReleaseCreate() {
                   <div className="p-8 manifest-card bg-white/[0.02] border-white/5 space-y-4">
                     <div className="flex items-center gap-3 text-primary">
                       <Clock className="w-4 h-4" />
-                      <span className="text-[10px] font-black uppercase tracking-widest font-mono italic">Optimal_Duration</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest font-mono italic">Best length</span>
                     </div>
                     <p className="text-[10px] font-bold text-white/30 uppercase tracking-wider font-sans italic leading-relaxed">
-                      AI Analysis suggests a 22.4s window for maximum retention on short-form platforms.
+                      A 20-25 second clip tends to hold attention best on TikTok and Reels.
                     </p>
                   </div>
                   <div className="p-8 manifest-card bg-white/[0.02] border-white/5 space-y-4">
                     <div className="flex items-center gap-3 text-primary">
                       <Target className="w-4 h-4" />
-                      <span className="text-[10px] font-black uppercase tracking-widest font-mono italic">Sonic_Peak</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest font-mono italic">Loudest moment</span>
                     </div>
                     <p className="text-[10px] font-bold text-white/30 uppercase tracking-wider font-sans italic leading-relaxed">
-                      Loudness peak detected at 0:24s. Strategic inclusion recommended.
+                      The biggest moment lands around 0:24. Try to include it in your hook.
                     </p>
                   </div>
                 </div>
@@ -356,7 +356,7 @@ export default function PreReleaseCreate() {
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {aiIdeas.map((idea, i) => (
-                      <div key={i} className="manifest-card p-10 bg-white/[0.02] border-white/5 space-y-8 group hover:border-primary/30 transition-all">
+                      <div key={i} className="manifest-card p-10 bg-white/[0.02] border-white/5 space-y-8 group transition-all">
                         <header className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
@@ -364,7 +364,7 @@ export default function PreReleaseCreate() {
                             </div>
                             <span className="text-[10px] font-black uppercase tracking-widest font-mono text-white/60">{idea.type}</span>
                           </div>
-                          <Sparkles className="w-4 h-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                          <Sparkles className="w-4 h-4 text-primary opacity-100 transition-opacity" />
                         </header>
                         
                         <div className="space-y-4">
@@ -382,9 +382,9 @@ export default function PreReleaseCreate() {
                         </div>
                       </div>
                     ))}
-                    <button className="manifest-card p-10 border-dashed border-white/10 hover:border-primary/50 bg-white/[0.01] flex flex-col items-center justify-center gap-4 group transition-all h-full">
-                       <Plus className="w-6 h-6 text-white/10 group-hover:text-primary transition-colors" />
-                       <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] font-mono group-hover:text-white transition-colors italic">Generate more</span>
+                    <button className="manifest-card p-10 border-dashed border-white/10 bg-white/[0.01] flex flex-col items-center justify-center gap-4 group transition-all h-full">
+                       <Plus className="w-6 h-6 text-white/10 transition-colors" />
+                       <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] font-mono transition-colors italic">Generate more</span>
                     </button>
                   </div>
                 )}
@@ -421,7 +421,7 @@ export default function PreReleaseCreate() {
                       }}
                       className={cn(
                         "manifest-card p-8 bg-white/[0.02] border transition-all text-left flex items-center justify-between group",
-                        selectedCreators.includes(invader.id) ? "border-primary bg-primary/5" : "border-white/5 hover:border-white/20"
+                        selectedCreators.includes(invader.id) ? "border-primary bg-primary/5" : "border-white/5"
                       )}
                     >
                       <div className="flex items-center gap-6">
@@ -460,27 +460,27 @@ export default function PreReleaseCreate() {
                 className="space-y-12"
               >
                 <div className="space-y-6">
-                  <h2 className="text-4xl font-black italic text-white uppercase tracking-tighter font-mono">Deployment_Sequencing</h2>
+                  <h2 className="text-4xl font-black italic text-white uppercase tracking-tighter font-mono">Schedule</h2>
                   <p className="text-[11px] font-bold text-white/40 uppercase tracking-widest italic font-sans leading-relaxed">
-                    Preview of your signal momentum timeline leading to global release.
+                    Here's your rollout plan leading up to release day.
                   </p>
                 </div>
 
-                <div className="manifest-card p-12 bg-black/40 border-white/5 space-y-1">
+                <div className="manifest-card p-6 sm:p-12 bg-black/40 border-white/5 space-y-1">
                   {[
-                    { day: 'D-14', env: 'Tease', action: 'Upload fragment to TikTok/IG sounds', status: 'pending' },
-                    { day: 'D-12', env: 'SEED_RELIANCE', action: 'Broadcast payload to elite creators', status: 'pending' },
-                    { day: 'D-07', env: 'Push', action: 'Brief meme + edit-page creators', status: 'pending' },
-                    { day: 'D-03', env: 'VOLOCITY_BOOST', action: 'Launch UGC "Hook Detection" challenge', status: 'pending' },
-                    { day: 'D-00', env: 'GLOBAL_DROP', action: 'Full release sync & official audio conversion', status: 'final' },
+                    { day: 'D-14', env: 'Tease', action: 'Post your snippet to TikTok and IG sounds', status: 'pending' },
+                    { day: 'D-12', env: 'Seed', action: 'Send your track to top creators', status: 'pending' },
+                    { day: 'D-07', env: 'Push', action: 'Brief meme and edit-page creators', status: 'pending' },
+                    { day: 'D-03', env: 'Boost', action: 'Launch a "find the hook" challenge', status: 'pending' },
+                    { day: 'D-00', env: 'Release day', action: 'Full release and switch to your official audio', status: 'final' },
                   ].map((event, i) => (
-                    <div key={i} className="flex items-center gap-8 py-6 group">
-                      <div className="w-16 text-center">
+                    <div key={i} className="flex items-center gap-4 sm:gap-8 py-6 group">
+                      <div className="w-14 sm:w-16 text-center shrink-0">
                         <div className="text-xl font-black text-white font-mono italic">{event.day}</div>
                       </div>
                       <div className="w-0.5 h-12 bg-white/5 relative">
                         <div className={cn(
-                          "absolute inset-0 w-full group-hover:bg-primary transition-all duration-300",
+                          "absolute inset-0 w-full transition-all duration-300",
                           event.status === 'final' ? "bg-primary animate-pulse" : ""
                         )} />
                       </div>
@@ -501,7 +501,7 @@ export default function PreReleaseCreate() {
               onClick={prevStep}
               className={cn(
                 "h-16 px-8 flex items-center gap-4 font-mono font-black italic text-[11px] tracking-widest uppercase transition-all",
-                currentStep === 0 ? "opacity-0 pointer-events-none" : "text-white/40 hover:text-white"
+                currentStep === 0 ? "opacity-0 pointer-events-none" : "text-white/40"
               )}
             >
               <ArrowLeft className="w-5 h-5" />
@@ -511,10 +511,10 @@ export default function PreReleaseCreate() {
             <button 
               onClick={nextStep}
               disabled={isProcessing}
-              className="h-16 bg-white text-black hover:bg-primary hover:text-white px-12 flex items-center gap-6 group transition-all font-mono font-black italic text-[12px] tracking-widest shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
+              className="beam h-16 bg-white text-black px-12 flex items-center justify-center gap-6 group transition-all font-mono font-black italic text-[12px] tracking-widest shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
             >
               <span>{isProcessing ? 'Working...' : currentStep === STEPS.length - 1 ? 'Schedule pre-release' : 'Next'}</span>
-              {!isProcessing && <ArrowRight className="w-5 h-5 group-hover:translate-x-3 transition-transform" /> }
+              {!isProcessing && <ArrowRight className="w-5 h-5 transition-transform" /> }
             </button>
           </div>
         </div>
@@ -526,29 +526,29 @@ export default function PreReleaseCreate() {
             
             <div className="space-y-6">
               <div className="space-y-2">
-                <span className="text-[9px] font-black text-white/20 uppercase tracking-widest font-mono">Payload_Target</span>
+                <span className="text-[9px] font-black text-white/20 uppercase tracking-widest font-mono">Track</span>
                 <div className="text-[11px] font-black text-white uppercase italic tracking-widest truncate">{title || 'Untitled track'}</div>
               </div>
 
               <div className="space-y-2">
-                <span className="text-[9px] font-black text-white/20 uppercase tracking-widest font-mono">Isolation_Range</span>
-                <div className="text-[11px] font-black text-primary italic tracking-widest">{hookEnd - hookStart}s Window [ {hookStart}:{hookEnd} ]</div>
+                <span className="text-[9px] font-black text-white/20 uppercase tracking-widest font-mono">Hook</span>
+                <div className="text-[11px] font-black text-primary italic tracking-widest">{hookEnd - hookStart}s clip [ {hookStart}:{hookEnd} ]</div>
               </div>
 
               <div className="space-y-2">
-                <span className="text-[9px] font-black text-white/20 uppercase tracking-widest font-mono">Tier</span>
-                <div className="text-[11px] font-black text-white italic tracking-widest uppercase">{aiIdeas.length} Neural Ideas</div>
+                <span className="text-[9px] font-black text-white/20 uppercase tracking-widest font-mono">Ideas</span>
+                <div className="text-[11px] font-black text-white italic tracking-widest uppercase">{aiIdeas.length} ideas</div>
               </div>
 
               <div className="space-y-2">
-                <span className="text-[9px] font-black text-white/20 uppercase tracking-widest font-mono">Target_Nodes</span>
-                <div className="text-[11px] font-black text-white italic tracking-widest uppercase">{selectedCreators.length} Strategic Creators</div>
+                <span className="text-[9px] font-black text-white/20 uppercase tracking-widest font-mono">Creators</span>
+                <div className="text-[11px] font-black text-white italic tracking-widest uppercase">{selectedCreators.length} creators</div>
               </div>
             </div>
 
             <div className="pt-8 border-t border-white/5">
                <div className="text-[8px] font-black text-white/10 uppercase tracking-[0.4em] font-mono italic leading-relaxed">
-                 Powered by DropKast. Every action is logged to your audit trail. 
+                 Powered by DropKast.
                </div>
             </div>
           </div>

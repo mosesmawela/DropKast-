@@ -55,9 +55,9 @@ export default function PreReleaseDetails() {
       const response = await fetch(`/api/pre-release/${id}/tiktok`, { method: 'POST' });
       const result = await response.json();
       setTiktokPlan(result.ideas);
-      notify('success', 'ANALYSIS_COMPLETE', 'Viral content nodes synchronized.');
+      notify('success', 'Ideas ready', 'Your TikTok content ideas are ready.');
     } catch (err) {
-      notify('error', 'NEURAL_ERROR', 'Failed to generate TikTok deployment plan.');
+      notify('error', 'Something went wrong', 'Couldn\'t generate your TikTok plan. Please try again.');
     } finally {
       setIsActivating(false);
     }
@@ -68,11 +68,11 @@ export default function PreReleaseDetails() {
     try {
       const response = await fetch(`/api/pre-release/${id}/invasion`, { method: 'POST' });
       if (response.ok) {
-        notify('success', 'INVASION_ACTIVE', 'Payload broadcast to influencer discovery network.');
+        notify('success', 'Campaign live', 'Your track has been sent out to creators.');
         setData((prev: any) => ({ ...prev, status: 'invading' }));
       }
     } catch (err) {
-      notify('error', 'DEPLOYMENT_ERROR', 'Invasion protocol aborted.');
+      notify('error', 'Something went wrong', 'Couldn\'t launch your campaign. Please try again.');
     } finally {
       setIsActivating(false);
     }
@@ -81,15 +81,15 @@ export default function PreReleaseDetails() {
   if (loading) return (
     <div className="h-96 flex flex-col items-center justify-center gap-6">
       <div className="w-12 h-12 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-      <span className="text-[10px] font-black text-primary uppercase font-mono italic animate-pulse">Syncing_Nodes...</span>
+      <span className="text-[10px] font-black text-primary uppercase font-mono italic animate-pulse">Loading...</span>
     </div>
   );
 
   if (!data) return (
     <div className="h-96 flex flex-col items-center justify-center gap-6">
       <Zap className="w-12 h-12 text-white/10" />
-      <span className="text-xl font-black text-white italic">NODE_NOT_FOUND</span>
-      <button onClick={() => navigate('/pre-release')} className="text-primary font-mono text-[10px] font-black uppercase tracking-widest hover:underline">RETURN_TO_DASH</button>
+      <span className="text-xl font-black text-white italic">Pre-release not found</span>
+      <button onClick={() => navigate('/pre-release')} className="text-primary font-mono text-[10px] font-black uppercase tracking-widest hover:underline">Back to pre-releases</button>
     </div>
   );
 
@@ -97,34 +97,34 @@ export default function PreReleaseDetails() {
     <div className="space-y-12 pb-20 uppercase tracking-[0.05em] font-sans">
        <button 
         onClick={() => navigate('/pre-release')}
-        className="flex items-center gap-3 text-white/40 hover:text-white transition-all group font-mono text-[10px] font-black tracking-widest"
+        className="flex items-center gap-3 text-white/40 transition-all group font-mono text-[10px] font-black tracking-widest"
       >
-        <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-        <span>BACK_TO_GRID</span>
+        <ChevronLeft className="w-4 h-4 transition-transform" />
+        <span>Back to pre-releases</span>
       </button>
 
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-white/10 pb-8">
         <div className="space-y-4">
           <div className="flex items-center gap-4">
             <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-            <span className="text-[10px] font-black text-primary uppercase tracking-[0.4em] font-mono italic">Control_Center // {data.id}</span>
+            <span className="text-[10px] font-black text-primary uppercase tracking-[0.4em] font-mono italic">Pre-release</span>
           </div>
-          <h1 className="text-6xl md:text-8xl font-black italic text-white uppercase tracking-tighter leading-[0.8]">{data.title}</h1>
+          <h1 className="text-5xl sm:text-6xl md:text-8xl font-black italic text-white uppercase tracking-tighter leading-[0.8] break-words">{data.title}</h1>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 shrink-0">
            <button 
             onClick={launchInvasion}
             disabled={isActivating || data.status === 'invading'}
             className={cn(
-              "h-16 px-10 flex items-center gap-4 group transition-all font-mono font-black italic text-[11px] tracking-widest shadow-[0_10px_30px_rgba(0,0,0,0.5)]",
-              data.status === 'invading' 
-                ? "bg-emerald-500 text-white pointer-events-none" 
-                : "bg-red-600 text-white hover:bg-red-500"
+              "beam h-16 px-10 flex items-center justify-center gap-4 group transition-all font-mono font-black italic text-[11px] tracking-widest shadow-[0_10px_30px_rgba(0,0,0,0.5)]",
+              data.status === 'invading'
+                ? "bg-emerald-500 text-white pointer-events-none"
+                : "bg-red-600 text-white"
             )}
           >
             <Zap className={cn("w-5 h-5", data.status === 'invading' && "animate-pulse")} />
-            <span>{data.status === 'invading' ? "INVASION_LIVE" : "START_INVASION"}</span>
+            <span>{data.status === 'invading' ? "Campaign live" : "Launch campaign"}</span>
           </button>
         </div>
       </header>
@@ -133,17 +133,17 @@ export default function PreReleaseDetails() {
         {/* Signal Profile */}
         <div className="lg:col-span-2 space-y-12">
           <div className="manifest-card p-12 bg-black/60 border-white/5 space-y-12">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-6">
-                <div className="w-20 h-20 bg-white/5 border border-white/5 flex items-center justify-center">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-6 min-w-0">
+                <div className="w-20 h-20 bg-white/5 border border-white/5 flex items-center justify-center shrink-0">
                   <Music className="w-8 h-8 text-white/10" />
                 </div>
-                <div className="space-y-2">
-                  <div className="text-[10px] font-black text-primary font-mono italic">Fragment_Sample_Locked</div>
-                  <div className="text-2xl font-black text-white italic font-mono lowercase tracking-tight">{data.title}.wav</div>
+                <div className="space-y-2 min-w-0">
+                  <div className="text-[10px] font-black text-primary font-mono italic">Your snippet</div>
+                  <div className="text-2xl font-black text-white italic font-mono lowercase tracking-tight truncate">{data.title}.wav</div>
                 </div>
               </div>
-              <button className="w-16 h-16 rounded-full border border-primary/20 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all group active:scale-95">
+              <button className="beam w-16 h-16 rounded-full border border-primary/20 flex items-center justify-center text-primary transition-all group active:scale-95">
                 <Play className="w-6 h-6 fill-current" />
               </button>
             </div>
@@ -160,16 +160,16 @@ export default function PreReleaseDetails() {
                 className="absolute inset-y-0 bg-primary/20 border-x-2 border-primary z-10 flex items-center justify-center"
                 style={{ left: '25%', right: '50%' }}
                >
-                 <span className="text-[8px] font-black text-primary font-mono uppercase tracking-[0.4em] rotate-90">HOOK_TARGET</span>
+                 <span className="text-[8px] font-black text-primary font-mono uppercase tracking-[0.4em] rotate-90">Hook</span>
                </div>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                {[
-                 { label: 'UGC_VELO', value: '—', color: 'text-white' },
-                 { label: 'TREND_NODE', value: '—', color: 'text-emerald-400' },
-                 { label: 'REL_DATE', value: data.releaseDate, color: 'text-white/40' },
-                 { label: 'HOOK_LEN', value: '—', color: 'text-primary' },
+                 { label: 'Videos made', value: '—', color: 'text-white' },
+                 { label: 'Trending', value: '—', color: 'text-emerald-400' },
+                 { label: 'Release date', value: data.releaseDate, color: 'text-white/40' },
+                 { label: 'Hook length', value: '—', color: 'text-primary' },
                ].map((stat, i) => (
                  <div key={i} className="space-y-1">
                    <div className="text-[8px] font-black text-white/20 uppercase tracking-widest font-mono italic">{stat.label}</div>
@@ -181,14 +181,14 @@ export default function PreReleaseDetails() {
 
           <div className="space-y-8">
             <div className="flex items-center justify-between border-b border-white/5 pb-6">
-              <h2 className="text-3xl font-black italic text-white uppercase tracking-tighter">Viral_Activation_Nodes</h2>
-              <button 
+              <h2 className="text-3xl font-black italic text-white uppercase tracking-tighter min-w-0 break-words">Content ideas</h2>
+              <button
                 onClick={generateTikTokPlan}
                 disabled={isActivating}
-                className="flex items-center gap-3 text-primary hover:text-white transition-all font-mono text-[10px] font-black tracking-widest"
+                className="flex items-center gap-3 text-primary transition-all font-mono text-[10px] font-black tracking-widest shrink-0"
               >
                 <Sparkles className={cn("w-4 h-4", isActivating && "animate-spin")} />
-                <span>{tiktokPlan.length > 0 ? "RECALIBRATE_IDEAS" : "SYNC_TIKTOK_PLANS"}</span>
+                <span>{tiktokPlan.length > 0 ? "Regenerate ideas" : "Generate ideas"}</span>
               </button>
             </div>
 
@@ -199,7 +199,7 @@ export default function PreReleaseDetails() {
                      <div className="w-16 h-16 border border-white/5 flex items-center justify-center mx-auto text-white/10">
                         <Video className="w-6 h-6" />
                      </div>
-                     <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] font-mono italic">No viral nodes detected. Synchronize TikTok plans to begin.</p>
+                     <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] font-mono italic">No ideas yet. Generate ideas to get started.</p>
                   </div>
                 ) : (
                   tiktokPlan.map((idea, i) => (
@@ -207,7 +207,7 @@ export default function PreReleaseDetails() {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       key={i}
-                      className="manifest-card p-10 bg-white/[0.02] border-white/5 space-y-8 group hover:border-primary/20 transition-all"
+                      className="manifest-card p-10 bg-white/[0.02] border-white/5 space-y-8 group transition-all"
                     >
                       <div className="flex items-center justify-between">
                          <div className="flex items-center gap-3">
@@ -216,7 +216,7 @@ export default function PreReleaseDetails() {
                            </div>
                            <span className="text-[10px] font-black text-white/40 font-mono tracking-widest">{idea.type}</span>
                          </div>
-                         <CheckCircle2 className="w-4 h-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                         <CheckCircle2 className="w-4 h-4 text-primary opacity-100 transition-opacity" />
                       </div>
                       <div className="space-y-4">
                         <h4 className="text-xl font-black italic text-white lowercase tracking-tight">{idea.idea || idea.title}</h4>
@@ -224,8 +224,8 @@ export default function PreReleaseDetails() {
                           {idea.caption}
                         </p>
                       </div>
-                      <button className="h-12 w-full border border-white/5 hover:border-white transition-all font-mono text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-3 text-white/30 hover:text-white">
-                        <span>DEPLOY_CONTENT_RESOURCES</span>
+                      <button className="beam h-12 w-full border border-white/5 transition-all font-mono text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-3 text-white/30">
+                        <span>Get the assets</span>
                         <ArrowRight className="w-3 h-3" />
                       </button>
                     </motion.div>
@@ -238,54 +238,29 @@ export default function PreReleaseDetails() {
 
         {/* Sidebar Intelligence */}
         <div className="space-y-8">
-           <div className="manifest-card p-8 bg-black/60 border-white/5 space-y-8">
-             <h3 className="text-lg font-black italic text-white uppercase tracking-tight border-b border-white/5 pb-4">Invasion_Intelligence</h3>
-             
-             <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <span className="text-[9px] font-black text-white/20 uppercase tracking-widest font-mono">Signal_Strength</span>
-                  <span className="text-[10px] font-black text-primary font-mono italic">84.2% [High]</span>
-                </div>
-                <div className="w-full h-1 bg-white/5">
-                  <div className="h-full bg-primary" style={{ width: '84.2%' }} />
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4 pt-4">
-                  <div className="p-4 bg-white/[0.02] border border-white/5 space-y-2">
-                    <div className="text-[8px] font-black text-white/20 uppercase tracking-widest font-mono">Nodes_Seeded</div>
-                    <div className="text-xl font-black text-white font-mono lowercase">0/12</div>
-                  </div>
-                  <div className="p-4 bg-white/[0.02] border border-white/5 space-y-2">
-                    <div className="text-[8px] font-black text-white/20 uppercase tracking-widest font-mono">Viral_Cap</div>
-                    <div className="text-xl font-black text-white font-mono lowercase">1.4M</div>
-                  </div>
-                </div>
-             </div>
-           </div>
-
            <div className="manifest-card p-8 bg-primary/10 border-primary/20 space-y-6">
               <div className="flex items-center gap-3 text-primary">
                 <Globe2 className="w-5 h-5 animate-spin-slow" />
-                <h3 className="text-lg font-black italic uppercase tracking-tight">Drop_Sync_Active</h3>
+                <h3 className="text-lg font-black italic uppercase tracking-tight">Auto-switch on release</h3>
               </div>
               <p className="text-[10px] font-bold text-white/60 uppercase tracking-widest italic font-sans leading-relaxed">
-                DROPHKAST is monitoring global sounds. When the full release is detected, all pre-release momentum will automatically pivot to the official audio node.
+                DropKast watches for your track going live. When your full release drops, all the buzz automatically moves over to your official audio.
               </p>
            </div>
 
            <div className="manifest-card p-8 bg-white/[0.02] border-white/5 space-y-6">
-              <h3 className="text-[10px] font-black text-white/30 uppercase tracking-widest font-mono italic">Activation_Timeline</h3>
+              <h3 className="text-[10px] font-black text-white/30 uppercase tracking-widest font-mono italic">Timeline</h3>
               <div className="space-y-4">
                 {[
-                  { label: 'Upload', status: 'COMPLETE', date: '4h ago' },
-                  { label: 'TikTok Plan', status: tiktokPlan.length > 0 ? 'COMPLETE' : 'PENDING', date: tiktokPlan.length > 0 ? 'Just now' : '-' },
-                  { label: 'Invasion', status: data.status === 'invading' ? 'BURSTING' : 'READY', date: '-' },
-                  { label: 'Global Drop', status: 'WAITING', date: data.releaseDate },
+                  { label: 'Upload', status: 'Done', date: '4h ago' },
+                  { label: 'TikTok plan', status: tiktokPlan.length > 0 ? 'Done' : 'Pending', date: tiktokPlan.length > 0 ? 'Just now' : '-' },
+                  { label: 'Campaign', status: data.status === 'invading' ? 'Live' : 'Ready', date: '-' },
+                  { label: 'Release day', status: 'Waiting', date: data.releaseDate },
                 ].map((step, i) => (
                   <div key={i} className="flex items-start gap-4 h-12">
                     <div className={cn(
                       "w-4 h-4 rounded-full border-2 mt-1",
-                      step.status === 'COMPLETE' ? "bg-primary border-primary" : "border-white/10"
+                      step.status === 'Done' ? "bg-primary border-primary" : "border-white/10"
                     )} />
                     <div className="flex-1 border-b border-white/5 pb-2">
                       <div className="flex justify-between items-center mb-1">
@@ -294,7 +269,7 @@ export default function PreReleaseDetails() {
                       </div>
                       <span className={cn(
                         "text-[8px] font-black font-mono tracking-widest",
-                        step.status === 'COMPLETE' ? "text-primary" : "text-white/20"
+                        step.status === 'Done' ? "text-primary" : "text-white/20"
                       )}>{step.status}</span>
                     </div>
                   </div>

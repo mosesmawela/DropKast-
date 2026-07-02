@@ -3,15 +3,16 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useReleases } from '../context/ReleaseContext';
 import { useNotify } from '../context/NotificationContext';
-import { Camera, Save, Mail, User as UserIcon, Cpu, Radio, Music, ExternalLink, Wallet, BarChart, Disc } from 'lucide-react';
+import { Camera, Save, Mail, User as UserIcon, Cpu, Radio, Music, ExternalLink, Wallet, BarChart, Disc, Building2 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 
 const ROLE_META = {
-  ARTIST: { label: 'Artist Core', icon: Music, color: '#FF4D00' },
-  INFLUENCER: { label: 'Creator Relay', icon: Camera, color: '#00f2ff' },
-  DJ: { label: 'Vibe Selecta', icon: Disc, color: '#acec00' },
+  ARTIST: { label: 'Artist', icon: Music, color: '#FF4D00' },
+  INFLUENCER: { label: 'Creator', icon: Camera, color: '#00f2ff' },
+  DJ: { label: 'DJ', icon: Disc, color: '#acec00' },
+  LABEL: { label: 'Label', icon: Building2, color: '#FF4D00' },
 } as const;
 
 export default function Profile() {
@@ -35,10 +36,10 @@ export default function Profile() {
       ...(draft.bio ? { bio: draft.bio } as any : {}),
     });
     setEditing(false);
-    notify('success', 'PROFILE_SAVED', 'Your profile has been updated.');
+    notify('success', 'Profile saved', 'Your profile has been updated.');
   };
 
-  const meta = ROLE_META[role];
+  const meta = ROLE_META[role as keyof typeof ROLE_META] ?? ROLE_META.ARTIST;
   const RoleIcon = meta.icon;
   const liveCount = releases?.length ?? 0;
 
@@ -80,7 +81,7 @@ export default function Profile() {
           {!editing ? (
             <button
               onClick={() => setEditing(true)}
-              className="h-10 px-5 border border-[var(--border-main)] hover:border-primary hover:text-primary text-[var(--text-main)]/60 text-[10px] font-mono font-black uppercase italic tracking-[0.3em] transition-all"
+              className="beam h-10 px-5 border border-[var(--border-main)] text-[var(--text-main)]/60 text-[10px] font-mono font-black uppercase italic tracking-[0.3em] transition-all"
             >
               Edit Profile
             </button>
@@ -91,13 +92,13 @@ export default function Profile() {
                   setEditing(false);
                   setDraft({ artistName: user?.artistName || '', email: user?.email || '', avatar: user?.avatar || '', bio: (user as any)?.bio || '' });
                 }}
-                className="h-10 px-5 border border-[var(--border-main)] hover:border-white text-[var(--text-main)]/60 text-[10px] font-mono font-black uppercase italic tracking-[0.3em] transition-all"
+                className="h-10 px-5 border border-[var(--border-main)] text-[var(--text-main)]/60 text-[10px] font-mono font-black uppercase italic tracking-[0.3em] transition-all"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSave}
-                className="h-10 px-5 bg-primary text-white text-[10px] font-mono font-black uppercase italic tracking-[0.3em] flex items-center gap-2 hover:scale-[1.03] active:scale-95 transition-all"
+                className="h-10 px-5 bg-primary text-white text-[10px] font-mono font-black uppercase italic tracking-[0.3em] flex items-center gap-2 active:scale-95 transition-all"
               >
                 <Save className="w-3.5 h-3.5" />
                 Save
@@ -112,7 +113,7 @@ export default function Profile() {
         {[
           { label: 'Releases', value: liveCount, icon: Music },
           { label: 'Role', value: meta.label, icon: RoleIcon },
-          { label: 'Identity', value: (user?.id ?? '').slice(0, 8) || '—', icon: UserIcon, mono: true },
+          { label: 'Account ID', value: (user?.id ?? '').slice(0, 8) || '—', icon: UserIcon, mono: true },
           { label: 'Status', value: 'Verified', icon: Cpu },
         ].map((s) => (
           <div key={s.label} className="manifest-card border border-[var(--border-main)] p-4 bg-[var(--card-bg)]">
@@ -171,22 +172,22 @@ export default function Profile() {
       {/* Quick links */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {[
-          { label: 'Treasury', icon: Wallet, href: '/earnings', color: 'text-primary' },
+          { label: 'Earnings', icon: Wallet, href: '/earnings', color: 'text-primary' },
           { label: 'Analytics', icon: BarChart, href: '/analytics', color: 'text-blue-400' },
           { label: 'Settings', icon: Cpu, href: '/settings', color: 'text-white' },
         ].map((q) => (
           <Link
             key={q.label}
             to={q.href}
-            className="group flex items-center justify-between manifest-card border border-[var(--border-main)] p-4 bg-[var(--card-bg)] hover:border-primary transition-all"
+            className="group flex items-center justify-between gap-2 manifest-card border border-[var(--border-main)] p-4 bg-[var(--card-bg)] transition-all"
           >
-            <div className="flex items-center gap-3">
-              <q.icon className={cn('w-4 h-4', q.color)} />
-              <span className="text-xs font-mono font-black uppercase tracking-widest italic text-[var(--text-main)]">
+            <div className="flex items-center gap-3 min-w-0">
+              <q.icon className={cn('w-4 h-4 shrink-0', q.color)} />
+              <span className="text-xs font-mono font-black uppercase tracking-widest italic text-[var(--text-main)] truncate">
                 {q.label}
               </span>
             </div>
-            <ExternalLink className="w-3.5 h-3.5 text-[var(--text-main)]/30 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+            <ExternalLink className="w-3.5 h-3.5 shrink-0 text-[var(--text-main)]/30 transition-all" />
           </Link>
         ))}
       </section>
@@ -194,12 +195,12 @@ export default function Profile() {
       {/* Linked accounts */}
       <section className="manifest-card border border-[var(--border-main)] p-6 bg-[var(--card-bg)] space-y-4">
         <h2 className="text-sm font-mono font-black uppercase tracking-[0.3em] text-primary italic">
-          Linked Portals
+          Your Roles
         </h2>
         <p className="text-xs text-[var(--text-main)]/50">
-          Your active portal is{' '}
-          <span className="font-bold text-[var(--text-main)]">{meta.label}</span>. Switch portals via "Portal Reboot"
-          in the sidebar to access the others.
+          You're currently in the{' '}
+          <span className="font-bold text-[var(--text-main)]">{meta.label}</span> space. Switch roles from
+          the sidebar to access the others.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {(['ARTIST', 'INFLUENCER', 'DJ'] as const).map((r) => {

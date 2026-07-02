@@ -49,7 +49,7 @@ export default function NotificationsDropdown() {
       <button
         data-tour="navbar-bell"
         onClick={() => setOpen((v) => !v)}
-        className="relative p-2 text-white/40 hover:text-primary transition-all"
+        className="relative p-2 text-white/40 transition-all"
         aria-label="Notifications"
       >
         <Bell className="w-4 h-4" />
@@ -83,7 +83,7 @@ export default function NotificationsDropdown() {
               </div>
               <button
                 onClick={() => setOpen(false)}
-                className="text-white/40 hover:text-white transition-colors"
+                className="text-white/40 transition-colors"
                 aria-label="Close"
               >
                 <X className="w-3.5 h-3.5" />
@@ -114,7 +114,7 @@ export default function NotificationsDropdown() {
                     }}
                     className={cn(
                       'w-full text-left flex gap-3 px-4 py-3 border-b border-white/5 last:border-0 transition-colors',
-                      n.read ? 'bg-transparent hover:bg-white/[0.02]' : 'bg-primary/[0.04] hover:bg-primary/[0.08]',
+                      n.read ? 'bg-transparent' : 'bg-primary/[0.04]',
                     )}
                   >
                     <div className="shrink-0 pt-0.5">{TYPE_ICON[n.type]}</div>
@@ -140,14 +140,14 @@ export default function NotificationsDropdown() {
                 <button
                   onClick={markAllRead}
                   disabled={unreadCount === 0}
-                  className="flex items-center gap-1.5 text-[9px] font-mono font-black uppercase tracking-widest italic text-white/40 hover:text-white disabled:opacity-30 transition-colors"
+                  className="flex items-center gap-1.5 text-[9px] font-mono font-black uppercase tracking-widest italic text-white/40 disabled:opacity-30 transition-colors"
                 >
                   <CheckCheck className="w-3 h-3" />
                   Mark all read
                 </button>
                 <button
                   onClick={clearAll}
-                  className="flex items-center gap-1.5 text-[9px] font-mono font-black uppercase tracking-widest italic text-white/40 hover:text-red-400 transition-colors"
+                  className="flex items-center gap-1.5 text-[9px] font-mono font-black uppercase tracking-widest italic text-white/40 transition-colors"
                 >
                   <Trash2 className="w-3 h-3" />
                   Clear all

@@ -93,14 +93,14 @@ export default function VideoIngestionWizard() {
   };
 
   return (
-    <div className="space-y-10 max-w-4xl mx-auto py-8">
+    <div className="space-y-10 max-w-4xl mx-auto py-8 px-4 sm:px-0">
       {/* Header */}
       <div>
         <div className="flex items-center gap-2 text-gray-400 mb-2">
           <span className="w-1.5 h-1.5 bg-[#F05A28]" />
           <span className="text-[10px] font-bold tracking-widest uppercase font-mono">VIDEO SUPPLY-CHAIN WIZARD</span>
         </div>
-        <h1 className="text-3xl font-black tracking-tight text-gray-900 uppercase font-mono">Distribute Video</h1>
+        <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-gray-900 uppercase font-mono">Distribute Video</h1>
       </div>
 
       {/* Stepper */}
@@ -131,7 +131,7 @@ export default function VideoIngestionWizard() {
       </div>
 
       {/* Step Content */}
-      <div className="bg-white border border-gray-200 p-8 min-h-[400px]">
+      <div className="bg-white border border-gray-200 p-4 sm:p-8 min-h-[400px]">
         <AnimatePresence mode="wait">
           <motion.div
             key={step}
@@ -153,7 +153,7 @@ export default function VideoIngestionWizard() {
       <div className="flex items-center justify-between">
         <button
           onClick={() => step === 0 ? navigate(-1) : setStep(step - 1)}
-          className="flex items-center gap-2 px-8 py-4 border border-gray-200 text-gray-600 hover:border-gray-400 transition-all text-[10px] font-black uppercase tracking-widest font-mono"
+          className="beam flex items-center gap-2 px-6 sm:px-8 py-4 border border-gray-200 text-gray-600 transition-all text-[10px] font-black uppercase tracking-widest font-mono"
         >
           <ChevronLeft className="w-4 h-4" />
           {step === 0 ? 'Cancel' : 'Back'}
@@ -164,9 +164,9 @@ export default function VideoIngestionWizard() {
             onClick={() => setStep(step + 1)}
             disabled={!canProceed()}
             className={cn(
-              'flex items-center gap-2 px-8 py-4 text-[10px] font-black uppercase tracking-widest font-mono transition-all',
+              'beam flex items-center gap-2 px-6 sm:px-8 py-4 text-[10px] font-black uppercase tracking-widest font-mono transition-all',
               canProceed()
-                ? 'bg-[#F05A28] text-white hover:bg-[#d94d20]'
+                ? 'bg-[#F05A28] text-white'
                 : 'bg-gray-100 text-gray-300 cursor-not-allowed',
             )}
           >
@@ -176,7 +176,7 @@ export default function VideoIngestionWizard() {
         ) : (
           <button
             onClick={handleSubmit}
-            className="flex items-center gap-2 px-8 py-4 bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest font-mono hover:bg-emerald-700 transition-all"
+            className="beam flex items-center gap-2 px-6 sm:px-8 py-4 bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest font-mono transition-all"
           >
             <Check className="w-4 h-4" />
             Submit for Distribution
@@ -227,7 +227,7 @@ function StepVideoInfo({ data, update }: { data: any; update: (f: any) => void }
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
             <label className="text-[9px] font-bold text-gray-500 uppercase tracking-widest font-mono block mb-2">Main Genre</label>
             <select
@@ -297,7 +297,7 @@ function StepContributors({ data, update }: { data: any; update: (f: any) => voi
         />
         <button
           onClick={addContributor}
-          className="px-6 py-3 bg-[#F05A28] text-white text-[10px] font-black uppercase tracking-widest font-mono hover:bg-[#d94d20] transition-all"
+          className="beam px-6 py-3 bg-[#F05A28] text-white text-[10px] font-black uppercase tracking-widest font-mono transition-all"
         >
           Add
         </button>
@@ -332,7 +332,7 @@ function StepUploadFile({ data, update }: { data: any; update: (f: any) => void 
         <p className="text-[10px] text-gray-400 font-mono">Select the video file for distribution.</p>
       </div>
 
-      <div className="flex flex-col items-center justify-center p-16 border-2 border-dashed border-gray-200 bg-gray-50 hover:bg-gray-100 transition-all cursor-pointer relative">
+      <div className="flex flex-col items-center justify-center p-8 sm:p-16 border-2 border-dashed border-gray-200 bg-gray-50 transition-all cursor-pointer relative">
         <input
           type="file"
           accept="video/mp4,video/mov,video/avi"
@@ -394,10 +394,10 @@ function StepDistributionPrefs({ data, update }: { data: any; update: (f: any) =
             <button
               key={p.id}
               onClick={() => togglePlatform(p.id)}
-              className={`p-4 border text-left transition-all flex items-center gap-3 ${
+              className={`beam p-4 border text-left transition-all flex items-center gap-3 ${
                 data.platforms.includes(p.id)
                   ? 'border-[#F05A28] bg-[#F05A28]/5 text-[#F05A28]'
-                  : 'border-gray-200 text-gray-500 hover:border-gray-400'
+                  : 'border-gray-200 text-gray-500'
               }`}
             >
               <div
@@ -429,7 +429,7 @@ function StepDistributionPrefs({ data, update }: { data: any; update: (f: any) =
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
             <label className="text-[9px] font-bold text-gray-500 uppercase tracking-widest font-mono block mb-2">Copyright Date of Release</label>
             <input

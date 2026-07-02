@@ -9,10 +9,21 @@ import {
   Music2, Palette, Type, Film, GripVertical, Eye, EyeOff, Lock,
   Unlock, Shuffle, SkipBack, SkipForward, Volume2,
   BookOpen, Zap, Maximize2, Minimize2, Sliders, Wand2,
-  Monitor, Speaker, CircleDot, Sun, Mic2,
+  Monitor, Speaker, CircleDot, Sun, Mic2, Hash,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '../lib/utils';
+import ModelPicker from '../components/ModelPicker';
+import { getRecommendation } from '../lib/ai-recommendations';
+import { submitJob } from '../lib/studios/apiClient';
+import { ALL_PROVIDERS } from '../lib/ai-providers';
+
+/** Map a picked model id → the Muapi endpoint slug the backend expects. */
+function muapiEndpointForModel(modelId: string, fallback: string): string {
+  const m = ALL_PROVIDERS.find((p) => p.id === modelId);
+  // ProviderModel.modelId holds the provider-native slug (e.g. fal-ai/flux-pro/v1.1).
+  return m?.modelId || fallback;
+}
 
 type StudioModule = 'overview' | 'lyrics' | 'assets' | 'templates' | 'broll' | 'cover' | 'timeline';
 
@@ -64,21 +75,21 @@ export default function AllInOneStudio() {
 
   return (
     <div className="h-screen flex flex-col bg-[var(--bg-main)] text-white overflow-hidden">
-      <header className="shrink-0 bg-[var(--bg-main)] border-b border-[var(--border-main)] px-6 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2">
+      <header className="shrink-0 bg-[var(--bg-main)] border-b border-[var(--border-main)] px-4 md:px-6 py-3 flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="flex items-center gap-3 md:gap-6 min-w-0 w-full md:w-auto">
+          <div className="flex items-center gap-2 shrink-0">
             <span className="text-[10px] font-black tracking-[0.4em] uppercase italic text-primary">STUDIO</span>
           </div>
-          <nav className="flex items-center gap-1">
+          <nav className="flex items-center gap-1 overflow-x-auto custom-scrollbar min-w-0">
             {modules.map(m => {
               const Icon = m.icon;
               return (
                 <button key={m.id} onClick={() => setActiveModule(m.id)}
                   className={cn(
-                    'flex items-center gap-2 px-4 py-2 text-[10px] font-black uppercase tracking-widest italic transition-all border-b-2',
+                    'flex items-center gap-2 px-4 py-2 text-[10px] font-black uppercase tracking-widest italic transition-all border-b-2 whitespace-nowrap shrink-0',
                     activeModule === m.id
                       ? 'border-primary text-primary bg-primary/5'
-                      : 'border-transparent text-white/40 hover:text-white hover:border-white/20'
+                      : 'border-transparent text-white/40'
                   )}>
                   <Icon className="w-3.5 h-3.5" />
                   {m.label}
@@ -87,7 +98,7 @@ export default function AllInOneStudio() {
             })}
           </nav>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 shrink-0 self-end md:self-auto">
           <button onClick={() => {
               const data: Record<string, any> = {};
               for (let i = 0; i < localStorage.length; i++) {
@@ -97,7 +108,7 @@ export default function AllInOneStudio() {
               localStorage.setItem('dropkast_studio_data', JSON.stringify(data));
               toast.success('Studio saved');
             }}
-            className="flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/30 text-primary text-[10px] font-black uppercase italic tracking-widest hover:bg-primary hover:text-black transition-all">
+            className="beam flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/30 text-primary text-[10px] font-black uppercase italic tracking-widest transition-all">
             <Save className="w-3.5 h-3.5" /> Save
           </button>
           <button onClick={() => {
@@ -115,7 +126,7 @@ export default function AllInOneStudio() {
               URL.revokeObjectURL(url);
               toast.success('Export started');
             }}
-            className="flex items-center gap-2 px-6 py-2 bg-primary text-black font-black uppercase italic text-[10px] tracking-widest hover:bg-primary/80 transition-all">
+            className="beam flex items-center gap-2 px-6 py-2 bg-primary text-black font-black uppercase italic text-[10px] tracking-widest transition-all">
             <Download className="w-3.5 h-3.5" /> Export
           </button>
         </div>
@@ -177,7 +188,7 @@ function OverviewDashboard({ onNavigate }: { onNavigate: (m: StudioModule) => vo
           <div className="text-[10px] font-black text-primary tracking-[0.5em] uppercase italic mb-2">
             {greeting}, CREATOR
           </div>
-          <h1 className="text-5xl font-black italic tracking-tighter text-white leading-none">
+          <h1 className="text-4xl sm:text-5xl font-black italic tracking-tighter text-white leading-none">
             All-In-One <span className="text-primary">Studio</span>
           </h1>
           <p className="text-white/40 italic mt-3 max-w-xl">
@@ -185,7 +196,7 @@ function OverviewDashboard({ onNavigate }: { onNavigate: (m: StudioModule) => vo
           </p>
         </div>
 
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: 'Templates', count: resourceCounts.templates, icon: Layers },
             { label: 'Exports', count: resourceCounts.exports, icon: Download },
@@ -207,19 +218,19 @@ function OverviewDashboard({ onNavigate }: { onNavigate: (m: StudioModule) => vo
           })}
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {cards.map(c => {
             const Icon = c.icon;
             return (
               <button key={c.id} onClick={() => onNavigate(c.id)}
-                className="group bg-[var(--card-bg)] border border-white/5 hover:border-primary/40 p-8 text-left transition-all relative overflow-hidden">
+                className="beam group bg-[var(--card-bg)] border border-white/5 p-8 text-left transition-all relative overflow-hidden">
                 <div className="flex items-start justify-between mb-6">
                   <div className="w-12 h-12 border border-primary/30 flex items-center justify-center text-primary">
                     <Icon className="w-6 h-6" />
                   </div>
-                  <ArrowRight className="w-5 h-5 text-white/20 group-hover:text-primary transition-all group-hover:translate-x-1" />
+                  <ArrowRight className="w-5 h-5 text-white/20 transition-all" />
                 </div>
-                <h3 className="text-2xl font-black italic text-white tracking-tight mb-2 group-hover:text-primary transition-colors">{c.label}</h3>
+                <h3 className="text-2xl font-black italic text-white tracking-tight mb-2 transition-colors">{c.label}</h3>
                 <p className="text-[13px] text-white/40 italic leading-relaxed">{c.desc}</p>
               </button>
             );
@@ -238,9 +249,9 @@ function OverviewDashboard({ onNavigate }: { onNavigate: (m: StudioModule) => vo
           <div className="flex items-center justify-between mb-5">
             <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic">Getting Started</span>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3">
             {['Write Lyrics', 'Import Assets', 'Create Template', 'Generate B-Roll', 'Export Video'].map((step, i) => (
-              <div key={step} className="flex items-center gap-3 flex-1">
+              <div key={step} className="flex items-center gap-3 flex-1 min-w-[140px]">
                 <div className={cn(
                   'w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black italic',
                   'bg-white/5 text-white/30'
@@ -312,8 +323,8 @@ function LyricStudio() {
   }, [lyrics]);
 
   return (
-    <div className="flex h-full">
-      <div className="flex-1 flex flex-col overflow-hidden border-r border-white/5">
+    <div className="flex flex-col md:flex-row h-full">
+      <div className="flex-1 flex flex-col overflow-hidden border-b md:border-b-0 md:border-r border-white/5">
         <div className="shrink-0 bg-[var(--card-bg)] border-b border-white/5 px-8 py-4 flex items-center gap-4">
           <div className="flex items-center gap-2">
             <Music2 className="w-4 h-4 text-primary" />
@@ -360,9 +371,9 @@ function LyricStudio() {
                         onDoubleClick={() => startEditing(seg)}>
                         {seg.text}
                       </span>
-                      <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-opacity">
-                        <button onClick={() => startEditing(seg)} className="p-1 hover:text-primary"><FileText className="w-3 h-3" /></button>
-                        <button onClick={() => deleteLine(seg.id)} className="p-1 hover:text-red-400"><Trash2 className="w-3 h-3" /></button>
+                      <div className="flex items-center gap-1 transition-opacity">
+                        <button onClick={() => startEditing(seg)} className="p-1"><FileText className="w-3 h-3" /></button>
+                        <button onClick={() => deleteLine(seg.id)} className="p-1"><Trash2 className="w-3 h-3" /></button>
                       </div>
                     </div>
                   )}
@@ -378,13 +389,13 @@ function LyricStudio() {
             className="flex-1 bg-black border border-white/10 px-4 py-3 text-sm italic text-white outline-none focus:border-primary"
             onKeyDown={e => { if (e.key === 'Enter') addLine(); }} />
           <button onClick={addLine} disabled={!newLine.trim()}
-            className="px-6 py-3 bg-primary text-black text-[10px] font-black uppercase tracking-widest italic hover:bg-primary/80 transition-all disabled:opacity-30">
+            className="beam px-6 py-3 bg-primary text-black text-[10px] font-black uppercase tracking-widest italic transition-all disabled:opacity-30">
             <Plus className="w-3.5 h-3.5 inline mr-1" /> Add
           </button>
         </div>
       </div>
 
-      <div className="w-80 bg-[var(--card-bg)] flex flex-col overflow-hidden">
+      <div className="w-full md:w-80 bg-[var(--card-bg)] flex flex-col overflow-hidden">
         <div className="shrink-0 flex border-b border-white/5">
           {[
             { id: 'lyrics' as const, label: 'Lyrics', icon: FileText },
@@ -398,7 +409,7 @@ function LyricStudio() {
               <button key={t.id} onClick={() => setActiveTab(t.id)}
                 className={cn(
                   'flex-1 flex flex-col items-center gap-1 py-3 text-[8px] font-black uppercase tracking-widest italic transition-all',
-                  activeTab === t.id ? 'text-primary bg-primary/5 border-b-2 border-primary' : 'text-white/30 hover:text-white'
+                  activeTab === t.id ? 'text-primary bg-primary/5 border-b-2 border-primary' : 'text-white/30'
                 )}>
                 <Icon className="w-4 h-4" />
                 {t.label}
@@ -417,7 +428,7 @@ function LyricStudio() {
               <div className="space-y-1">
                 {['part', 'smart', 'start', 'apart', 'chart', 'dark', 'mark', 'park'].map(w => (
                   <button key={w} onClick={() => setRhymeWord(w)}
-                    className="w-full text-left px-3 py-2 text-xs italic text-white/60 hover:text-white hover:bg-white/5 transition-all">
+                    className="w-full text-left px-3 py-2 text-xs italic text-white/60 transition-all">
                     {w}
                   </button>
                 ))}
@@ -469,7 +480,7 @@ function LyricStudio() {
                     setLyrics(prev => [...prev, ...newSegments]);
                     toast.success(`${v} generated`);
                   }}
-                    className="w-full text-left px-4 py-3 bg-black/40 border border-white/5 hover:border-primary/40 text-xs italic text-white/70 hover:text-white transition-all">
+                    className="w-full text-left px-4 py-3 bg-black/40 border border-white/5 text-xs italic text-white/70 transition-all">
                     {v}
                   </button>
                 ))}
@@ -482,7 +493,7 @@ function LyricStudio() {
               <div className="flex flex-wrap gap-2">
                 {CHORD_PROGRESSIONS.slice(0, 8).map((c, i) => (
                   <button key={i} onClick={() => toast.info(`Playing ${c}`)}
-                    className="px-4 py-2 bg-black/40 border border-primary/30 text-primary text-xs font-mono font-bold hover:bg-primary/20 transition-all">
+                    className="px-4 py-2 bg-black/40 border border-primary/30 text-primary text-xs font-mono font-bold transition-all">
                     {c}
                   </button>
                 ))}
@@ -540,8 +551,8 @@ function AssetManager() {
   const filteredAssets = selectedFolder && selectedFolder !== 'my-uploads' ? [] : assets;
 
   return (
-    <div className="flex h-full">
-      <div className="w-64 bg-[var(--card-bg)] border-r border-white/5 p-4 overflow-y-auto custom-scrollbar">
+    <div className="flex flex-col md:flex-row h-full">
+      <div className="w-full md:w-64 bg-[var(--card-bg)] border-b md:border-b-0 md:border-r border-white/5 p-4 overflow-y-auto custom-scrollbar shrink-0">
         <div className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic mb-4">FOLDERS</div>
         <div className="space-y-1">
           {folders.map(f => {
@@ -550,7 +561,7 @@ function AssetManager() {
               <button key={f.id} onClick={() => setSelectedFolder(f.id)}
                 className={cn(
                   'w-full flex items-center gap-3 px-3 py-2 text-[11px] italic transition-all',
-                  selectedFolder === f.id ? 'bg-primary/10 text-primary border-l-2 border-primary' : 'text-white/50 hover:text-white hover:bg-white/5'
+                  selectedFolder === f.id ? 'bg-primary/10 text-primary border-l-2 border-primary' : 'text-white/50'
                 )}>
                 <Icon className="w-3.5 h-3.5" />
                 {f.label}
@@ -578,7 +589,7 @@ function AssetManager() {
               </button>
             </div>
             <button onClick={() => fileInputRef.current?.click()}
-              className="flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/30 text-primary text-[9px] font-black uppercase tracking-widest italic hover:bg-primary hover:text-black transition-all">
+              className="beam flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/30 text-primary text-[9px] font-black uppercase tracking-widest italic transition-all">
               <Upload className="w-3.5 h-3.5" /> Import
             </button>
             <input ref={fileInputRef} type="file" multiple accept="video/*,image/*,audio/*" onChange={handleUpload} className="hidden" />
@@ -594,9 +605,9 @@ function AssetManager() {
             </div>
           </div>
         ) : viewMode === 'grid' ? (
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
             {filteredAssets.map(a => (
-              <div key={a.id} className="group bg-black/40 border border-white/5 hover:border-primary/40 transition-all cursor-pointer">
+              <div key={a.id} className="group bg-black/40 border border-white/5 transition-all cursor-pointer">
                 <div className="aspect-video bg-[var(--bg-main)] flex items-center justify-center relative">
                   {a.type === 'video' ? <Video className="w-8 h-8 text-white/20" /> :
                    a.type === 'image' ? <ImageIcon className="w-8 h-8 text-white/20" /> :
@@ -604,9 +615,9 @@ function AssetManager() {
                   {a.duration && (
                     <span className="absolute bottom-2 right-2 text-[9px] font-mono bg-black/80 px-2 py-0.5 text-white/60">{a.duration}s</span>
                   )}
-                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 transition-opacity">
-                    <button className="p-2 bg-white/20 hover:bg-primary/80 transition-all"><Eye className="w-4 h-4" /></button>
-                    <button onClick={() => deleteAsset(a.id)} className="p-2 bg-white/20 hover:bg-red-500/80 transition-all"><Trash2 className="w-4 h-4" /></button>
+                  <div className="absolute inset-0 flex items-center justify-center gap-2 transition-opacity">
+                    <button className="p-2 bg-black/60 transition-all"><Eye className="w-4 h-4" /></button>
+                    <button onClick={() => deleteAsset(a.id)} className="p-2 bg-black/60 transition-all"><Trash2 className="w-4 h-4" /></button>
                   </div>
                 </div>
                 <div className="p-3">
@@ -619,16 +630,16 @@ function AssetManager() {
         ) : (
           <div className="space-y-1">
             {filteredAssets.map(a => (
-              <div key={a.id} className="flex items-center gap-4 px-4 py-3 bg-black/20 border border-white/5 hover:border-white/20 transition-all cursor-pointer group">
+              <div key={a.id} className="flex items-center gap-4 px-4 py-3 bg-black/20 border border-white/5 transition-all cursor-pointer group">
                 {a.type === 'video' ? <Video className="w-4 h-4 text-white/30" /> :
                  a.type === 'image' ? <ImageIcon className="w-4 h-4 text-white/30" /> :
                  <Music className="w-4 h-4 text-white/30" />}
                 <span className="flex-1 text-xs italic text-white/80">{a.name}</span>
                 {a.duration && <span className="text-[10px] font-mono text-white/30">{a.duration}s</span>}
                 <span className="text-[10px] text-white/30">{a.date}</span>
-                <div className="opacity-0 group-hover:opacity-100 flex gap-1 transition-opacity">
-                  <button className="p-1 hover:text-primary"><Eye className="w-3 h-3" /></button>
-                  <button onClick={() => deleteAsset(a.id)} className="p-1 hover:text-red-400"><Trash2 className="w-3 h-3" /></button>
+                <div className="flex gap-1 transition-opacity">
+                  <button className="p-1"><Eye className="w-3 h-3" /></button>
+                  <button onClick={() => deleteAsset(a.id)} className="p-1"><Trash2 className="w-3 h-3" /></button>
                 </div>
               </div>
             ))}
@@ -680,13 +691,13 @@ function TemplateManager() {
             <p className="text-white/40 italic mt-1 text-sm">Reusable blueprints for your video projects</p>
           </div>
           <button onClick={() => setShowCreate(true)}
-            className="flex items-center gap-2 px-6 py-3 bg-primary/10 border border-primary/30 text-primary text-[10px] font-black uppercase tracking-widest italic hover:bg-primary hover:text-black transition-all">
+            className="beam flex items-center gap-2 px-6 py-3 bg-primary/10 border border-primary/30 text-primary text-[10px] font-black uppercase tracking-widest italic transition-all">
             <Plus className="w-4 h-4" /> Create Template
           </button>
         </div>
 
         {showCreate && (
-          <div className="mb-6 bg-[var(--card-bg)] border border-primary/30 p-6 flex items-center gap-4">
+          <div className="mb-6 bg-[var(--card-bg)] border border-primary/30 p-6 flex flex-col sm:flex-row sm:items-center gap-4">
             <input type="text" value={newName} onChange={e => setNewName(e.target.value)}
               placeholder="Template name..."
               className="flex-1 bg-black border border-white/10 px-4 py-3 text-sm text-white outline-none focus:border-primary italic"
@@ -709,9 +720,9 @@ function TemplateManager() {
             <p className="text-[11px] text-white/20 italic mt-1">Click "Create Template" to get started</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {templates.map(t => (
-              <div key={t.id} className="bg-[var(--card-bg)] border border-white/5 hover:border-primary/40 transition-all p-6 group">
+              <div key={t.id} className="bg-[var(--card-bg)] border border-white/5 transition-all p-6 group">
                 <div className="flex items-start justify-between mb-4">
                   <div>
                     <h3 className="text-xl font-black italic text-white tracking-tight mb-1">{t.name}</h3>
@@ -729,11 +740,11 @@ function TemplateManager() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 pt-4 border-t border-white/5">
-                  <button className="flex-1 py-2 bg-primary/10 border border-primary/30 text-primary text-[9px] font-black uppercase tracking-widest italic hover:bg-primary hover:text-black transition-all">
+                  <button className="beam flex-1 py-2 bg-primary/10 border border-primary/30 text-primary text-[9px] font-black uppercase tracking-widest italic transition-all">
                     View Projects
                   </button>
                   <button onClick={() => deleteTemplate(t.id)}
-                    className="px-3 py-2 bg-red-500/10 border border-red-500/30 text-red-400 text-[9px] font-black uppercase tracking-widest italic hover:bg-red-500/20 transition-all">
+                    className="px-3 py-2 bg-red-500/10 border border-red-500/30 text-red-400 text-[9px] font-black uppercase tracking-widest italic transition-all">
                     <Trash2 className="w-3 h-3" />
                   </button>
                 </div>
@@ -757,33 +768,50 @@ function BRollEngine() {
   const [wardrobe, setWardrobe] = useState('');
   const [handheld, setHandheld] = useState(true);
   const [resolution, setResolution] = useState<'720p' | '1080p'>('720p');
+  const [model, setModel] = useState<string>('');
   const [jobs, setJobs] = useState<BrollJob[]>(() => loadStudioData<BrollJob[]>('broll-jobs', []));
   const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => { saveStudioData('broll-jobs', jobs); }, [jobs]);
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     if (!prompt.trim()) { toast.error('Describe a shot first'); return; }
     setIsGenerating(true);
-    const variations = [
-      `Wide shot: ${prompt}`,
-      `Close-up: ${prompt}, detailed view`,
-      `Slow motion: ${prompt}, cinematic`,
-    ];
-    const newJobs: BrollJob[] = variations.map((v, i) => ({
-      id: `b${Date.now()}-${i}`,
-      prompt: v,
-      status: 'done',
-    }));
-    setJobs(prev => [...newJobs, ...prev]);
-    setIsGenerating(false);
-    toast.success('B-roll clips generated');
+    const fullPrompt = [prompt, environment && `in ${environment}`, wardrobe && `wearing ${wardrobe}`, handheld && 'handheld camera', 'cinematic'].filter(Boolean).join(', ');
+    const endpoint = muapiEndpointForModel(model, 'kling-video');
+    const jobId = `b${Date.now()}`;
+    setJobs(prev => [{ id: jobId, prompt: fullPrompt, status: 'generating' }, ...prev]);
+    try {
+      const { output } = await submitJob(
+        '/api/assets/video',
+        { prompt: fullPrompt, endpoint, duration: Math.round(shakes * 0.3), aspect_ratio: '16:9' },
+        'video',
+      );
+      const url = output.url || output.urls?.[0];
+      if (!url) throw new Error('No video returned');
+      setJobs(prev => prev.map(j => j.id === jobId ? { ...j, status: 'done', outputUrl: url, thumbnailUrl: output.thumbnailUrl } : j));
+      toast.success('B-roll clip generated');
+    } catch (e: any) {
+      const msg = String(e?.message || e);
+      setJobs(prev => prev.map(j => j.id === jobId ? { ...j, status: 'failed' } : j));
+      if (msg.includes('401') || /key/i.test(msg)) {
+        toast.error('Add your Muapi key in Connectors (/ai-providers) to generate.');
+      } else {
+        toast.error(`Generation failed: ${msg.slice(0, 120)}`);
+      }
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
-    <div className="flex h-full">
-      <div className="w-96 bg-[var(--card-bg)] border-r border-white/5 p-6 overflow-y-auto custom-scrollbar space-y-6">
+    <div className="flex flex-col md:flex-row h-full">
+      <div className="w-full md:w-96 bg-[var(--card-bg)] border-b md:border-b-0 md:border-r border-white/5 p-6 overflow-y-auto custom-scrollbar space-y-6 shrink-0">
         <h3 className="text-lg font-black italic text-white">B-Roll Generator</h3>
+        <div className="space-y-2">
+          <label className="text-[9px] font-black text-white/40 uppercase tracking-widest italic block">Model</label>
+          <ModelPicker recommendation={getRecommendation('short-form')} value={model || undefined} onChange={setModel} variant="full" className="w-full" />
+        </div>
         <div className="space-y-2">
           <label className="text-[9px] font-black text-white/40 uppercase tracking-widest italic block">Prompt</label>
           <textarea value={prompt} onChange={e => setPrompt(e.target.value)} rows={3}
@@ -828,13 +856,13 @@ function BRollEngine() {
           {['720p', '1080p'].map(r => (
             <button key={r} onClick={() => setResolution(r as '720p' | '1080p')}
               className={cn('flex-1 py-2 text-[9px] font-black uppercase tracking-widest italic border transition-all',
-                resolution === r ? 'bg-white text-black border-white' : 'border-white/10 text-white/40 hover:border-white/30')}>
+                resolution === r ? 'bg-white text-black border-white' : 'border-white/10 text-white/40')}>
               {r}
             </button>
           ))}
         </div>
         <button onClick={handleGenerate} disabled={isGenerating}
-          className="w-full py-4 bg-primary text-black font-black uppercase italic text-[10px] tracking-widest hover:bg-primary/80 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+          className="beam w-full py-4 bg-primary text-black font-black uppercase italic text-[10px] tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
           {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
           {isGenerating ? 'Generating...' : 'Generate B-Roll'}
         </button>
@@ -850,15 +878,19 @@ function BRollEngine() {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {jobs.map(j => (
               <div key={j.id} className="bg-black/40 border border-white/5 overflow-hidden">
                 <div className="aspect-video bg-[var(--bg-main)] flex items-center justify-center">
                   {j.status === 'generating' ? (
                     <Loader2 className="w-8 h-8 text-primary animate-spin" />
-                  ) : j.status === 'done' ? (
+                  ) : j.status === 'done' && j.outputUrl ? (
+                    <video src={j.outputUrl} controls className="w-full h-full object-cover" />
+                  ) : j.status === 'failed' ? (
+                    <Video className="w-8 h-8 text-red-400/40" />
+                  ) : (
                     <Video className="w-8 h-8 text-white/30" />
-                  ) : null}
+                  )}
                 </div>
                 <div className="p-3">
                   <div className="text-[10px] italic text-white/60 truncate">{j.prompt}</div>
@@ -884,42 +916,47 @@ function CoverArtStudio() {
   const [artist, setArtist] = useState('');
   const [parental, setParental] = useState(false);
   const [resolution, setResolution] = useState<'2K' | 'medium'>('2K');
+  const [model, setModel] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [gallery, setGallery] = useState<string[]>(() => loadStudioData<string[]>('cover-gallery', []));
 
   useEffect(() => { saveStudioData('cover-gallery', gallery); }, [gallery]);
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     if (!prompt.trim()) { toast.error('Enter a prompt first'); return; }
     setIsGenerating(true);
-    const colors = ['#FF4D00', '#00E5FF', '#22C55E', '#FFD700', '#FF0066'];
-    const bgColor = colors[Math.floor(Math.random() * colors.length)];
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
-      <defs><linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#1a1a2e"/><stop offset="100%" stop-color="${bgColor}"/></linearGradient></defs>
-      <rect width="1024" height="1024" fill="url(#bg)"/>
-      <circle cx="512" cy="350" r="180" fill="none" stroke="white" stroke-width="2" opacity="0.2"/>
-      <text x="512" y="650" text-anchor="middle" fill="white" font-size="72" font-weight="900" font-style="italic">${title || 'UNTITLED'}</text>
-      <text x="512" y="730" text-anchor="middle" fill="white" font-size="36" opacity="0.6" font-style="italic">${artist || 'ARTIST'}</text>
-      ${parental ? '<text x="512" y="820" text-anchor="middle" fill="#FF0000" font-size="28" font-weight="bold">PARENTAL ADVISORY — EXPLICIT CONTENT</text>' : ''}
-    </svg>`;
-    const dataUri = 'data:image/svg+xml,' + encodeURIComponent(svg);
-    setGallery(prev => [dataUri, ...prev]);
-    setIsGenerating(false);
-    saveStudioData('generation-count', loadStudioData('generation-count', 0) + 1);
-    toast.success('Cover art generated');
+    const fullPrompt = [prompt, title && `title "${title}"`, artist && `by ${artist}`, parental && 'explicit content advisory'].filter(Boolean).join(', ');
+    const endpoint = muapiEndpointForModel(model, 'flux-pro');
+    try {
+      const { output } = await submitJob(
+        '/api/assets/cover',
+        { prompt: fullPrompt, endpoint, resolution: resolution === '2K' ? '2K' : '1K', aspect_ratio: '1:1' },
+        'image',
+      );
+      const urls = output.urls?.length ? output.urls : output.url ? [output.url] : [];
+      if (!urls.length) throw new Error('No image returned');
+      setGallery(prev => [...urls, ...prev]);
+      saveStudioData('generation-count', loadStudioData('generation-count', 0) + 1);
+      toast.success('Cover art generated');
+    } catch (e: any) {
+      const msg = String(e?.message || e);
+      if (msg.includes('401') || /key/i.test(msg)) {
+        toast.error('Add your Muapi key in Connectors (/ai-providers) to generate.');
+      } else {
+        toast.error(`Generation failed: ${msg.slice(0, 120)}`);
+      }
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
-    <div className="flex h-full">
-      <div className="w-96 bg-[var(--card-bg)] border-r border-white/5 p-6 overflow-y-auto custom-scrollbar space-y-6">
+    <div className="flex flex-col md:flex-row h-full">
+      <div className="w-full md:w-96 bg-[var(--card-bg)] border-b md:border-b-0 md:border-r border-white/5 p-6 overflow-y-auto custom-scrollbar space-y-6 shrink-0">
         <h3 className="text-lg font-black italic text-white">Cover Art Studio</h3>
         <div className="space-y-2">
           <label className="text-[9px] font-black text-white/40 uppercase tracking-widest italic block">Model</label>
-          <select className="w-full bg-black border border-white/10 px-4 py-2 text-xs text-white outline-none focus:border-primary">
-            <option>GPT Image 2</option>
-            <option>Stable Diffusion XL</option>
-            <option>Flux Pro</option>
-          </select>
+          <ModelPicker recommendation={getRecommendation('cover-art')} value={model || undefined} onChange={setModel} variant="full" className="w-full" />
         </div>
         <div className="space-y-2">
           <label className="text-[9px] font-black text-white/40 uppercase tracking-widest italic block">Prompt</label>
@@ -962,7 +999,7 @@ function CoverArtStudio() {
           </div>
         </div>
         <button onClick={handleGenerate} disabled={isGenerating}
-          className="w-full py-4 bg-primary text-black font-black uppercase italic text-[10px] tracking-widest hover:bg-primary/80 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+          className="beam w-full py-4 bg-primary text-black font-black uppercase italic text-[10px] tracking-widest transition-all disabled:opacity-50 flex items-center justify-center gap-2">
           {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Palette className="w-4 h-4" />}
           {isGenerating ? 'Generating...' : 'Generate Cover Art'}
         </button>
@@ -978,13 +1015,13 @@ function CoverArtStudio() {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {gallery.map((url, i) => (
-              <div key={i} className="aspect-square bg-[var(--bg-main)] border border-white/5 flex items-center justify-center relative group">
-                <ImageIcon className="w-12 h-12 text-white/20" />
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-3 transition-opacity">
-                  <button className="px-4 py-2 bg-primary text-black text-[10px] font-black uppercase tracking-widest italic"><Download className="w-4 h-4 inline" /> Save</button>
-                  <button className="p-2 bg-white/20 hover:bg-red-500/80 transition-all"><Trash2 className="w-4 h-4" /></button>
+              <div key={i} className="aspect-square bg-[var(--bg-main)] border border-white/5 flex items-center justify-center relative group overflow-hidden">
+                <img src={url} alt={`Cover ${i + 1}`} className="w-full h-full object-cover" />
+                <div className="absolute inset-0 flex items-center justify-center gap-3 transition-opacity">
+                  <a href={url} download={`cover-${i + 1}.png`} className="px-4 py-2 bg-primary text-black text-[10px] font-black uppercase tracking-widest italic"><Download className="w-4 h-4 inline" /> Save</a>
+                  <button onClick={() => setGallery(prev => prev.filter((_, j) => j !== i))} className="p-2 bg-black/60 transition-all"><Trash2 className="w-4 h-4" /></button>
                 </div>
               </div>
             ))}
@@ -1098,16 +1135,16 @@ function TimelineEditor() {
   return (
     <div className="flex flex-col h-full">
       {/* Top Controls */}
-      <div className="shrink-0 bg-[var(--card-bg)] border-b border-white/5 px-6 py-4 flex items-center justify-between">
+      <div className="shrink-0 bg-[var(--card-bg)] border-b border-white/5 px-4 md:px-6 py-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-4">
           <h3 className="text-lg font-black italic text-white">Timeline Editor</h3>
           <div className="h-6 w-px bg-white/10" />
           <div className="flex items-center gap-2">
             <button onClick={() => setIsPlaying(!isPlaying)}
-              className="w-10 h-10 rounded-full bg-primary text-black flex items-center justify-center hover:bg-primary/80 transition-all">
+              className="w-10 h-10 rounded-full bg-primary text-black flex items-center justify-center transition-all">
               {isPlaying ? <Square className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
             </button>
-            <button onClick={() => setCurrentTime(0)} className="p-2 text-white/40 hover:text-white transition-all">
+            <button onClick={() => setCurrentTime(0)} className="p-2 text-white/40 transition-all">
               <SkipBack className="w-4 h-4" />
             </button>
           </div>
@@ -1119,12 +1156,12 @@ function TimelineEditor() {
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <button onClick={() => setZoom(Math.max(0.5, zoom - 0.25))} className="p-1.5 text-white/30 hover:text-white text-xs">-</button>
+            <button onClick={() => setZoom(Math.max(0.5, zoom - 0.25))} className="p-1.5 text-white/30 text-xs">-</button>
             <span className="text-[10px] font-mono text-white/60 w-8 text-center">{zoom.toFixed(2)}x</span>
-            <button onClick={() => setZoom(Math.min(3, zoom + 0.25))} className="p-1.5 text-white/30 hover:text-white text-xs">+</button>
+            <button onClick={() => setZoom(Math.min(3, zoom + 0.25))} className="p-1.5 text-white/30 text-xs">+</button>
           </div>
           <div className="h-6 w-px bg-white/10" />
-          <button onClick={clearAll} className="px-3 py-1.5 border border-red-500/30 text-red-400 text-[9px] font-black uppercase tracking-widest italic hover:bg-red-500/20 transition-all">
+          <button onClick={clearAll} className="px-3 py-1.5 border border-red-500/30 text-red-400 text-[9px] font-black uppercase tracking-widest italic transition-all">
             Clear
           </button>
           <button onClick={() => {
@@ -1139,15 +1176,15 @@ function TimelineEditor() {
               saveStudioData('export-count', loadStudioData('export-count', 0) + 1);
               toast.success('Project exported');
             }}
-            className="px-6 py-2 bg-primary text-black text-[10px] font-black uppercase tracking-widest italic hover:bg-primary/80 transition-all flex items-center gap-2">
+            className="beam px-6 py-2 bg-primary text-black text-[10px] font-black uppercase tracking-widest italic transition-all flex items-center gap-2">
             <Download className="w-3.5 h-3.5" /> Export
           </button>
         </div>
       </div>
 
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
         {/* Left Panel - Clips & Controls */}
-        <div className="w-72 bg-[var(--card-bg)] border-r border-white/5 p-4 overflow-y-auto custom-scrollbar space-y-4">
+        <div className="w-full md:w-72 bg-[var(--card-bg)] border-b md:border-b-0 md:border-r border-white/5 p-4 overflow-y-auto custom-scrollbar space-y-4 shrink-0">
           <div className="space-y-2">
             <span className="text-[9px] font-black text-primary uppercase tracking-widest italic">Add Clip</span>
             <div className="flex gap-2">
@@ -1184,7 +1221,7 @@ function TimelineEditor() {
                   <div key={m.time} className="flex items-center justify-between px-2 py-1 bg-black/40 border border-white/5">
                     <span className="text-[10px] font-mono text-white/60">{m.time.toFixed(1)}s</span>
                     <span className="text-[10px] text-white/40 italic truncate mx-2">{m.label}</span>
-                    <button onClick={() => removeMarker(m.time)} className="text-white/20 hover:text-red-400 shrink-0"><Trash2 className="w-3 h-3" /></button>
+                    <button onClick={() => removeMarker(m.time)} className="text-white/20 shrink-0"><Trash2 className="w-3 h-3" /></button>
                   </div>
                 ))}
               </div>
@@ -1197,7 +1234,7 @@ function TimelineEditor() {
               {TEXT_PRESETS.map(p => (
                 <button key={p.id} onClick={() => setSelectedPreset(p.id)}
                   className={cn('px-2 py-2 text-[8px] font-black uppercase tracking-widest italic border transition-all text-center',
-                    selectedPreset === p.id ? 'border-primary bg-primary/10 text-primary' : 'border-white/5 bg-black/40 text-white/40 hover:border-white/20')}>
+                    selectedPreset === p.id ? 'border-primary bg-primary/10 text-primary' : 'border-white/5 bg-black/40 text-white/40')}>
                   {p.name}
                 </button>
               ))}
@@ -1239,15 +1276,15 @@ function TimelineEditor() {
         </div>
 
         {/* Center - Video Preview */}
-        <div className="flex-1 flex flex-col items-center justify-center bg-[var(--bg-main)] p-8">
+        <div className="flex-1 flex flex-col items-center justify-center bg-[var(--bg-main)] p-4 sm:p-8">
           {clips.length === 0 ? (
-            <div className="text-center border-2 border-dashed border-white/5 p-16">
+            <div className="text-center border-2 border-dashed border-white/5 p-8 sm:p-16">
               <Video className="w-16 h-16 text-white/10 mx-auto mb-4" />
               <p className="text-white/30 italic">No clips in timeline</p>
               <p className="text-[11px] text-white/20 italic mt-1">Add clips from the left panel</p>
             </div>
           ) : (
-            <div className="relative w-[360px] aspect-[9/16] bg-black border border-white/10 overflow-hidden">
+            <div className="relative w-full max-w-[360px] aspect-[9/16] bg-black border border-white/10 overflow-hidden">
               <div className="absolute inset-0 flex items-center justify-center p-8">
                 <p className="text-3xl font-black italic text-white text-center leading-tight tracking-tight"
                   style={{
@@ -1313,12 +1350,12 @@ function TimelineEditor() {
                     backgroundColor: c.locked ? '#1a3a1a' : `${c.color}30`,
                     border: `1px solid ${active ? c.color : `${c.color}60`}`,
                   }}>
-                  <span className="text-[7px] font-mono text-white/60 truncate w-full group-hover:text-white">{c.name}</span>
-                  <div className="hidden group-hover:flex items-center gap-1 ml-1 shrink-0">
-                    <button onClick={(e) => { e.stopPropagation(); toggleLock(c.id); }} className="text-white/40 hover:text-primary">
+                  <span className="text-[7px] font-mono text-white/60 truncate w-full">{c.name}</span>
+                  <div className="flex items-center gap-1 ml-1 shrink-0">
+                    <button onClick={(e) => { e.stopPropagation(); toggleLock(c.id); }} className="text-white/40">
                       {c.locked ? <Lock className="w-2.5 h-2.5" /> : <Unlock className="w-2.5 h-2.5" />}
                     </button>
-                    <button onClick={(e) => { e.stopPropagation(); removeClip(c.id); }} className="text-white/40 hover:text-red-400">
+                    <button onClick={(e) => { e.stopPropagation(); removeClip(c.id); }} className="text-white/40">
                       <Trash2 className="w-2.5 h-2.5" />
                     </button>
                   </div>
@@ -1342,8 +1379,8 @@ function TimelineEditor() {
                     backgroundColor: `${c.color}20`,
                     border: `1px solid ${c.color}50`,
                   }}>
-                  <span className="text-[7px] font-mono text-white/50 truncate w-full group-hover:text-white">{c.name}</span>
-                  <button onClick={(e) => { e.stopPropagation(); removeClip(c.id); }} className="hidden group-hover:block text-white/40 hover:text-red-400 ml-1 shrink-0">
+                  <span className="text-[7px] font-mono text-white/50 truncate w-full">{c.name}</span>
+                  <button onClick={(e) => { e.stopPropagation(); removeClip(c.id); }} className="text-white/40 ml-1 shrink-0">
                     <Trash2 className="w-2.5 h-2.5" />
                   </button>
                 </div>

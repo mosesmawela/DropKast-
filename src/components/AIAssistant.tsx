@@ -281,7 +281,7 @@ export default function AIAssistant() {
                   onClick={() => setActiveTab('CHAT')}
                   className={cn(
                     'p-1.5 transition-all',
-                    activeTab === 'CHAT' ? 'text-primary' : 'text-white/20 hover:text-white',
+                    activeTab === 'CHAT' ? 'text-primary' : 'text-white/20',
                   )}
                 >
                   <MessageSquare className="w-4 h-4" />
@@ -290,7 +290,7 @@ export default function AIAssistant() {
                   onClick={() => setActiveTab('CONFIG')}
                   className={cn(
                     'p-1.5 transition-all',
-                    activeTab === 'CONFIG' ? 'text-primary' : 'text-white/20 hover:text-white',
+                    activeTab === 'CONFIG' ? 'text-primary' : 'text-white/20',
                   )}
                 >
                   <Sliders className="w-4 h-4" />
@@ -309,12 +309,12 @@ export default function AIAssistant() {
                     }]);
                     localStorage.removeItem('dropkast_ai_history');
                   }}
-                  className="text-white/20 hover:text-white transition-colors p-1"
+                  className="text-white/20 transition-colors p-1"
                   title="Clear conversation"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                 </button>
-                <button onClick={() => setIsOpen(false)} className="text-white/20 hover:text-white transition-colors">
+                <button onClick={() => setIsOpen(false)} className="text-white/20 transition-colors">
                   <X className="w-4 h-4" />
                 </button>
               </div>
@@ -368,7 +368,7 @@ export default function AIAssistant() {
                               navigator.clipboard.writeText(msg.text);
                               toast.success('Copied to clipboard');
                             }}
-                            className="text-[8px] font-mono font-black uppercase tracking-widest text-white/20 hover:text-primary transition-colors mt-1"
+                            className="text-[8px] font-mono font-black uppercase tracking-widest text-white/20 transition-colors mt-1"
                           >
                             Copy
                           </button>
@@ -486,7 +486,7 @@ export default function AIAssistant() {
                   <button
                     onClick={handleSend}
                     disabled={isSending || !message.trim()}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-primary hover:text-white disabled:text-white/10 transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-primary disabled:text-white/10 transition-colors"
                   >
                     {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                   </button>
@@ -500,9 +500,9 @@ export default function AIAssistant() {
       <button
         data-tour="ai-assistant"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-14 h-14 sm:w-16 sm:h-16 bg-white text-black hover:bg-primary hover:text-white shadow-[0_0_50px_rgba(255,102,0,0.3)] transition-all active:scale-90 flex items-center justify-center relative group"
+        className="w-14 h-14 sm:w-16 sm:h-16 bg-white text-black shadow-[0_0_50px_rgba(255,102,0,0.3)] transition-all active:scale-90 flex items-center justify-center relative group"
       >
-        <Zap className={cn('w-6 h-6 transition-transform duration-500', isOpen ? 'rotate-180' : 'group-hover:scale-125')} />
+        <Zap className={cn('w-6 h-6 transition-transform duration-500', isOpen ? 'rotate-180' : '')} />
         {!isOpen && <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full animate-ping" />}
       </button>
     </div>

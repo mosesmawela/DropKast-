@@ -15,7 +15,7 @@ export default function ActiveArtistBadge() {
   return (
     <Link
       to="/roster"
-      className="hidden md:flex items-center gap-3 h-9 px-3 border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors group"
+      className="beam hidden md:flex items-center gap-3 h-9 px-3 border border-primary/30 bg-primary/5 transition-colors group"
       title="Switch managed artist"
     >
       <Building2 className="w-3.5 h-3.5 text-primary" />
@@ -27,7 +27,7 @@ export default function ActiveArtistBadge() {
           {activeArtist ? activeArtist.name : 'Whole roster'}
         </div>
       </div>
-      <ChevronDown className="w-3 h-3 text-white/40 group-hover:text-white transition-colors" />
+      <ChevronDown className="w-3 h-3 text-white transition-colors" />
     </Link>
   );
 }

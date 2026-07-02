@@ -82,7 +82,7 @@ export default function ClaimArtistProfile({ artistName, spotifyArtistId, appleA
           href={spotifyUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-[10px] font-black text-primary uppercase tracking-widest italic hover:text-white transition-colors"
+          className="text-[10px] font-black text-primary uppercase tracking-widest italic transition-colors"
         >
           Claim →
         </a>
@@ -145,7 +145,7 @@ export default function ClaimArtistProfile({ artistName, spotifyArtistId, appleA
               href={spotifyUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full h-10 border border-green-500/30 text-green-400 text-[10px] font-black uppercase italic tracking-widest hover:bg-green-500 hover:text-black transition-all flex items-center justify-center gap-2"
+              className="beam w-full h-10 border border-green-500/30 text-green-400 text-[10px] font-black uppercase italic tracking-widest transition-all flex items-center justify-center gap-2"
             >
               Open dashboard <ExternalLink className="w-3 h-3" />
             </a>
@@ -156,13 +156,13 @@ export default function ClaimArtistProfile({ artistName, spotifyArtistId, appleA
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setTimeout(() => markClaimed('spotify'), 1000)}
-                className="flex-1 h-10 bg-white text-black text-[10px] font-black uppercase italic tracking-widest hover:bg-[#1DB954] hover:text-white transition-all flex items-center justify-center gap-2"
+                className="beam flex-1 h-10 bg-white text-black text-[10px] font-black uppercase italic tracking-widest transition-all flex items-center justify-center gap-2"
               >
                 Claim now <ExternalLink className="w-3 h-3" />
               </a>
               <button
                 onClick={() => markClaimed('spotify')}
-                className="h-10 px-3 border border-white/10 text-white/50 text-[10px] font-black uppercase italic tracking-widest hover:border-white hover:text-white transition-all"
+                className="beam h-10 px-3 border border-white/10 text-white/50 text-[10px] font-black uppercase italic tracking-widest transition-all"
                 title="Already claimed elsewhere"
               >
                 Already done
@@ -191,7 +191,7 @@ export default function ClaimArtistProfile({ artistName, spotifyArtistId, appleA
               href={appleUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full h-10 border border-green-500/30 text-green-400 text-[10px] font-black uppercase italic tracking-widest hover:bg-green-500 hover:text-black transition-all flex items-center justify-center gap-2"
+              className="beam w-full h-10 border border-green-500/30 text-green-400 text-[10px] font-black uppercase italic tracking-widest transition-all flex items-center justify-center gap-2"
             >
               Open dashboard <ExternalLink className="w-3 h-3" />
             </a>
@@ -202,13 +202,13 @@ export default function ClaimArtistProfile({ artistName, spotifyArtistId, appleA
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setTimeout(() => markClaimed('apple'), 1000)}
-                className="flex-1 h-10 bg-white text-black text-[10px] font-black uppercase italic tracking-widest hover:bg-[#FA2D48] hover:text-white transition-all flex items-center justify-center gap-2"
+                className="beam flex-1 h-10 bg-white text-black text-[10px] font-black uppercase italic tracking-widest transition-all flex items-center justify-center gap-2"
               >
                 Claim now <ExternalLink className="w-3 h-3" />
               </a>
               <button
                 onClick={() => markClaimed('apple')}
-                className="h-10 px-3 border border-white/10 text-white/50 text-[10px] font-black uppercase italic tracking-widest hover:border-white hover:text-white transition-all"
+                className="beam h-10 px-3 border border-white/10 text-white/50 text-[10px] font-black uppercase italic tracking-widest transition-all"
                 title="Already claimed elsewhere"
               >
                 Already done
@@ -237,7 +237,7 @@ export default function ClaimArtistProfile({ artistName, spotifyArtistId, appleA
               href={audiomackUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full h-10 border border-green-500/30 text-green-400 text-[10px] font-black uppercase italic tracking-widest hover:bg-green-500 hover:text-black transition-all flex items-center justify-center gap-2"
+              className="beam w-full h-10 border border-green-500/30 text-green-400 text-[10px] font-black uppercase italic tracking-widest transition-all flex items-center justify-center gap-2"
             >
               Open dashboard <ExternalLink className="w-3 h-3" />
             </a>
@@ -248,13 +248,13 @@ export default function ClaimArtistProfile({ artistName, spotifyArtistId, appleA
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setTimeout(() => markClaimed('audiomack'), 1000)}
-                className="flex-1 h-10 bg-white text-black text-[10px] font-black uppercase italic tracking-widest hover:bg-[#FFA200] hover:text-black transition-all flex items-center justify-center gap-2"
+                className="beam flex-1 h-10 bg-white text-black text-[10px] font-black uppercase italic tracking-widest transition-all flex items-center justify-center gap-2"
               >
                 Claim now <ExternalLink className="w-3 h-3" />
               </a>
               <button
                 onClick={() => markClaimed('audiomack')}
-                className="h-10 px-3 border border-white/10 text-white/50 text-[10px] font-black uppercase italic tracking-widest hover:border-white hover:text-white transition-all"
+                className="beam h-10 px-3 border border-white/10 text-white/50 text-[10px] font-black uppercase italic tracking-widest transition-all"
                 title="Already claimed elsewhere"
               >
                 Already done

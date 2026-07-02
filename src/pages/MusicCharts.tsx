@@ -56,15 +56,15 @@ export default function MusicCharts() {
   return (
     <div className="max-w-7xl mx-auto py-12 px-6">
       <div className="mb-10">
-        <Link to="/analytics" className="inline-flex items-center gap-2 text-[10px] font-black text-white/40 hover:text-white uppercase italic tracking-widest mb-6">
+        <Link to="/analytics" className="inline-flex items-center gap-2 text-[10px] font-black text-white/40 uppercase italic tracking-widest mb-6">
           <ChevronLeft className="w-3 h-3" /> Back to analytics
         </Link>
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-          <div className="space-y-3">
+          <div className="space-y-3 min-w-0">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-[0.4em] italic">
               <Trophy className="w-3 h-3" /> Music Charts
             </div>
-            <h1 className="text-5xl md:text-6xl font-black text-white italic uppercase tracking-tighter leading-none">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-white italic uppercase tracking-tighter leading-none">
               Where your <span className="text-primary">tracks rank</span>
             </h1>
             <p className="text-white/40 text-sm italic max-w-2xl">
@@ -73,7 +73,7 @@ export default function MusicCharts() {
             </p>
           </div>
 
-          <div className="manifest-card p-5 bg-dark border-primary/20 min-w-[200px]">
+          <div className="manifest-card p-5 bg-dark border-primary/20 w-full md:w-auto md:min-w-[200px] shrink-0">
             <div className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic mb-2">
               Your tracks on this chart
             </div>
@@ -101,10 +101,10 @@ export default function MusicCharts() {
                 key={d.id}
                 onClick={() => setDsp(d.id)}
                 className={cn(
-                  'h-9 px-4 text-[10px] font-black uppercase italic tracking-widest border transition-all',
+                  'beam h-10 px-4 text-[10px] font-black uppercase italic tracking-widest border transition-all',
                   dsp === d.id
                     ? 'text-white'
-                    : 'text-white/50 border-white/10 hover:text-white hover:border-white/30',
+                    : 'text-white/50 border-white/10',
                 )}
                 style={{
                   borderColor: dsp === d.id ? d.brand : undefined,
@@ -126,10 +126,10 @@ export default function MusicCharts() {
                 key={t.id}
                 onClick={() => setTerritory(t.id)}
                 className={cn(
-                  'h-9 px-4 text-[10px] font-black uppercase italic tracking-widest border transition-all',
+                  'beam h-10 px-4 text-[10px] font-black uppercase italic tracking-widest border transition-all',
                   territory === t.id
                     ? 'bg-primary border-primary text-white'
-                    : 'text-white/50 border-white/10 hover:border-white/30 hover:text-white',
+                    : 'text-white/50 border-white/10',
                 )}
               >
                 {t.label}
@@ -141,8 +141,8 @@ export default function MusicCharts() {
 
       {/* Chart table */}
       <div className="manifest-card p-0 bg-dark border border-white/10 overflow-x-auto">
-        <div className="px-5 py-3 border-b border-white/10 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="px-5 py-3 border-b border-white/10 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0 flex-wrap">
             <div className="w-2 h-2 rounded-full" style={{ background: dspMeta.brand }} />
             <span className="text-[10px] font-black uppercase tracking-widest italic" style={{ color: dspMeta.brand }}>
               {dspMeta.label}
@@ -152,8 +152,8 @@ export default function MusicCharts() {
               {TERRITORIES.find((t) => t.id === territory)?.label}
             </span>
           </div>
-          <span className="text-[9px] font-mono text-white/30 uppercase tracking-widest italic">
-            Updated daily · last sync 2h ago
+          <span className="text-[9px] font-mono text-white/30 uppercase tracking-widest italic shrink-0">
+            Updated daily
           </span>
         </div>
         <table className="w-full min-w-[760px] text-left">
@@ -185,7 +185,7 @@ export default function MusicCharts() {
                   initial={{ opacity: 0, y: 4 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: Math.min(idx * 0.02, 0.2) }}
-                  className={cn('border-b border-white/5 hover:bg-white/[0.02]', isYours && 'bg-primary/[0.04]')}
+                  className={cn('border-b border-white/5', isYours && 'bg-primary/[0.04]')}
                 >
                   <td className="px-5 py-3">
                     <span className={cn('text-2xl font-black italic tabular-nums', e.position <= 3 ? 'text-primary' : 'text-white/80')}>

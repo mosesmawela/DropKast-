@@ -98,7 +98,7 @@ export default function Signup() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -10 }}
               transition={{ duration: 0.18 }}
-              className="manifest-card corner-marker p-12 bg-black shadow-none border-white/10"
+              className="manifest-card corner-marker p-6 md:p-12 bg-black shadow-none border-white/10"
             >
               <div className="mb-12">
                 <div className="flex items-center gap-3 mb-6">
@@ -107,7 +107,7 @@ export default function Signup() {
                   </div>
                   <span className="text-2xl font-black tracking-tighter text-white italic">DROPKAST</span>
                 </div>
-                <h1 className="text-5xl font-black text-white mb-2 leading-none uppercase italic">Create your account</h1>
+                <h1 className="text-4xl md:text-5xl font-black text-white mb-2 leading-none uppercase italic">Create your account</h1>
                 <p className="text-white/20 text-[9px] font-black tracking-[0.4em] italic uppercase">
                   Step 1 of 2 — credentials. Step 2 — pick your portal.
                 </p>
@@ -220,13 +220,13 @@ export default function Signup() {
                     <div className="w-full h-full bg-primary opacity-0 peer-checked:opacity-100 transition-opacity"></div>
                   </div>
                   <label htmlFor="terms" className="text-[10px] font-black text-white/40 tracking-[0.1em] leading-relaxed italic">
-                    I agree to the <Link to="/terms" target="_blank" className="text-white hover:text-primary transition-colors italic border-b border-white/20">Terms of Service</Link> and <Link to="/privacy" target="_blank" className="text-white hover:text-primary transition-colors italic border-b border-white/20">Privacy Policy</Link>
+                    I agree to the <Link to="/terms" target="_blank" className="text-white transition-colors italic border-b border-white/20">Terms of Service</Link> and <Link to="/privacy" target="_blank" className="text-white transition-colors italic border-b border-white/20">Privacy Policy</Link>
                   </label>
                 </div>
 
                 <button
                   type="submit"
-                  className="primary-button h-16 md:col-span-2 bg-white text-black hover:bg-primary hover:text-white flex items-center justify-between px-10"
+                  className="primary-button h-16 md:col-span-2 bg-white text-black flex items-center justify-between px-10"
                 >
                   <span className="text-[12px] font-black tracking-widest uppercase italic">Continue → Pick portal</span>
                   <ArrowRight className="w-4 h-4" />
@@ -246,7 +246,7 @@ export default function Signup() {
                 type="button"
                 onClick={() => setStep('form')}
                 disabled={isLoading}
-                className="mb-6 flex items-center gap-2 text-[10px] font-mono font-black text-white/40 hover:text-white tracking-[0.3em] uppercase italic transition-colors disabled:opacity-30"
+                className="mb-6 flex items-center gap-2 text-[10px] font-mono font-black text-white/40 tracking-[0.3em] uppercase italic transition-colors disabled:opacity-30"
               >
                 <ChevronLeft className="w-4 h-4" /> Back to credentials
               </button>
@@ -272,7 +272,7 @@ export default function Signup() {
                       onClick={() => setSelectedPortal(p.id)}
                       onDoubleClick={() => pickPortal(p.id)}
                       className={cn(
-                        'manifest-card relative p-7 text-left flex flex-col gap-5 transition-all border bg-white/[0.02] hover:bg-white/[0.05] min-h-[300px] group disabled:opacity-50 disabled:cursor-wait',
+                        'manifest-card relative p-7 text-left flex flex-col gap-5 transition-all border bg-white/[0.02] min-h-[300px] group disabled:opacity-50 disabled:cursor-wait',
                         active ? 'border-primary scale-[1.02]' : 'border-white/10',
                       )}
                       style={
@@ -318,7 +318,7 @@ export default function Signup() {
                   type="button"
                   disabled={isLoading}
                   onClick={() => pickPortal(selectedPortal)}
-                  className="primary-button h-16 flex-1 bg-white text-black hover:bg-primary hover:text-white flex items-center justify-between px-8 transition-all disabled:opacity-30"
+                  className="primary-button h-16 flex-1 bg-white text-black flex items-center justify-between px-8 transition-all disabled:opacity-30"
                 >
                   <span className="text-[12px] font-mono font-black tracking-widest uppercase italic">
                     {isLoading ? 'Provisioning...' : `Continue as ${PORTALS.find(p => p.id === selectedPortal)?.label}`}
@@ -340,7 +340,7 @@ export default function Signup() {
 
         <div className="mt-12 text-center relative">
           <div className="barcode-sim h-4 w-20 mx-auto opacity-10 mb-4" />
-          <p className="text-white/30 text-[11px] font-black tracking-[0.1em] flex items-center justify-center gap-4 italic">
+          <p className="text-white/30 text-[11px] font-black tracking-[0.1em] flex flex-wrap items-center justify-center gap-4 italic">
             Already have an account? <Link to="/login" className="text-primary hover:underline italic">Sign in</Link>
           </p>
         </div>

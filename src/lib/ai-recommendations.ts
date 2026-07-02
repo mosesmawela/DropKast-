@@ -62,23 +62,23 @@ export const RECOMMENDATIONS: Record<string, TaskRecommendation> = {
   'cover-art': {
     task: 'Album / single cover art',
     kind: 'image',
-    recommendedId: 'flux-schnell',
+    recommendedId: 'gpt-image-2',
     storageKey: 'dropkast_model_cover',
-    blurb: 'Flux Schnell at $0.003/image is the value pick. Upgrade to Flux Pro for finals.',
+    blurb: 'GPT Image 2 — the #1 image model of 2026. Best all-round quality for finished covers. Try Nano Banana Pro for 4K, or Seedream 5 to iterate cheaply.',
   },
   'lyric-card': {
     task: 'Lyric card / typography poster',
     kind: 'image',
-    recommendedId: 'ideogram',
+    recommendedId: 'ideogram-3',
     storageKey: 'dropkast_model_lyric',
-    blurb: 'Ideogram is the only model that gets in-image text right.',
+    blurb: 'Ideogram 3.0 is the 2026 leader for accurate in-image text.',
   },
   'social-post': {
     task: 'Social post graphic',
     kind: 'image',
-    recommendedId: 'flux-schnell',
+    recommendedId: 'nano-banana-2',
     storageKey: 'dropkast_model_social',
-    blurb: 'Cheap and fast. Iterate 10 versions, pick the best one.',
+    blurb: 'Nano Banana 2 is fast with a free tier. Iterate versions, pick the best. Seedream 5 is even cheaper for bulk.',
   },
 
   // ---- VIDEO

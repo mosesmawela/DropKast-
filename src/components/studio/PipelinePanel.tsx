@@ -76,9 +76,9 @@ export default function PipelinePanel({
               <button
                 key={wf.id}
                 onClick={() => onSelectWorkflow(wf)}
-                className="w-full text-left p-4 border border-white/10 hover:border-primary/40 bg-black/40 transition-all group"
+                className="beam w-full text-left p-4 border border-white/10 bg-black/40 transition-all group"
               >
-                <div className="text-sm font-black italic text-white group-hover:text-primary transition-colors mb-1">
+                <div className="text-sm font-black italic text-white transition-colors mb-1">
                   {wf.name}
                 </div>
                 <div className="text-[11px] text-white/50 italic leading-relaxed">{wf.description}</div>
@@ -113,7 +113,7 @@ export default function PipelinePanel({
               </div>
               <button
                 onClick={() => onSelectWorkflow(null as any)}
-                className="text-[9px] font-black text-white/30 hover:text-white uppercase tracking-widest italic"
+                className="text-[9px] font-black text-white/30 uppercase tracking-widest italic"
               >
                 Change
               </button>
@@ -144,7 +144,7 @@ export default function PipelinePanel({
             <button
               onClick={onRun}
               disabled={wfRunning}
-              className="w-full h-14 flex items-center justify-center gap-3 bg-white text-black text-[11px] font-black uppercase italic tracking-widest hover:bg-primary hover:text-white transition-all"
+              className="beam w-full h-14 flex items-center justify-center gap-3 bg-white text-black text-[11px] font-black uppercase italic tracking-widest transition-all"
             >
               {wfRunning ? (
                 <>
@@ -198,7 +198,7 @@ export default function PipelinePanel({
 
             <button
               onClick={() => { onSelectWorkflow(null as any); }}
-              className="w-full h-10 border border-white/10 text-[10px] font-black text-white/40 hover:text-white uppercase tracking-widest italic transition-all"
+              className="beam w-full h-10 border border-white/10 text-[10px] font-black text-white/40 uppercase tracking-widest italic transition-all"
             >
               Run another pipeline
             </button>

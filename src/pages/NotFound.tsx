@@ -15,7 +15,7 @@ export default function NotFound() {
           404 — Page not found
         </div>
 
-        <h1 className="text-7xl md:text-9xl font-black italic leading-none mb-6 tracking-tighter">
+        <h1 className="text-6xl md:text-9xl font-black italic leading-none mb-6 tracking-tighter">
           Lost the beat
         </h1>
 
@@ -26,7 +26,7 @@ export default function NotFound() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link
             to="/dashboard"
-            className="primary-button h-14 bg-white text-black hover:bg-primary hover:text-white flex items-center gap-3 px-8 transition-all"
+            className="primary-button h-14 bg-white text-black flex items-center gap-3 px-8 transition-all"
           >
             <Home className="w-4 h-4" />
             <span className="text-[11px] font-black tracking-widest uppercase italic">Go to dashboard</span>
@@ -35,7 +35,7 @@ export default function NotFound() {
 
           <Link
             to="/"
-            className="text-[11px] font-black text-white/40 hover:text-white tracking-[0.3em] uppercase italic transition-colors"
+            className="text-[11px] font-black text-white/40 tracking-[0.3em] uppercase italic transition-colors"
           >
             Or back home
           </Link>

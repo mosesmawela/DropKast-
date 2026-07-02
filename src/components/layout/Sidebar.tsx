@@ -42,14 +42,17 @@ import {
   Send,
   List,
   PieChart,
+  Plug,
+  PanelLeftClose,
+  PanelLeft,
   type LucideProps,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useTheme } from '../../context/ThemeContext';
 import { useWorkspace } from '../../context/WorkspaceContext';
-import { PRESETS, type ModuleId, type WorkspacePreset } from '../../lib/workspace';
+import { PRESETS, MODULES, type ModuleId, type WorkspacePreset } from '../../lib/workspace';
 import { toast } from 'sonner';
-import { useState, type FC } from 'react';
+import { useState, useEffect, useRef, useCallback, type FC } from 'react';
 
 interface NavItem {
   icon: any;
@@ -69,7 +72,9 @@ interface TreeSection {
   badge?: string;
   badgeColor?: string;
   defaultOpen?: boolean;
-  children: {
+  /** When set (and no children), the section is a single direct link — no dropdown. */
+  path?: string;
+  children?: {
     label: string;
     path: string;
     icon?: any;
@@ -90,18 +95,14 @@ const treeSections: TreeSection[] = [
     children: [
       { label: 'Manage Music', path: '/releases' },
       { label: 'Upload Music', path: '/releases/new' },
-      { label: 'Manage Video', path: '/releases?tab=video' },
-      { label: 'Upload Video', path: '/video/distribute' },
+      { label: 'Video Distribution', path: '/video/distribute' },
     ],
   },
   {
     label: 'Publishing Hub',
     icon: FileText,
     children: [
-      { label: 'Manage Compositions', path: '/publishing' },
-      { label: 'Add Composition', path: '/publishing' },
-      { label: 'Rights Owners Info', path: '/publishing' },
-      { label: 'Publishing Analytics', path: '/analytics' },
+      { label: 'Compositions', path: '/publishing' },
       { label: 'Share Requests', path: '/publishing/shares' },
     ],
   },
@@ -110,11 +111,8 @@ const treeSections: TreeSection[] = [
     icon: TrendingUp,
     children: [
       { label: 'Daily Stats', path: '/trending', icon: BarChart },
-      { label: 'Demographics', path: '/analytics/audience', icon: PieChart },
-      { label: 'TikTok Stats', path: '/trending', icon: Video },
-      { label: 'Store Comparison', path: '/analytics', icon: Building2 },
+      { label: 'Audience', path: '/analytics/audience', icon: PieChart },
       { label: 'Music Charts', path: '/analytics/charts', icon: Music },
-      { label: 'Trackers', path: '/analytics', icon: Target },
     ],
   },
   {
@@ -150,30 +148,21 @@ const treeSections: TreeSection[] = [
     ],
   },
   {
+    label: 'Connectors',
+    icon: Plug,
+    path: '/ai-providers',
+  },
+  {
     label: 'Help & Support',
     icon: Headphones,
     children: [
       { label: 'Academy & Guides', path: '/academy' },
-      { label: 'Account & Settings', path: '/settings' },
     ],
   },
   {
     label: 'Account Settings',
     icon: Settings,
-    children: [
-      { label: 'Identity & Profile', path: '/settings?tab=IDENTITY' },
-      { label: 'Payouts & Billing', path: '/settings?tab=BILLING' },
-      { label: 'Backups & Data', path: '/settings?tab=DATA' },
-      { label: 'Change Password', path: '/settings?tab=SECURITY' },
-    ],
-  },
-  {
-    label: 'LVRN Community',
-    icon: Globe,
-    children: [
-      { label: 'Academy', path: '/academy' },
-      { label: 'Latest Releases', path: '/releases' },
-    ],
+    path: '/settings',
   },
 ];
 
@@ -206,9 +195,8 @@ const labelTree: TreeSection[] = [
   ] },
   { label: 'Help & Support', icon: Headphones, children: [
     { label: 'Academy & Guides', path: '/academy' },
-    { label: 'Settings', path: '/settings' },
   ] },
-  { label: 'LVRN Community', icon: Globe, children: [{ label: 'Academy', path: '/academy' }] },
+  { label: 'Account Settings', icon: Settings, path: '/settings' },
 ];
 
 const influencerTree: TreeSection[] = [
@@ -233,14 +221,19 @@ const influencerTree: TreeSection[] = [
   { label: 'Inbox', icon: Mail, children: [{ label: 'Messages', path: '/messages' }] },
   { label: 'Help & Support', icon: Headphones, children: [
     { label: 'Academy & Guides', path: '/academy' },
-    { label: 'Settings', path: '/settings' },
   ] },
+  { label: 'Account Settings', icon: Settings, path: '/settings' },
 ];
 
 const djTree: TreeSection[] = [
   { label: 'Overview', icon: LayoutDashboard, defaultOpen: true, children: [{ label: 'Home', path: '/dashboard' }] },
   { label: 'Packs', icon: Radio, defaultOpen: true, children: [
     { label: 'Promo Packs', path: '/dj/packs' },
+  ] },
+  { label: 'Content Studio', icon: Sparkles, children: [
+    { label: 'AI Studio', path: '/studio' },
+    { label: 'Creator Assets', path: '/assets' },
+    { label: 'Playlists', path: '/playlists' },
   ] },
   { label: 'Feedback', icon: MessageSquare, children: [
     { label: 'Submit Feedback', path: '/dj/feedback' },
@@ -251,8 +244,8 @@ const djTree: TreeSection[] = [
   { label: 'Inbox', icon: Mail, children: [{ label: 'Messages', path: '/messages' }] },
   { label: 'Help & Support', icon: Headphones, children: [
     { label: 'Academy & Guides', path: '/academy' },
-    { label: 'Settings', path: '/settings' },
   ] },
+  { label: 'Account Settings', icon: Settings, path: '/settings' },
 ];
 
 /** Pick the dedicated nav tree for the current portal. */
@@ -405,23 +398,125 @@ export default function Sidebar({ open = false, onClose }: SidebarProps) {
   };
 
   // Every portal renders its own dedicated tree in the same accordion style.
-  const activeTree = treeForRole(role);
+  const baseTree = treeForRole(role);
   void artistNavGroups; void influencerNav; void djNav; // legacy, retained for presets
+
+  // --- Workspace preset filtering ---------------------------------------
+  // The Min/Creator/Full switcher toggles `enabled` modules; here we actually
+  // reflect that in the nav. A nav link maps to a module by its path; if that
+  // module is turned off (and not required), the link is hidden. Links with no
+  // matching module (portal-specific pages, external links) always show.
+  const moduleForPath = (path?: string): ModuleId | undefined => {
+    if (!path || path.startsWith('http') || path === '#') return undefined;
+    const clean = path.split('?')[0];
+    if (clean === '/studio' || clean === '/studios') return 'studios';
+    const exact = MODULES.find((m) => m.path === clean);
+    if (exact) return exact.id;
+    const pref = MODULES.find((m) => m.path !== '/' && clean.startsWith(m.path + '/'));
+    return pref?.id;
+  };
+  const pathVisible = (path?: string): boolean => {
+    const mid = moduleForPath(path);
+    if (!mid) return true; // portal-specific / external → always show
+    const def = MODULES.find((m) => m.id === mid);
+    if (def?.required) return true;
+    return isEnabled(mid);
+  };
+  // Filtering only applies where the preset switcher is shown (artist/label);
+  // influencer/DJ portals are already lean + purpose-built.
+  const applyPreset = role === 'ARTIST' || role === 'LABEL';
+  const activeTree: TreeSection[] = !applyPreset
+    ? baseTree
+    : baseTree
+        .map((section) => {
+          if (!section.children) return section;
+          return { ...section, children: section.children.filter((c) => pathVisible(c.path)) };
+        })
+        .filter((section) => {
+          // Direct-link section (no children) — keep if its own path is visible.
+          if (section.path && (!section.children || section.children.length === 0)) {
+            return pathVisible(section.path);
+          }
+          // Accordion section — keep only if it still has visible children.
+          return !!section.children && section.children.length > 0;
+        });
 
   const resetPortal = () => {
     localStorage.removeItem('dropkast_welcome_seen');
     window.location.reload();
   };
 
+  // --- Resizable + collapsible sidebar (desktop) ---
+  const MIN_W = 208;
+  const MAX_W = 420;
+  const DEFAULT_W = 268;
+  const [collapsed, setCollapsed] = useState(() => {
+    try { return localStorage.getItem('dropkast_sidebar_collapsed') === '1'; } catch { return false; }
+  });
+  const [width, setWidth] = useState(() => {
+    try {
+      const v = Number(localStorage.getItem('dropkast_sidebar_width'));
+      return v >= MIN_W && v <= MAX_W ? v : DEFAULT_W;
+    } catch { return DEFAULT_W; }
+  });
+  const draggingRef = useRef(false);
+
+  useEffect(() => { try { localStorage.setItem('dropkast_sidebar_width', String(width)); } catch { /* ignore */ } }, [width]);
+  useEffect(() => { try { localStorage.setItem('dropkast_sidebar_collapsed', collapsed ? '1' : '0'); } catch { /* ignore */ } }, [collapsed]);
+
+  const startResize = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    draggingRef.current = true;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    const onMove = (ev: MouseEvent) => {
+      if (!draggingRef.current) return;
+      setWidth(Math.min(MAX_W, Math.max(MIN_W, ev.clientX)));
+    };
+    const onUp = () => {
+      draggingRef.current = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+  }, []);
+
   return (
+    <>
+    {/* Floating re-open button when collapsed (desktop only) */}
+    {collapsed && (
+      <button
+        onClick={() => setCollapsed(false)}
+        className="hidden md:flex fixed top-4 left-3 z-50 w-9 h-9 items-center justify-center bg-[var(--card-bg)] border border-[var(--border-main)] text-white/60 hover:text-primary hover:border-primary transition-all"
+        aria-label="Open sidebar"
+        title="Open sidebar"
+      >
+        <PanelLeft className="w-4 h-4" />
+      </button>
+    )}
     <aside
+      style={{ ['--sbw' as any]: width + 'px' }}
       className={cn(
-        'w-72 max-w-[85vw] md:w-56 h-screen bg-[var(--bg-main)] border-r border-[var(--border-main)] flex flex-col z-40 backdrop-blur-md transition-transform duration-300 ease-out',
-        // Mobile: fixed off-canvas drawer
-        'fixed top-0 left-0 md:relative md:translate-x-0',
+        'h-screen bg-[var(--bg-main)] border-r border-[var(--border-main)] flex flex-col z-40 backdrop-blur-md transition-transform duration-300 ease-out relative',
+        // Mobile: fixed off-canvas drawer at a comfortable fixed width
+        'w-[min(86vw,20rem)] fixed top-0 left-0 md:relative md:translate-x-0',
+        // Desktop: user-resizable width, or fully collapsed
+        collapsed ? 'md:w-0 md:min-w-0 md:overflow-hidden md:border-0' : 'md:w-[var(--sbw)]',
         open ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
       )}
     >
+      {/* Drag-to-resize handle (desktop only) */}
+      {!collapsed && (
+        <div
+          onMouseDown={startResize}
+          className="hidden md:block absolute top-0 right-0 h-full w-1.5 cursor-col-resize z-50 hover:bg-primary/40 active:bg-primary/60 transition-colors"
+          title="Drag to resize"
+        />
+      )}
+
       {/* Logo + mobile close */}
       <div className="px-5 py-4 border-b border-[var(--border-main)] shrink-0 flex items-center justify-between" data-tour="sidebar-logo">
         <Link to="/dashboard" className="flex flex-col gap-1.5">
@@ -435,13 +530,25 @@ export default function Sidebar({ open = false, onClose }: SidebarProps) {
             Music distribution
           </span>
         </Link>
-        <button
-          onClick={onClose}
-          className="md:hidden p-4 -mr-4 text-white/40 hover:text-white transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
-          aria-label="Close menu"
-        >
-          <X className="w-5 h-5" />
-        </button>
+        <div className="flex items-center gap-1 shrink-0">
+          {/* Collapse (desktop only) */}
+          <button
+            onClick={() => setCollapsed(true)}
+            className="hidden md:flex w-8 h-8 items-center justify-center text-white/30 hover:text-primary transition-colors"
+            aria-label="Collapse sidebar"
+            title="Collapse sidebar"
+          >
+            <PanelLeftClose className="w-4 h-4" />
+          </button>
+          {/* Close (mobile drawer) */}
+          <button
+            onClick={onClose}
+            className="md:hidden p-4 -mr-4 text-white/40 hover:text-white transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+            aria-label="Close menu"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
       {/* Pinned New Release CTA — only for artists */}
@@ -450,10 +557,10 @@ export default function Sidebar({ open = false, onClose }: SidebarProps) {
           <Link
             to="/releases/new"
             data-tour="new-release"
-            className="flex items-center justify-between w-full bg-white text-black font-mono font-black uppercase text-[10px] tracking-widest px-4 py-2.5 hover:bg-primary hover:text-white transition-all group active:scale-95"
+            className="beam flex items-center justify-between w-full bg-white text-black font-mono font-black uppercase text-[10px] tracking-widest px-4 py-2.5 transition-all active:scale-95"
           >
             <span>New Release</span>
-            <PlusCircle className="w-4 h-4 group-hover:rotate-90 transition-transform" />
+            <PlusCircle className="w-4 h-4" />
           </Link>
         </div>
       )}
@@ -463,9 +570,29 @@ export default function Sidebar({ open = false, onClose }: SidebarProps) {
         {(
           <div className="space-y-0.5">
             {activeTree.map((section) => {
+              const kids = section.children ?? [];
+              // Direct-link section (no dropdown) — e.g. Account Settings → Settings.
+              if (section.path && kids.length === 0) {
+                const active = location.pathname === section.path.split('?')[0];
+                return (
+                  <Link
+                    key={section.label}
+                    to={section.path}
+                    className={cn(
+                      'w-full flex items-center gap-3 px-5 py-2.5 transition-all group text-left',
+                      active ? 'text-primary bg-primary/5' : 'text-white/40',
+                    )}
+                  >
+                    <section.icon className="w-4 h-4 shrink-0" />
+                    <span className="flex-1 text-[10px] font-bold uppercase tracking-widest font-mono leading-none">
+                      {section.label}
+                    </span>
+                  </Link>
+                );
+              }
               const isOpen = openSections[section.label] ?? false;
-              const hasActiveChild = isChildActive(section.children);
-              const isActive = section.children.some((c) => location.pathname === c.path) || hasActiveChild;
+              const hasActiveChild = isChildActive(kids);
+              const isActive = kids.some((c) => location.pathname === c.path) || hasActiveChild;
 
               return (
                 <div key={section.label}>
@@ -476,7 +603,7 @@ export default function Sidebar({ open = false, onClose }: SidebarProps) {
                       'w-full flex items-center gap-3 px-5 py-2.5 transition-all group text-left',
                       isActive
                         ? 'text-primary bg-primary/5'
-                        : 'text-white/40 hover:text-white hover:bg-white/[0.02]',
+                        : 'text-white/40',
                     )}
                   >
                     <section.icon className="w-4 h-4 shrink-0" />
@@ -501,7 +628,7 @@ export default function Sidebar({ open = false, onClose }: SidebarProps) {
                   {/* Children */}
                   {isOpen && (
                     <div className="ml-3 border-l border-white/5 pl-3">
-                      {section.children.map((child) => {
+                      {kids.map((child) => {
                         if (child.children) {
                           return (
                             <NestedTreeItem
@@ -524,7 +651,7 @@ export default function Sidebar({ open = false, onClose }: SidebarProps) {
                               'flex items-center gap-3 px-4 py-2 text-[9px] font-bold uppercase tracking-widest font-mono transition-all',
                               location.pathname === child.path
                                 ? 'text-primary bg-primary/5'
-                                : 'text-white/30 hover:text-white hover:bg-white/[0.02]',
+                                : 'text-white/30',
                             )}
                           >
                             {child.icon && <child.icon className="w-3 h-3 shrink-0" />}
@@ -609,6 +736,7 @@ export default function Sidebar({ open = false, onClose }: SidebarProps) {
         </div>
       </div>
     </aside>
+    </>
   );
 }
 
@@ -625,14 +753,14 @@ function NavLinkRow({ item, active }: { item: NavItem; active: boolean }) {
         'flex items-center gap-3 px-5 py-2 transition-all group relative',
         active
           ? 'bg-primary/5 text-primary'
-          : 'text-[var(--text-main)]/40 hover:bg-[var(--text-main)]/[0.02] hover:text-[var(--text-main)]',
+          : 'text-[var(--text-main)]/40',
       )}
     >
       {active && <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />}
       <item.icon
         className={cn(
           'w-4 h-4 transition-transform shrink-0',
-          active ? 'text-primary scale-110' : 'text-white/30 group-hover:scale-110',
+          active ? 'text-primary scale-110' : 'text-white/30',
         )}
       />
       <span className="text-[11px] font-mono font-bold uppercase tracking-widest leading-none">
@@ -699,7 +827,7 @@ function NestedTreeItem({
         onClick={() => setOpen(!open)}
         className={cn(
           'w-full flex items-center gap-3 px-4 py-2 text-[9px] font-bold uppercase tracking-widest font-mono transition-all',
-          hasActive ? 'text-primary' : 'text-white/30 hover:text-white',
+          hasActive ? 'text-primary' : 'text-white/30',
         )}
       >
         {Icon && <Icon className="w-3 h-3 shrink-0" />}
@@ -716,7 +844,7 @@ function NestedTreeItem({
             const external = /^https?:\/\//.test(child.path);
             const cls = cn(
               'block px-4 py-1.5 text-[8px] font-bold uppercase tracking-widest font-mono transition-all',
-              location.pathname === child.path ? 'text-primary' : 'text-white/20 hover:text-white/60',
+              location.pathname === child.path ? 'text-primary' : 'text-white/20',
             );
             return external ? (
               <a key={child.path} href={child.path} target="_blank" rel="noopener noreferrer" className={cls}>

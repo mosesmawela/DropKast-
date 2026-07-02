@@ -1,6 +1,5 @@
-import { useState } from "react";
 import { X, ChevronUp, ChevronDown, Check } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import { cn } from "../../lib/utils";
 
 const genres = [
@@ -32,18 +31,18 @@ export default function StudioGenreSelector({ activeId, onSelect, onClose }: { a
           <h2 className="text-xl font-bold text-white">Genre</h2>
         </div>
         
-        <button 
+        <button
           onClick={onClose}
-          className="absolute top-8 right-8 z-10 w-10 h-10 bg-white/5 hover:bg-white/10 rounded-full flex items-center justify-center transition-all"
+          className="beam absolute top-8 right-8 z-10 w-10 h-10 bg-white/5 rounded-full flex items-center justify-center transition-all"
         >
           <X className="w-5 h-5 text-white/50" />
         </button>
 
-        <div className="flex h-[500px]">
+        <div className="flex flex-col md:flex-row max-h-[85vh] md:h-[500px]">
           {/* Visual Preview Left */}
-          <div className="flex-[1.5] relative flex items-center justify-center bg-zinc-900/50">
-             <div className="w-[300px] h-[300px] rounded-full overflow-hidden border-4 border-white/5 shadow-2xl relative flex items-center justify-center bg-gradient-to-br from-primary/30 via-zinc-800 to-black">
-                <span className="text-4xl font-black italic uppercase tracking-tighter text-white/80 font-mono text-center px-6">
+          <div className="flex-[1.5] relative flex items-center justify-center bg-zinc-900/50 py-10 md:py-0">
+             <div className="w-[200px] h-[200px] md:w-[300px] md:h-[300px] rounded-full overflow-hidden border-4 border-white/5 shadow-2xl relative flex items-center justify-center bg-gradient-to-br from-primary/30 via-zinc-800 to-black">
+                <span className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter text-white/80 font-mono text-center px-6">
                   {activeGenre.name}
                 </span>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -53,14 +52,14 @@ export default function StudioGenreSelector({ activeId, onSelect, onClose }: { a
           </div>
 
           {/* List Right */}
-          <div className="flex-1 border-l border-white/10 p-12 flex flex-col justify-center gap-2 overflow-y-auto custom-scrollbar">
+          <div className="flex-1 border-t md:border-t-0 md:border-l border-white/10 p-6 md:p-12 flex flex-col justify-center gap-2 overflow-y-auto custom-scrollbar">
              {genres.map((g) => (
                 <button
                   key={g.id}
                   onClick={() => onSelect(g.id)}
                   className={cn(
-                    "flex items-center justify-between p-4 rounded-xl transition-all group",
-                    activeId === g.id ? "bg-white/5 scale-105" : "hover:bg-white/[0.02] opacity-40 hover:opacity-100"
+                    "beam flex items-center justify-between p-4 rounded-xl transition-all group",
+                    activeId === g.id ? "bg-white/5 scale-105" : "opacity-40"
                   )}
                 >
                   <div className="flex items-center gap-4">
@@ -77,10 +76,10 @@ export default function StudioGenreSelector({ activeId, onSelect, onClose }: { a
              
              {/* Arrows indicator */}
              <div className="absolute right-8 top-1/2 -translate-y-1/2 flex flex-col gap-4">
-                <button className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white/20 hover:text-white transition-colors">
+                <button className="beam w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white/20 transition-colors">
                   <ChevronUp className="w-4 h-4" />
                 </button>
-                <button className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white/20 hover:text-white transition-colors">
+                <button className="beam w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white/20 transition-colors">
                   <ChevronDown className="w-4 h-4" />
                 </button>
              </div>

@@ -96,13 +96,13 @@ export default function SocialAds() {
               <Monitor className="w-4 h-4" />
               <span className="text-[11px] font-bold uppercase tracking-widest italic font-mono">Ads</span>
             </div>
-            <h1 className="text-5xl font-black tracking-tighter text-white italic font-mono uppercase">Social Ads</h1>
+            <h1 className="text-3xl sm:text-5xl font-black tracking-tighter text-white italic font-mono uppercase">Social Ads</h1>
           </div>
-          <div className="flex items-center gap-4">
-             <button 
+          <div className="flex flex-wrap items-center gap-4">
+             <button
                onClick={handleOptimize}
                disabled={isOptimizing}
-               className="secondary-button h-14 flex items-center gap-3 px-8"
+               className="beam secondary-button h-14 flex items-center gap-3 px-8"
              >
                <RefreshCw className={cn("w-4 h-4", isOptimizing && "animate-spin")} />
                {isOptimizing ? 'Optimizing...' : 'Re-optimize'}
@@ -123,7 +123,7 @@ export default function SocialAds() {
       {/* Main Stats Area */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div className="lg:col-span-8 p-10 border border-white/5 bg-dark">
-           <div className="flex items-center justify-between mb-10">
+           <div className="flex flex-wrap items-center justify-between gap-4 mb-10">
               <div className="flex items-center gap-4">
                  <div className="w-12 h-12 border-2 border-primary flex items-center justify-center font-mono text-primary italic font-black">
                    ROAS
@@ -133,14 +133,14 @@ export default function SocialAds() {
                     <div className="text-3xl font-black text-white font-mono italic">—</div>
                  </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                  {['ALL', 'INSTAGRAM', 'YOUTUBE', 'TIKTOK'].map(p => (
-                   <button 
-                      key={p} 
+                   <button
+                      key={p}
                       onClick={() => setActivePlatform(p)}
                       className={cn(
-                        "px-3 py-1 text-[9px] font-bold font-mono tracking-widest border transition-all uppercase",
-                        activePlatform === p ? "border-primary text-primary" : "border-white/5 text-white/20 hover:text-white"
+                        "px-3 py-1 min-h-[40px] text-[9px] font-bold font-mono tracking-widest border transition-all uppercase",
+                        activePlatform === p ? "border-primary text-primary" : "border-white/5 text-white/20"
                       )}
                     >
                       {p}
@@ -180,9 +180,9 @@ export default function SocialAds() {
               <p className="text-white/40 text-sm italic font-medium leading-relaxed">
                  Creative performance insights appear here once your ad sets have run long enough to gather data.
               </p>
-              <button 
+              <button
                 onClick={() => notify('success', 'Published', 'Variation B-2 pushed to your active ad sets.')}
-                className="w-full py-4 border border-primary/20 text-primary font-mono text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary/10 transition-all"
+                className="beam w-full py-4 min-h-[40px] border border-primary/20 text-primary font-mono text-[10px] font-black uppercase tracking-[0.2em] transition-all"
               >
                  Publish Variation B-2
               </button>
@@ -225,7 +225,7 @@ export default function SocialAds() {
             )}
             {filteredAdSets.map((ad, i) => (
               <ScrollReveal key={ad.id} delay={i * 0.05} direction="up">
-                 <div className="p-8 bg-dark border border-white/5 hover:border-white/20 transition-all group grid grid-cols-1 md:grid-cols-12 gap-8 items-center text-left">
+                 <div className="p-8 bg-dark border border-white/5 transition-all group grid grid-cols-1 md:grid-cols-12 gap-8 items-center text-left">
                     <div className="md:col-span-4 flex items-center gap-6">
                        <div className="w-12 h-12 border border-white/5 bg-white/5 flex items-center justify-center">
                           {ad.platform === 'INSTAGRAM' ? <Instagram className="w-6 h-6 text-primary" /> : <Youtube className="w-6 h-6 text-primary" />}
@@ -251,14 +251,14 @@ export default function SocialAds() {
                        <span className="text-[9px] font-bold text-white/20 uppercase tracking-widest font-mono">CTR</span>
                        <div className="text-lg font-black text-primary italic font-mono">{ad.ctr}</div>
                     </div>
-                    <div className="md:col-span-2 flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                       <button 
+                    <div className="md:col-span-2 flex justify-end gap-3 transition-opacity">
+                       <button
                          onClick={() => notify('info', 'Manual override', `Manual settings applied to ad ${ad.id}.`)}
-                         className="p-3 border border-white/10 hover:border-primary transition-all text-white/40 hover:text-primary"
+                         className="beam p-3 min-h-[40px] min-w-[40px] flex items-center justify-center border border-white/10 transition-all text-white/40"
                         >
                           <Settings className="w-4 h-4" />
                        </button>
-                       <button className="p-3 border border-white/10 hover:bg-white hover:text-black transition-all">
+                       <button className="beam p-3 min-h-[40px] min-w-[40px] flex items-center justify-center border border-white/10 transition-all">
                           <ArrowUpRight className="w-4 h-4" />
                        </button>
                     </div>
@@ -270,12 +270,12 @@ export default function SocialAds() {
 
       <AnimatePresence>
         {showBuilder && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-xl">
-            <motion.div 
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-xl overflow-y-auto">
+            <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-dark border border-white/10 p-12 max-w-2xl w-full space-y-10 relative overflow-hidden"
+              className="bg-dark border border-white/10 p-6 sm:p-12 max-w-2xl w-full space-y-10 relative overflow-hidden"
             >
               <div className="absolute top-0 right-0 p-8 opacity-5">
                 <Settings className="w-32 h-32 text-primary" />
@@ -287,11 +287,11 @@ export default function SocialAds() {
                     <Plus className="w-4 h-4" />
                     <span className="text-[10px] font-bold uppercase tracking-[0.3em] font-mono">New ad set</span>
                   </div>
-                  <h2 className="text-4xl font-black italic font-mono uppercase tracking-tighter text-white">Ad Set Builder</h2>
+                  <h2 className="text-3xl sm:text-4xl font-black italic font-mono uppercase tracking-tighter text-white">Ad Set Builder</h2>
                 </header>
 
                 <div className="space-y-6">
-                  <div className="grid grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div className="space-y-2">
                        <label className="text-[10px] font-bold text-white/20 uppercase tracking-widest font-mono">Campaign Name</label>
                        <input 
@@ -350,9 +350,9 @@ export default function SocialAds() {
                 </div>
 
                 <div className="flex gap-4 pt-6">
-                  <button 
+                  <button
                     onClick={() => setShowBuilder(false)}
-                    className="flex-1 py-4 border border-white/10 text-white/40 font-mono text-[10px] font-black uppercase tracking-[0.2em] hover:text-white hover:border-white/20 transition-all"
+                    className="beam flex-1 py-4 min-h-[40px] border border-white/10 text-white/40 font-mono text-[10px] font-black uppercase tracking-[0.2em] transition-all"
                   >
                     Cancel
                   </button>

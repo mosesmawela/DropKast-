@@ -21,13 +21,13 @@ export default function UGCGenerator() {
 
   return (
     <div className="space-y-8 h-full flex flex-col">
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {templates.map((t) => (
           <button
             key={t.id}
             onClick={() => setTemplate(t.id)}
             className={cn(
-              "p-6 border text-left transition-all relative group",
+              "beam p-6 border text-left transition-all relative group",
               template === t.id ? "border-primary bg-primary/5 shadow-[0_0_20px_rgba(255,77,0,0.1)]" : "border-white/5 bg-black"
             )}
           >
@@ -38,17 +38,17 @@ export default function UGCGenerator() {
         ))}
       </div>
 
-      <div className="flex-1 flex gap-8">
+      <div className="flex-1 flex flex-col lg:flex-row gap-8">
         <div className="flex-1 space-y-10">
-           <div className="grid grid-cols-2 gap-8">
+           <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
               <div className="space-y-4">
                  <label className="text-[9px] font-black text-white/40 uppercase tracking-[0.4em] font-mono italic">Source_Portrait</label>
-                 <div className="aspect-[4/5] border border-dashed border-white/10 bg-black/40 flex flex-col items-center justify-center gap-4 group cursor-pointer hover:border-primary/50 transition-all">
-                    <div className="w-12 h-12 rounded-full bg-white/[0.03] flex items-center justify-center group-hover:scale-110 transition-transform">
-                       <Upload className="w-5 h-5 text-white/20 group-hover:text-primary" />
+                 <div className="beam aspect-[4/5] border border-dashed border-white/10 bg-black/40 flex flex-col items-center justify-center gap-4 group cursor-pointer transition-all">
+                    <div className="w-12 h-12 rounded-full bg-white/[0.03] flex items-center justify-center transition-transform">
+                       <Upload className="w-5 h-5 text-white/20" />
                     </div>
                     <div className="text-center">
-                       <div className="text-[10px] font-black text-white/20 uppercase tracking-widest group-hover:text-white transition-colors">Upload_Media_Node</div>
+                       <div className="text-[10px] font-black text-white/20 uppercase tracking-widest transition-colors">Upload_Media_Node</div>
                        <div className="text-[8px] text-white/10 uppercase tracking-widest mt-1">MP4 / MOV / JPG</div>
                     </div>
                  </div>
@@ -96,19 +96,19 @@ export default function UGCGenerator() {
            <button
              onClick={generate}
              disabled={loading}
-             className="w-full h-16 bg-primary text-white text-[11px] font-black uppercase italic tracking-widest flex items-center justify-center gap-4 hover:bg-white hover:text-black transition-all disabled:opacity-50 shadow-[0_0_40px_rgba(255,77,0,0.2)]"
+             className="beam w-full h-16 bg-primary text-white text-[11px] font-black uppercase italic tracking-widest flex items-center justify-center gap-4 transition-all disabled:opacity-50 shadow-[0_0_40px_rgba(255,77,0,0.2)]"
            >
              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <VideoIcon className="w-5 h-5" />}
              {loading ? "Synthesizing_Synthetic_Influencer..." : "Initiate_Viral_UGC_Engine"}
            </button>
         </div>
 
-        <div className="w-72 bg-black border border-white/10 p-12 flex flex-col items-center justify-center text-center italic relative overflow-hidden group">
+        <div className="w-full lg:w-72 bg-black border border-white/10 p-12 flex flex-col items-center justify-center text-center italic relative overflow-hidden group">
            <div className="absolute top-0 left-0 w-full h-1 bg-primary/20" />
            <User className="w-12 h-12 text-white/5 mb-6 animate-pulse" />
            <p className="text-[10px] text-white/20 font-black uppercase tracking-[0.3em] leading-relaxed">Neural Renderer idling. Input source media and target audio node to visualize UGC generation.</p>
-           
-           <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+
+           <div className="absolute inset-0 bg-primary/5 transition-opacity pointer-events-none" />
         </div>
       </div>
     </div>

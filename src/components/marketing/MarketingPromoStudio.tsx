@@ -22,18 +22,18 @@ export default function MarketingPromoStudio() {
   const [tab, setTab] = useState<PromoTab>('presave');
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto py-8">
+    <div className="space-y-8 max-w-7xl mx-auto py-8 px-4 sm:px-0">
       {/* Header */}
       <div>
         <div className="flex items-center gap-2 text-white/40 mb-2">
           <Sparkles className="w-4 h-4 text-primary" />
           <span className="text-[10px] font-black tracking-widest uppercase italic">MARKETING PROMO STUDIO</span>
         </div>
-        <h1 className="text-3xl font-black tracking-tight text-white uppercase italic">Promotional Tools</h1>
+        <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white uppercase italic">Promotional Tools</h1>
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex border-b border-white/5">
+      <div className="flex border-b border-white/5 overflow-x-auto">
         {[
           { id: 'presave' as PromoTab, icon: Link2, label: 'PRE-SAVES / SMART LINKS' },
           { id: 'pitching' as PromoTab, icon: Send, label: 'PITCHING' },
@@ -43,8 +43,8 @@ export default function MarketingPromoStudio() {
             key={t.id}
             onClick={() => setTab(t.id)}
             className={cn(
-              'px-8 py-4 text-[10px] font-black uppercase tracking-widest italic transition-all flex items-center gap-2',
-              tab === t.id ? 'text-primary border-b-2 border-primary' : 'text-white/40 hover:text-white',
+              'px-6 sm:px-8 py-4 text-[10px] font-black uppercase tracking-widest italic transition-all flex items-center gap-2 whitespace-nowrap',
+              tab === t.id ? 'text-primary border-b-2 border-primary' : 'text-white/40',
             )}
           >
             <t.icon className="w-4 h-4" />
@@ -112,8 +112,8 @@ function PreSaveSmartLinks() {
       </div>
 
       {/* Table */}
-      <div className="bg-[var(--card-bg)] border border-white/5 overflow-hidden">
-        <table className="w-full text-left border-collapse">
+      <div className="bg-[var(--card-bg)] border border-white/5 overflow-x-auto">
+        <table className="w-full min-w-[600px] text-left border-collapse">
           <thead>
             <tr className="border-b border-white/5 bg-[var(--bg-main)]">
               {['ALBUM', 'ARTIST', 'RELEASE DATE', 'ACTIONS'].map((h) => (
@@ -131,7 +131,7 @@ function PreSaveSmartLinks() {
               </tr>
             ) : (
               campaigns.map((c, i) => (
-                <tr key={i} className="border-b border-white/5 hover:bg-white/5">
+                <tr key={i} className="border-b border-white/5">
                   <td className="px-6 py-5 text-xs font-black text-white italic">{c.album}</td>
                   <td className="px-6 py-5 text-[10px] font-black text-white/60 italic">{c.artist}</td>
                   <td className="px-6 py-5 text-[10px] font-black text-white/40 italic">{c.releaseDate}</td>
@@ -165,15 +165,15 @@ function FanEmailHarvest() {
 
   return (
     <div className="bg-[var(--bg-main)] border border-white/5 p-6 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap gap-4 items-center justify-between">
         <h3 className="text-[10px] font-black text-white/50 uppercase tracking-widest italic">Fan CRM — Email Harvest</h3>
-        <button className="flex items-center gap-2 px-6 py-3 bg-primary text-black text-[9px] font-black uppercase tracking-widest italic hover:bg-primary/80 transition-all">
+        <button className="beam flex items-center gap-2 px-6 py-3 bg-primary text-black text-[9px] font-black uppercase tracking-widest italic transition-all">
           <Download className="w-3 h-3" />
           DOWNLOAD EMAIL LIST
         </button>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {stats.map((s) => (
           <div key={s.label} className="bg-[var(--card-bg)] border border-white/5 p-5 flex items-start gap-4">
             <div className="w-10 h-10 border border-white/10 flex items-center justify-center">
@@ -209,8 +209,8 @@ function PitchingPanel() {
           <Clock className="w-4 h-4 text-primary" />
           Active Pitch Candidates
         </h2>
-        <div className="bg-[var(--card-bg)] border border-white/5 overflow-hidden">
-          <table className="w-full text-left border-collapse">
+        <div className="bg-[var(--card-bg)] border border-white/5 overflow-x-auto">
+          <table className="w-full min-w-[600px] text-left border-collapse">
             <thead>
               <tr className="border-b border-white/5 bg-[var(--bg-main)]">
                 {['ALBUM', 'ARTIST', 'RELEASE DATE', 'PITCHING ACTION STATUS'].map((h) => (
@@ -246,8 +246,8 @@ function PitchingPanel() {
           </select>
         </div>
 
-        <div className="bg-[var(--card-bg)] border border-white/5 overflow-hidden">
-          <table className="w-full text-left border-collapse">
+        <div className="bg-[var(--card-bg)] border border-white/5 overflow-x-auto">
+          <table className="w-full min-w-[600px] text-left border-collapse">
             <thead>
               <tr className="border-b border-white/5 bg-[var(--bg-main)]">
                 {['ALBUM', 'ARTIST', 'RELEASE DATE', 'DISTRO / PLATFORM PITCH STATUS'].map((h) => (
@@ -283,11 +283,11 @@ function PromoArtGenerator() {
       {/* Create new */}
       <div className="bg-[var(--card-bg)] border border-white/5 p-6 space-y-4">
         <h3 className="text-[10px] font-black text-white/50 uppercase tracking-widest italic">Source Asset</h3>
-        <div className="flex items-center gap-4">
-          <select value={albumSelect} onChange={(e) => setAlbumSelect(e.target.value)} className="flex-1 border border-white/10 px-4 py-4 text-[10px] font-black text-white/60 uppercase tracking-widest italic bg-black">
+        <div className="flex flex-wrap items-center gap-4">
+          <select value={albumSelect} onChange={(e) => setAlbumSelect(e.target.value)} className="flex-1 min-w-[200px] border border-white/10 px-4 py-4 text-[10px] font-black text-white/60 uppercase tracking-widest italic bg-black">
             <option value="">Select Album</option>
           </select>
-          <button className="px-8 py-4 bg-primary text-black text-[10px] font-black uppercase tracking-widest italic hover:bg-primary/80 transition-all flex items-center gap-2">
+          <button className="beam px-8 py-4 bg-primary text-black text-[10px] font-black uppercase tracking-widest italic transition-all flex items-center gap-2">
             <Image className="w-4 h-4" />
             CREATE NEW
           </button>
@@ -308,8 +308,8 @@ function PromoArtGenerator() {
       </div>
 
       {/* Assets Table */}
-      <div className="bg-[var(--card-bg)] border border-white/5 overflow-hidden">
-        <table className="w-full text-left border-collapse">
+      <div className="bg-[var(--card-bg)] border border-white/5 overflow-x-auto">
+        <table className="w-full min-w-[700px] text-left border-collapse">
           <thead>
             <tr className="border-b border-white/5 bg-[var(--bg-main)]">
               {['ALBUM', 'ARTIST', 'PROMO TYPE', 'FORMAT', 'DATE CREATED', 'ACTIONS'].map((h) => (
@@ -327,7 +327,7 @@ function PromoArtGenerator() {
               </tr>
             )}
             {assets.map((a, i) => (
-              <tr key={i} className="border-b border-white/5 hover:bg-white/5">
+              <tr key={i} className="border-b border-white/5">
                 <td className="px-6 py-5 text-xs font-black text-white italic">{a.album}</td>
                 <td className="px-6 py-5 text-[10px] font-black text-white/60 italic">{a.artist}</td>
                 <td className="px-6 py-5"><span className="text-[9px] font-black text-white/60 italic">{a.promoType}</span></td>

@@ -63,10 +63,10 @@ export default function Analytics() {
   ]);
 
   const stats = [
-    { label: 'NODE_PLAYS', value: data?.plays != null ? `${(data.plays / 1000).toFixed(1)}K` : '—', trend: '', color: 'from-primary/20 to-primary/5' },
-    { label: 'CONVERSION_NODES', value: data?.clicks != null ? data.clicks : '—', trend: '', color: 'from-blue-500/20 to-blue-500/5' },
-    { label: 'INF_POSTS', value: data?.influencerPosts != null ? data.influencerPosts : '—', trend: '', color: 'from-purple-500/20 to-purple-500/5' },
-    { label: 'TOTAL_REACH', value: data?.totalReach != null ? (data.totalReach > 1000000 ? `${(data.totalReach/1000000).toFixed(1)}M` : `${(data.totalReach/1000).toFixed(1)}K`) : '—', trend: '', color: 'from-emerald-500/20 to-emerald-500/5' },
+    { label: 'Total Plays', value: data?.plays != null ? `${(data.plays / 1000).toFixed(1)}K` : '—', trend: '', color: 'from-primary/20 to-primary/5' },
+    { label: 'Clicks', value: data?.clicks != null ? data.clicks : '—', trend: '', color: 'from-blue-500/20 to-blue-500/5' },
+    { label: 'Creator Posts', value: data?.influencerPosts != null ? data.influencerPosts : '—', trend: '', color: 'from-purple-500/20 to-purple-500/5' },
+    { label: 'Total Reach', value: data?.totalReach != null ? (data.totalReach > 1000000 ? `${(data.totalReach/1000000).toFixed(1)}M` : `${(data.totalReach/1000).toFixed(1)}K`) : '—', trend: '', color: 'from-emerald-500/20 to-emerald-500/5' },
   ];
 
   const handleSendMessage = async () => {
@@ -120,12 +120,12 @@ export default function Analytics() {
           <div>
             <div className="flex items-center gap-2 text-primary mb-3 font-mono">
               <Cpu className="w-4 h-4" />
-              <span className="text-[11px] font-bold tracking-[0.2em] uppercase">AI Assistant</span>
+              <span className="text-[11px] font-bold tracking-[0.2em] uppercase">Insights</span>
             </div>
-            <h1 className="text-5xl font-black tracking-tight text-white italic font-mono uppercase">Analytics</h1>
+            <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white italic font-mono uppercase">Analytics</h1>
           </div>
           <div className="flex items-center gap-4">
-            <button className="flex items-center gap-3 px-6 h-14 bg-surface-low border border-white/10 hover:border-white transition-all text-xs font-bold italic tracking-widest font-mono">
+            <button className="flex items-center gap-3 px-6 h-14 bg-surface-low border border-white/10 transition-all text-xs font-bold italic tracking-widest font-mono">
               <Calendar className="w-4 h-4 text-primary" />
               Last 30 Days
               <ChevronDown className="w-4 h-4 text-white/20" />
@@ -146,24 +146,24 @@ export default function Analytics() {
           {/* Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {stats.map((stat, i) => (
-              <div key={i} className="manifest-card p-10 bg-dark border-white/5 relative group overflow-hidden">
-                <div className={cn("absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-500", stat.color)} />
+              <div key={i} className="manifest-card p-5 sm:p-10 bg-dark border-white/5 relative group overflow-hidden">
+                <div className={cn("absolute inset-0 bg-gradient-to-br opacity-70 transition-opacity duration-500", stat.color)} />
                 <div className="relative z-10">
-                  <div className="flex items-center gap-4 mb-8">
-                    <div className="w-10 h-10 border border-white/10 flex items-center justify-center text-primary group-hover:border-primary transition-colors bg-white/5">
+                  <div className="flex items-center gap-4 mb-8 min-w-0">
+                    <div className="w-10 h-10 border border-white/10 flex items-center justify-center text-primary transition-colors bg-white/5 shrink-0">
                       {i === 0 ? <TrendingUp className="w-4 h-4" /> : i === 1 ? <Globe2 className="w-4 h-4" /> : <Users className="w-4 h-4" />}
                     </div>
-                    <span className="text-[11px] font-bold text-white/40 tracking-widest italic font-mono uppercase">{stat.label}</span>
+                    <span className="text-[11px] font-bold text-white/40 tracking-widest italic font-mono uppercase truncate">{stat.label}</span>
                   </div>
                   <div className="text-5.5xl font-black text-white mb-2 italic leading-none font-mono">{stat.value}</div>
-                  <p className="text-[11px] text-primary font-bold italic tracking-widest font-mono">{stat.trend} <span className="text-white/20 lowercase ml-2 font-sans font-medium tracking-normal italic">from target_node</span></p>
+                  <p className="text-[11px] text-white/20 font-medium italic tracking-normal font-sans">Last 30 days</p>
                 </div>
               </div>
             ))}
           </div>
 
           {/* Stream Growth Chart */}
-          <div className="manifest-card p-10 min-h-[450px] bg-dark border-white/5">
+          <div className="manifest-card p-5 sm:p-10 min-h-[450px] bg-dark border-white/5">
             <div className="flex items-center justify-between mb-12">
               <h3 className="text-sm font-bold text-white italic tracking-widest font-mono uppercase">Monthly Growth</h3>
               <div className="barcode-sim opacity-10" />
@@ -217,18 +217,17 @@ export default function Analytics() {
           </div>
 
           {/* Global Heatmap Overlay */}
-          <div className="manifest-card p-10 bg-dark border-white/5 space-y-10 overflow-hidden relative">
+          <div className="manifest-card p-5 sm:p-10 bg-dark border-white/5 space-y-10 overflow-hidden relative">
              <div className="absolute top-0 right-0 p-8 opacity-5">
                 <Globe2 className="w-40 h-40" />
              </div>
-             <div className="flex items-center justify-between relative z-10">
-                <h3 className="text-sm font-bold text-white italic tracking-widest font-mono uppercase">Market Heatmap</h3>
-                <div className="flex gap-4 items-center">
+             <div className="flex items-center justify-between gap-4 relative z-10">
+                <h3 className="text-sm font-bold text-white italic tracking-widest font-mono uppercase min-w-0 truncate">Market Heatmap</h3>
+                <div className="flex gap-4 items-center shrink-0">
                    <div className="flex items-center gap-2 text-[9px] font-black text-primary font-mono italic">
                       <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-                      LIVE_TRENDS
+                      Live trends
                    </div>
-                   <button className="text-[10px] font-black text-white/20 uppercase tracking-widest hover:text-white transition-colors">Expand_Map</button>
                 </div>
              </div>
 
@@ -241,9 +240,12 @@ export default function Analytics() {
 
           {/* Release Performance Nodes */}
           <div className="space-y-8">
-             <div className="flex items-center justify-between">
-                <h3 className="text-[11px] font-bold text-white/30 italic tracking-[0.4em] font-mono uppercase italic">Release Performance Nodes</h3>
-                <button className="text-[10px] font-bold text-primary uppercase tracking-widest font-mono italic underline decoration-primary/30 underline-offset-4">View All Catalog</button>
+             <div className="flex items-center justify-between gap-4">
+                <h3 className="text-[11px] font-bold text-white/30 italic tracking-[0.4em] font-mono uppercase min-w-0 truncate">Release Performance</h3>
+                <button
+                  onClick={() => navigate('/releases')}
+                  className="text-[10px] font-bold text-primary uppercase tracking-widest font-mono italic underline decoration-primary/30 underline-offset-4 shrink-0"
+                >View all</button>
              </div>
              <div className="grid grid-cols-1 gap-4">
                 {allReleases.length === 0 && (
@@ -256,18 +258,18 @@ export default function Analytics() {
                     key={node.id}
                     whileHover={{ scale: 1.01 }}
                     onClick={() => navigate(`/analytics/${node.id}`)}
-                    className="p-6 border border-white/5 bg-dark hover:border-primary/20 transition-all cursor-pointer flex items-center justify-between group"
+                    className="beam p-6 border border-white/5 bg-dark transition-all cursor-pointer flex items-center justify-between gap-4 group"
                   >
-                     <div className="flex items-center gap-6">
-                        <div className="w-12 h-12 bg-white/5 border border-white/10 flex items-center justify-center font-mono font-black italic text-primary overflow-hidden">
+                     <div className="flex items-center gap-6 min-w-0">
+                        <div className="w-12 h-12 bg-white/5 border border-white/10 flex items-center justify-center font-mono font-black italic text-primary overflow-hidden shrink-0">
                           {node.artwork ? <img src={node.artwork} alt="" className="w-full h-full object-cover" /> : (node.title[0] || '?')}
                         </div>
-                        <div>
-                           <h4 className="text-lg font-black text-white italic uppercase tracking-tight group-hover:text-primary transition-colors">{node.title}</h4>
-                           <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest font-mono">{node.status} · {node.artist}</p>
+                        <div className="min-w-0">
+                           <h4 className="text-lg font-black text-white italic uppercase tracking-tight transition-colors truncate">{node.title}</h4>
+                           <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest font-mono truncate">{node.status} · {node.artist}</p>
                         </div>
                      </div>
-                     <div className="text-right">
+                     <div className="text-right shrink-0">
                         <div className="text-xl font-black text-white/30 italic font-mono">—</div>
                         <div className="text-[10px] font-black text-white/20 uppercase italic tracking-widest">No data yet</div>
                      </div>
@@ -279,18 +281,18 @@ export default function Analytics() {
 
         {/* AI Copilot Side Panel */}
         <div className="lg:col-span-1 flex flex-col h-full min-h-[600px] space-y-8">
-          <div className="flex items-center justify-between px-2">
-            <h3 className="text-xl font-bold tracking-tight uppercase italic font-mono">Strategy AI</h3>
-            <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between gap-3 px-2">
+            <h3 className="text-xl font-bold tracking-tight uppercase italic font-mono min-w-0 truncate">Strategy Assistant</h3>
+            <div className="flex items-center gap-2 shrink-0">
               <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-              <span className="text-[10px] font-bold text-white/40 font-mono tracking-widest">LIVE_SYNC</span>
+              <span className="text-[10px] font-bold text-white/40 font-mono tracking-widest">Online</span>
             </div>
           </div>
 
           <div className="flex-1 flex flex-col bg-dark border border-white/5 overflow-hidden shadow-2xl">
             <div className="bg-white/5 p-6 border-b border-white/10 flex items-center gap-3">
               <Sparkles className="w-4 h-4 text-primary" />
-              <span className="text-[11px] font-bold tracking-widest font-mono uppercase italic">Music Strategist AI</span>
+              <span className="text-[11px] font-bold tracking-widest font-mono uppercase italic">Music Strategist</span>
             </div>
 
             {/* Chat Messages */}
@@ -331,7 +333,7 @@ export default function Analytics() {
                 />
                 <button 
                   onClick={handleSendMessage}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 text-primary hover:text-white transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 text-primary transition-colors"
                 >
                   <Send className="w-5 h-5" />
                 </button>
@@ -340,7 +342,7 @@ export default function Analytics() {
           </div>
 
           <div className="p-6 border border-white/5 bg-dark space-y-5">
-            <h4 className="text-[10px] font-bold text-white/20 uppercase tracking-widest font-mono">Quick Inquiries</h4>
+            <h4 className="text-[10px] font-bold text-white/20 uppercase tracking-widest font-mono">Quick Questions</h4>
             <div className="space-y-1">
               {[
                 "Why did my streams drop this week?",
@@ -349,11 +351,11 @@ export default function Analytics() {
               ].map((q, i) => (
                 <button 
                   key={i}
-                  className="w-full text-left p-4 hover:bg-white/5 transition-colors group flex items-center justify-between font-mono"
+                  className="w-full text-left p-4 transition-colors group flex items-center justify-between font-mono"
                   onClick={() => setChatInput(q)}
                 >
-                  <span className="text-[11px] text-white/50 group-hover:text-white transition-colors">{q}</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-white/5 group-hover:text-primary transition-colors" />
+                  <span className="text-[11px] text-white/50 transition-colors">{q}</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-white/5 transition-colors" />
                 </button>
               ))}
             </div>

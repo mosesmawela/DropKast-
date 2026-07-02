@@ -57,7 +57,7 @@ export default function CoverGenerator() {
           <button
             onClick={generate}
             disabled={loading || !prompt.trim()}
-            className="absolute bottom-4 right-4 h-12 px-8 bg-primary text-white text-[10px] font-black uppercase italic tracking-widest flex items-center gap-3 hover:bg-white hover:text-black transition-all disabled:opacity-50 active:scale-95"
+            className="beam absolute bottom-4 right-4 h-12 px-8 bg-primary text-white text-[10px] font-black uppercase italic tracking-widest flex items-center gap-3 transition-all disabled:opacity-50 active:scale-95"
           >
             {loading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -76,17 +76,17 @@ export default function CoverGenerator() {
         </div>
 
         {images.length > 0 ? (
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
             {images.map((img, i) => (
-              <motion.div 
+              <motion.div
                 key={i}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: i * 0.1 }}
                 onClick={() => setSelected(i)}
-                className={`relative aspect-square border overflow-hidden cursor-pointer group transition-all duration-500 ${selected === i ? 'border-primary' : 'border-white/5 hover:border-white/20'}`}
+                className={`beam relative aspect-square border overflow-hidden cursor-pointer group transition-all duration-500 ${selected === i ? 'border-primary' : 'border-white/5'}`}
               >
-                <img src={img} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                <img src={img} className="w-full h-full object-cover transition-transform duration-700" />
                 {selected === i && (
                   <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
                     <div className="w-10 h-10 bg-primary text-white flex items-center justify-center shadow-2xl">
@@ -115,11 +115,11 @@ export default function CoverGenerator() {
 
         {selected !== null && (
           <div className="flex gap-4 pt-6">
-            <button className="flex-1 h-12 bg-white text-black text-[10px] font-black uppercase italic tracking-widest flex items-center justify-center gap-3 hover:bg-primary hover:text-white transition-all shadow-2xl">
+            <button className="beam flex-1 h-12 bg-white text-black text-[10px] font-black uppercase italic tracking-widest flex items-center justify-center gap-3 transition-all shadow-2xl">
               <Download className="w-4 h-4" />
               Store_Local
             </button>
-            <button className="flex-1 h-12 bg-primary text-white text-[10px] font-black uppercase italic tracking-widest flex items-center justify-center gap-3 hover:bg-white hover:text-black transition-all shadow-2xl">
+            <button className="beam flex-1 h-12 bg-primary text-white text-[10px] font-black uppercase italic tracking-widest flex items-center justify-center gap-3 transition-all shadow-2xl">
               <Check className="w-4 h-4" />
               Use_Primary
             </button>

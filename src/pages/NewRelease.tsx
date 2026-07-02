@@ -185,26 +185,26 @@ export default function NewRelease() {
     <div className="max-w-6xl mx-auto py-12 px-6 font-mono">
       {/* Header & Status */}
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
-        <div>
-           <button 
+        <div className="min-w-0">
+           <button
              onClick={() => navigate('/releases')}
-             className="flex items-center gap-2 text-white/20 hover:text-primary transition-colors mb-8 text-[11px] font-black uppercase tracking-widest font-mono italic"
+             className="flex items-center gap-2 text-white/20 transition-colors mb-8 text-[11px] font-black uppercase tracking-widest font-mono italic"
            >
-             <ChevronLeft className="w-3 h-3" />
+             <ChevronLeft className="w-3 h-3 shrink-0" />
              Back to Catalog
            </button>
-           <div className="flex items-center gap-4 mb-4">
-              <span className="px-3 py-1 bg-primary/10 border border-primary/20 text-primary text-[9px] font-black uppercase tracking-[0.3em] font-mono italic">Phase_01: Deployment</span>
+           <div className="flex flex-wrap items-center gap-4 mb-4">
+              <span className="px-3 py-1 bg-primary/10 border border-primary/20 text-primary text-[9px] font-black uppercase tracking-[0.3em] font-mono italic">New Release</span>
               <div className="flex items-center gap-2">
                  {isSaving ? (
                    <Loader2 className="w-3 h-3 text-white/20 animate-spin" />
                  ) : (
                    <Save className="w-3 h-3 text-white/20" />
                  )}
-                 <span className="text-[8px] font-black text-white/20 uppercase tracking-widest leading-none underline decoration-white/10 underline-offset-4">Auto_Save_Active</span>
+                 <span className="text-[8px] font-black text-white/20 uppercase tracking-widest leading-none underline decoration-white/10 underline-offset-4">Auto-save on</span>
               </div>
            </div>
-           <h1 className="text-7xl font-black text-white italic uppercase tracking-tighter leading-none mb-4">New <span className="text-primary">Release</span></h1>
+           <h1 className="text-4xl sm:text-7xl font-black text-white italic uppercase tracking-tighter leading-none mb-4">New <span className="text-primary">Release</span></h1>
            <p className="text-white/30 text-[10px] font-bold uppercase tracking-[0.4em] font-mono italic">Release wizard</p>
         </div>
 
@@ -214,15 +214,15 @@ export default function NewRelease() {
              animate={{ opacity: 1, x: 0 }}
              className="p-8 border-2 border-primary bg-primary/5 flex items-center gap-10 shadow-[0_0_50px_rgba(255,77,0,0.1)]"
            >
-              <div>
-                 <div className="text-[10px] font-black text-primary uppercase tracking-[0.4em] mb-1 italic">Fragmented Node Recovery</div>
-                 <div className="text-sm font-black text-white uppercase italic tracking-tight">Resume previous data transmission?</div>
+              <div className="min-w-0">
+                 <div className="text-[10px] font-black text-primary uppercase tracking-[0.4em] mb-1 italic">Draft recovered</div>
+                 <div className="text-sm font-black text-white uppercase italic tracking-tight">Pick up where you left off?</div>
               </div>
-              <button 
+              <button
                 onClick={resumeDraft}
-                className="h-12 px-8 bg-white text-black font-black uppercase italic tracking-widest text-[11px] hover:bg-primary hover:text-white transition-all shadow-xl active:scale-95"
+                className="beam h-12 px-8 shrink-0 bg-white text-black font-black uppercase italic tracking-widest text-[11px] transition-all shadow-xl active:scale-95"
               >
-                Sync_Draft
+                Resume Draft
               </button>
            </motion.div>
         )}
@@ -244,12 +244,12 @@ export default function NewRelease() {
                   isCompleted ? "border-white/40 text-white/40" : "border-white/5 text-white/10"
                 )}>
                   {isActive && <div className="absolute inset-0 bg-primary/10 animate-pulse" />}
-                  {isCompleted ? <CheckCircle2 className="w-6 h-6" /> : <s.icon className="w-5 h-5 transition-transform duration-500 group-hover:rotate-12" />}
+                  {isCompleted ? <CheckCircle2 className="w-6 h-6" /> : <s.icon className="w-5 h-5 transition-transform duration-500" />}
                 </div>
                 <div className="text-center absolute pt-16">
                   <div className={cn(
                     "text-[10px] font-black uppercase tracking-[0.4em] font-mono italic transition-all duration-500",
-                    isActive ? "text-white opacity-100" : "text-white/20 opacity-40 hover:opacity-100"
+                    isActive ? "text-white opacity-100" : "text-white/20 opacity-40"
                   )}>{s.label}</div>
                   {isActive && (
                     <motion.div 
@@ -266,12 +266,12 @@ export default function NewRelease() {
         </div>
       </div>
 
-      {/* Manifest Area */}
-      <div className="manifest-card p-12 bg-dark/40 border-white/5 relative overflow-hidden backdrop-blur-3xl min-h-[550px] flex flex-col justify-center">
+      {/* Wizard Area */}
+      <div className="manifest-card p-5 sm:p-12 bg-dark/40 border-white/5 relative overflow-hidden backdrop-blur-3xl min-h-[550px] flex flex-col justify-center">
         {/* Abstract Background Branding */}
         <div className="absolute top-0 right-0 p-12 opacity-[0.03] select-none pointer-events-none">
-           <div className="text-[150px] font-black italic uppercase leading-none tracking-tighter">DISTRO</div>
-           <div className="text-[150px] font-black italic uppercase leading-none tracking-tighter text-primary ml-24">MASTER</div>
+           <div className="text-[150px] font-black italic uppercase leading-none tracking-tighter">NEW</div>
+           <div className="text-[150px] font-black italic uppercase leading-none tracking-tighter text-primary ml-24">RELEASE</div>
         </div>
 
         {Object.keys(stepErrors).length > 0 && (
@@ -302,16 +302,16 @@ export default function NewRelease() {
         </AnimatePresence>
       </div>
 
-      {/* Traceability Footer */}
+      {/* Footer */}
       <div className="mt-16 flex flex-col md:flex-row items-center justify-between opacity-30 text-[10px] font-black uppercase tracking-[0.4em] font-mono italic gap-6 border-t border-white/5 pt-10">
          <div className="flex items-center gap-3">
-            <div className="w-1.5 h-1.5 bg-primary animate-pulse rounded-full" />
+            <div className="w-1.5 h-1.5 bg-primary animate-pulse rounded-full shrink-0" />
             Drafts auto-save every 10s
          </div>
-         <div className="flex items-center gap-8">
-            <span>UPC auto-mint</span>
-            <span>ISRC auto-sync</span>
-            <span>Audit-logged</span>
+         <div className="flex flex-wrap items-center justify-center gap-8">
+            <span>UPC included</span>
+            <span>ISRC included</span>
+            <span>Fully tracked</span>
          </div>
       </div>
 

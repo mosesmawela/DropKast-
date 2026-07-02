@@ -151,11 +151,11 @@ export default function SmartLinks() {
   return (
     <div className="max-w-7xl mx-auto py-12 px-6">
       <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-8">
-        <div className="space-y-4">
+        <div className="space-y-4 min-w-0">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-[0.4em] italic">
-            <Link2 className="w-3 h-3" /> Smart Links
+            <Link2 className="w-3 h-3 shrink-0" /> Smart Links
           </div>
-          <h1 className="text-6xl md:text-7xl font-black text-white italic uppercase tracking-tighter leading-none">
+          <h1 className="text-4xl sm:text-6xl md:text-7xl font-black text-white italic uppercase tracking-tighter leading-none break-words">
             One link.<br />
             <span className="text-primary">Every</span> platform.
           </h1>
@@ -168,9 +168,9 @@ export default function SmartLinks() {
 
         <button
           onClick={() => setShowCreate(true)}
-          className="h-14 px-8 bg-white text-black hover:bg-primary hover:text-white transition-all flex items-center gap-3 text-[11px] font-black uppercase italic tracking-widest"
+          className="beam h-14 px-8 shrink-0 bg-white text-black transition-all flex items-center gap-3 text-[11px] font-black uppercase italic tracking-widest"
         >
-          <Plus className="w-4 h-4" /> Create smart link
+          <Plus className="w-4 h-4 shrink-0" /> Create smart link
         </button>
       </div>
 
@@ -213,7 +213,7 @@ export default function SmartLinks() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.04 }}
-            className="manifest-card p-6 bg-dark border border-white/5 hover:border-primary/30 transition-all flex flex-col gap-4"
+            className="manifest-card p-6 bg-dark border border-white/5 transition-all flex flex-col gap-4"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1 min-w-0">
@@ -222,7 +222,7 @@ export default function SmartLinks() {
               </div>
               <button
                 onClick={() => handleDelete(it.slug, it.title)}
-                className="p-2 text-white/30 hover:text-red-500 transition-colors shrink-0"
+                className="beam p-2 text-white/30 transition-colors shrink-0"
                 aria-label="Delete smart link"
               >
                 <Trash2 className="w-3.5 h-3.5" />
@@ -247,7 +247,7 @@ export default function SmartLinks() {
             <div className="flex gap-2 pt-2">
               <button
                 onClick={() => handleCopy(it.slug)}
-                className="flex-1 h-10 border border-white/10 text-[10px] font-black uppercase italic tracking-widest text-white/70 hover:bg-white hover:text-black hover:border-white transition-all flex items-center justify-center gap-2"
+                className="beam flex-1 h-10 border border-white/10 text-[10px] font-black uppercase italic tracking-widest text-white/70 transition-all flex items-center justify-center gap-2"
               >
                 <Copy className="w-3 h-3" /> Copy
               </button>
@@ -255,7 +255,7 @@ export default function SmartLinks() {
                 href={`/link/${it.slug}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 h-10 bg-white text-black text-[10px] font-black uppercase italic tracking-widest hover:bg-primary hover:text-white transition-all flex items-center justify-center gap-2"
+                className="beam flex-1 h-10 bg-white text-black text-[10px] font-black uppercase italic tracking-widest transition-all flex items-center justify-center gap-2"
               >
                 Open <ExternalLink className="w-3 h-3" />
               </a>
@@ -301,7 +301,7 @@ export default function SmartLinks() {
               </div>
               <button
                 onClick={() => setShowCreate(false)}
-                className="text-white/40 hover:text-white text-2xl leading-none"
+                className="text-white/40 text-2xl leading-none"
                 aria-label="Close"
               >
                 ×
@@ -416,13 +416,13 @@ export default function SmartLinks() {
             <div className="flex gap-3 pt-2">
               <button
                 onClick={() => setShowCreate(false)}
-                className="h-12 px-6 border border-white/10 text-white/60 text-[10px] font-black uppercase italic tracking-widest hover:border-white hover:text-white transition-all"
+                className="beam h-12 px-6 border border-white/10 text-white/60 text-[10px] font-black uppercase italic tracking-widest transition-all"
               >
                 Cancel
               </button>
               <button
                 onClick={handleCreate}
-                className="flex-1 h-12 bg-white text-black hover:bg-primary hover:text-white text-[10px] font-black uppercase italic tracking-widest transition-all flex items-center justify-center gap-3"
+                className="beam flex-1 h-12 bg-white text-black text-[10px] font-black uppercase italic tracking-widest transition-all flex items-center justify-center gap-3"
               >
                 Generate smart link <ArrowRight className="w-4 h-4" />
               </button>

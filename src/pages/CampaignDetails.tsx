@@ -46,7 +46,7 @@ export default function CampaignDetails() {
         </p>
         <Link
           to="/campaigns"
-          className="inline-flex items-center gap-2 h-11 px-5 bg-primary text-white text-[10px] font-black uppercase italic tracking-widest hover:bg-white hover:text-black transition-all font-mono"
+          className="beam inline-flex items-center gap-2 h-11 px-5 bg-primary text-white text-[10px] font-black uppercase italic tracking-widest transition-all font-mono"
         >
           <ChevronLeft className="w-3 h-3" /> Back to campaigns
         </Link>
@@ -66,7 +66,7 @@ export default function CampaignDetails() {
           <div className="flex items-center gap-6">
             <Link
               to="/campaigns"
-              className="w-12 h-12 border border-white/10 flex items-center justify-center hover:bg-white hover:text-black transition-all"
+              className="beam w-12 h-12 border border-white/10 flex items-center justify-center transition-all"
             >
               <ChevronLeft className="w-5 h-5" />
             </Link>
@@ -75,7 +75,7 @@ export default function CampaignDetails() {
                 <Target className="w-4 h-4" />
                 <span className="text-[11px] font-bold uppercase tracking-widest italic font-mono">Campaign: {campaign.id}</span>
               </div>
-              <h1 className="text-5xl font-black tracking-tighter text-white italic font-mono uppercase">{campaign.title}</h1>
+              <h1 className="text-3xl sm:text-5xl font-black tracking-tighter text-white italic font-mono uppercase">{campaign.title}</h1>
             </div>
           </div>
           <div className="flex items-center gap-4">
@@ -93,7 +93,7 @@ export default function CampaignDetails() {
             </div>
             <Link
               to="/campaigns"
-              className="secondary-button h-14 px-8 text-[11px] font-bold uppercase tracking-widest font-mono italic flex items-center"
+              className="beam secondary-button h-14 px-8 text-[11px] font-bold uppercase tracking-widest font-mono italic flex items-center"
             >
               Manage
             </Link>
@@ -104,7 +104,7 @@ export default function CampaignDetails() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
         {/* Left: performance + channels */}
         <div className="lg:col-span-8 space-y-12">
-          <section className="bg-dark border border-white/5 p-12 space-y-12 shadow-2xl">
+          <section className="bg-dark border border-white/5 p-6 sm:p-12 space-y-12 shadow-2xl">
             <div className="flex items-center justify-between flex-wrap gap-6">
               <div>
                 <h3 className="text-xl font-bold text-white italic font-mono uppercase tracking-tight mb-2">All-Channel Traction</h3>
@@ -115,7 +115,7 @@ export default function CampaignDetails() {
                   <span className={cn('w-1.5 h-1.5 rounded-full', campaign.status === 'ACTIVE' ? 'bg-green-500 animate-pulse' : 'bg-white/20')} />
                 </div>
               </div>
-              <div className="grid grid-cols-3 gap-12 text-right">
+              <div className="grid grid-cols-3 gap-4 sm:gap-12 text-right">
                 <Stat label="Reach" value={campaign.metrics?.reach || '—'} />
                 <Stat label="Engagement" value={campaign.metrics?.engagement || '—'} />
                 <Stat label="Budget spent" value={`${campaign.spent || '$0'} / ${campaign.budget || '$0'}`} accent />
@@ -150,7 +150,7 @@ export default function CampaignDetails() {
                   const Icon = CHANNEL_ICON[ch] || Target;
                   return (
                     <ScrollReveal key={ch} delay={i * 0.1}>
-                      <div className="p-8 bg-dark border border-white/5 hover:border-primary/20 transition-all space-y-6">
+                      <div className="p-8 bg-dark border border-white/5 transition-all space-y-6">
                         <div className="flex items-center justify-between font-mono">
                           <Icon className="w-4 h-4 text-primary" />
                         </div>

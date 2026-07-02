@@ -28,7 +28,14 @@ export const ReleaseProvider: React.FC<{ children: ReactNode }> = ({ children })
       try {
         const res = await fetch('/api/releases');
         const data = await res.json();
-        setAllReleases(data);
+        // Backend must return an array; coerce anything else (error object,
+        // { releases: [...] } envelope, HTML fallback) so .filter never throws.
+        const list = Array.isArray(data)
+          ? data
+          : Array.isArray((data as any)?.releases)
+            ? (data as any).releases
+            : [];
+        setAllReleases(list);
       } catch (err) {
         console.error('Failed to load releases:', err);
         setAllReleases([]);
@@ -41,8 +48,9 @@ export const ReleaseProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   // Scope releases to the active artist when a label is in artist-context
   const releases = useMemo(() => {
-    if (!activeArtistId || !activeArtist) return allReleases;
-    return allReleases.filter(
+    const base = Array.isArray(allReleases) ? allReleases : [];
+    if (!activeArtistId || !activeArtist) return base;
+    return base.filter(
       (r: any) =>
         r.artistId === activeArtistId ||
         (r.artist && r.artist.toLowerCase().includes(activeArtist.name.toLowerCase())),

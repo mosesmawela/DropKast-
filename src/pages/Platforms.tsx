@@ -138,11 +138,11 @@ export default function Platforms() {
     <div className="max-w-7xl mx-auto py-12 px-6">
       {/* Header */}
       <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-8">
-        <div className="space-y-4">
+        <div className="space-y-4 min-w-0">
           <div className="inline-block px-4 py-2 bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-[0.4em] italic">
             Where your music lands
           </div>
-          <h1 className="text-6xl md:text-7xl font-black text-white italic uppercase tracking-tighter leading-none">
+          <h1 className="text-4xl sm:text-6xl md:text-7xl font-black text-white italic uppercase tracking-tighter leading-none">
             Pick your <span className="text-primary">stores</span>
           </h1>
           <p className="text-white/40 text-base font-medium leading-relaxed max-w-2xl">
@@ -152,7 +152,7 @@ export default function Platforms() {
           </p>
         </div>
 
-        <div className="manifest-card p-6 bg-dark border-primary/20 min-w-[260px]">
+        <div className="manifest-card p-6 bg-dark border-primary/20 w-full md:w-auto md:min-w-[260px] shrink-0">
           <div className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic mb-2">Currently selected</div>
           <div className="flex items-baseline gap-2 mb-3">
             <span className="text-5xl font-black italic text-white">{totalSelected}</span>
@@ -172,25 +172,25 @@ export default function Platforms() {
         <span className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] italic mr-2">Quick pick:</span>
         <button
           onClick={() => setPreset('all')}
-          className="h-10 px-5 bg-primary text-white text-[10px] font-black uppercase tracking-widest italic hover:bg-white hover:text-black transition-all flex items-center gap-2"
+          className="beam h-10 px-5 bg-primary text-white text-[10px] font-black uppercase tracking-widest italic transition-all flex items-center gap-2"
         >
           <Check className="w-3 h-3" /> All platforms
         </button>
         <button
           onClick={() => setPreset('recommended')}
-          className="h-10 px-5 bg-white text-black text-[10px] font-black uppercase tracking-widest italic hover:bg-primary hover:text-white transition-all flex items-center gap-2"
+          className="beam h-10 px-5 bg-white text-black text-[10px] font-black uppercase tracking-widest italic transition-all flex items-center gap-2"
         >
           <Star className="w-3 h-3" /> Recommended only
         </button>
         <button
           onClick={() => setPreset('tier1')}
-          className="h-10 px-5 border border-white/20 text-white text-[10px] font-black uppercase tracking-widest italic hover:border-white hover:bg-white hover:text-black transition-all"
+          className="beam h-10 px-5 border border-white/20 text-white text-[10px] font-black uppercase tracking-widest italic transition-all"
         >
           Major streaming only
         </button>
         <button
           onClick={() => setPreset('none')}
-          className="h-10 px-5 border border-white/10 text-white/40 text-[10px] font-black uppercase tracking-widest italic hover:border-red-500 hover:text-red-500 transition-all flex items-center gap-2"
+          className="beam h-10 px-5 border border-white/10 text-white/40 text-[10px] font-black uppercase tracking-widest italic transition-all flex items-center gap-2"
         >
           <X className="w-3 h-3" /> Clear all
         </button>
@@ -216,10 +216,10 @@ export default function Platforms() {
               key={cat}
               onClick={() => setActiveCategory(cat)}
               className={cn(
-                'h-10 px-4 text-[10px] font-black uppercase tracking-widest italic border transition-all',
+                'beam h-10 px-4 text-[10px] font-black uppercase tracking-widest italic border transition-all',
                 activeCategory === cat
                   ? 'bg-white text-black border-white'
-                  : 'text-white/50 border-white/10 hover:border-white/30 hover:text-white',
+                  : 'text-white/50 border-white/10',
               )}
             >
               {cat === 'all' ? 'All categories' : CATEGORY_LABEL[cat as DspCategory]}
@@ -235,10 +235,10 @@ export default function Platforms() {
             key={r}
             onClick={() => setActiveRegion(r)}
             className={cn(
-              'h-8 px-3 text-[9px] font-black uppercase tracking-wider italic border transition-all',
+              'beam h-9 px-3 text-[9px] font-black uppercase tracking-wider italic border transition-all',
               activeRegion === r
                 ? 'bg-primary text-white border-primary'
-                : 'text-white/40 border-white/10 hover:border-white/30 hover:text-white',
+                : 'text-white/40 border-white/10',
             )}
           >
             {r === 'all' ? 'All regions' : REGION_LABEL[r as DspRegion]}
@@ -247,20 +247,20 @@ export default function Platforms() {
       </div>
 
       {/* Bulk action for current view */}
-      <div className="flex items-center justify-between mb-6 p-4 border border-white/5 bg-white/[0.02]">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6 p-4 border border-white/5 bg-white/[0.02]">
         <div className="text-[11px] text-white/50 italic">
           Showing <span className="text-white font-black">{filtered.length}</span> of {DSPS.length} platforms
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setAllInView(true)}
-            className="h-8 px-3 border border-white/10 text-[9px] font-black text-white/60 uppercase tracking-wider italic hover:border-white hover:text-white transition-all"
+            className="beam h-9 px-3 border border-white/10 text-[9px] font-black text-white/60 uppercase tracking-wider italic transition-all"
           >
             Select all in view
           </button>
           <button
             onClick={() => setAllInView(false)}
-            className="h-8 px-3 border border-white/10 text-[9px] font-black text-white/60 uppercase tracking-wider italic hover:border-white hover:text-white transition-all"
+            className="beam h-9 px-3 border border-white/10 text-[9px] font-black text-white/60 uppercase tracking-wider italic transition-all"
           >
             Deselect all in view
           </button>
@@ -281,7 +281,7 @@ export default function Platforms() {
               transition={{ delay: Math.min(idx * 0.015, 0.4) }}
               className={cn(
                 'manifest-card p-6 text-left flex flex-col gap-4 group transition-all bg-dark min-h-[180px] relative',
-                isOn ? 'border-primary' : 'border-white/5 hover:border-white/20',
+                isOn ? 'border-primary' : 'border-white/5',
               )}
             >
               {p.recommended && (
@@ -301,7 +301,7 @@ export default function Platforms() {
                     <img
                       src={`https://cdn.simpleicons.org/${p.iconSlug}/${isOn ? 'FF4D00' : 'ffffff'}`}
                       alt=""
-                      className={cn('w-full h-full object-contain transition-all', isOn ? 'opacity-100' : 'opacity-30 group-hover:opacity-60')}
+                      className={cn('w-full h-full object-contain transition-all', isOn ? 'opacity-100' : 'opacity-30')}
                     />
                   ) : (
                     <Globe2 className={cn('w-5 h-5 transition-all', isOn ? 'text-primary' : 'text-white/30')} />
@@ -317,12 +317,12 @@ export default function Platforms() {
                 </div>
               </div>
 
-              <div>
-                <h3 className="text-lg font-black text-white italic tracking-tight mb-1">{p.name}</h3>
-                <div className="flex items-center gap-2 text-[9px] font-black text-white/40 uppercase tracking-widest italic">
+              <div className="min-w-0">
+                <h3 className="text-lg font-black text-white italic tracking-tight mb-1 break-words">{p.name}</h3>
+                <div className="flex items-center gap-2 text-[9px] font-black text-white/40 uppercase tracking-widest italic flex-wrap">
                   <span className="text-primary">{CATEGORY_LABEL[p.category]}</span>
                   <span>·</span>
-                  <span>{p.regions.map((r) => REGION_LABEL[r]).join(', ')}</span>
+                  <span className="break-words">{p.regions.map((r) => REGION_LABEL[r]).join(', ')}</span>
                 </div>
               </div>
 
@@ -343,7 +343,7 @@ export default function Platforms() {
               setActiveCategory('all');
               setActiveRegion('all');
             }}
-            className="text-primary hover:underline italic text-sm"
+            className="text-primary italic text-sm"
           >
             Clear filters
           </button>
@@ -351,13 +351,13 @@ export default function Platforms() {
       )}
 
       {/* CTA — go release */}
-      <div className="p-12 border border-primary/20 bg-primary/5 flex flex-col lg:flex-row items-center gap-12 relative overflow-hidden">
+      <div className="p-6 md:p-12 border border-primary/20 bg-primary/5 flex flex-col lg:flex-row items-center gap-8 md:gap-12 relative overflow-hidden">
         <div className="absolute top-0 right-0 p-12 opacity-5">
           <Globe2 className="w-40 h-40 text-primary" />
         </div>
-        <div className="flex-1 space-y-4">
+        <div className="flex-1 min-w-0 space-y-4">
           <div className="flex items-center gap-3">
-            <Sparkles className="w-6 h-6 text-primary" />
+            <Sparkles className="w-6 h-6 text-primary shrink-0" />
             <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter leading-none">
               Ready to drop?
             </h2>
@@ -375,7 +375,7 @@ export default function Platforms() {
         <button
           onClick={() => navigate('/releases/new')}
           disabled={totalSelected === 0}
-          className="h-16 px-12 bg-white text-black font-black uppercase italic tracking-widest text-[11px] hover:bg-primary hover:text-white transition-all flex items-center gap-3 shrink-0 disabled:opacity-30 disabled:cursor-not-allowed"
+          className="beam h-16 px-12 bg-white text-black font-black uppercase italic tracking-widest text-[11px] transition-all flex items-center gap-3 shrink-0 disabled:opacity-30 disabled:cursor-not-allowed"
         >
           Create a release
           <ArrowRight className="w-4 h-4" />

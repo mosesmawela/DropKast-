@@ -78,7 +78,7 @@ export default function CatalogManager() {
   };
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto py-8">
+    <div className="space-y-8 max-w-7xl mx-auto py-8 px-4 sm:px-0">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 border-b border-gray-200 pb-8">
         <div>
@@ -86,11 +86,11 @@ export default function CatalogManager() {
             <span className="w-1.5 h-1.5 bg-[#F05A28]" />
             <span className="text-[10px] font-bold tracking-widest uppercase font-mono">MY CATALOG CONTROL RADAR</span>
           </div>
-          <h1 className="text-3xl font-black tracking-tight text-gray-900 uppercase font-mono">Catalog</h1>
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-gray-900 uppercase font-mono">Catalog</h1>
         </div>
         <button
           onClick={() => navigate('/releases/archived')}
-          className="flex items-center gap-2 px-6 py-3 border border-[#F05A28] text-[#F05A28] hover:bg-[#F05A28] hover:text-white transition-all text-[10px] font-black uppercase tracking-widest font-mono"
+          className="beam flex items-center gap-2 px-6 py-3 border border-[#F05A28] text-[#F05A28] transition-all text-[10px] font-black uppercase tracking-widest font-mono"
         >
           <Archive className="w-4 h-4" />
           View archived albums
@@ -105,7 +105,7 @@ export default function CatalogManager() {
             'px-8 py-4 text-[10px] font-black uppercase tracking-widest font-mono transition-all flex items-center gap-2',
             activeTab === 'music'
               ? 'text-[#F05A28] border-b-2 border-[#F05A28]'
-              : 'text-gray-400 hover:text-gray-600'
+              : 'text-gray-400'
           )}
         >
           <Disc className="w-4 h-4" />
@@ -117,7 +117,7 @@ export default function CatalogManager() {
             'px-8 py-4 text-[10px] font-black uppercase tracking-widest font-mono transition-all flex items-center gap-2',
             activeTab === 'video'
               ? 'text-[#F05A28] border-b-2 border-[#F05A28]'
-              : 'text-gray-400 hover:text-gray-600'
+              : 'text-gray-400'
           )}
         >
           <Video className="w-4 h-4" />
@@ -154,8 +154,8 @@ export default function CatalogManager() {
 
       {/* Content */}
       {activeTab === 'music' && (
-        <div className="bg-white border border-gray-200 overflow-hidden">
-          <table className="w-full text-left border-collapse">
+        <div className="bg-white border border-gray-200 overflow-x-auto">
+          <table className="w-full min-w-[600px] text-left border-collapse">
             <thead>
               <tr className="border-b border-gray-200 bg-gray-50/50">
                 <th className="px-6 py-4 text-[9px] font-bold text-gray-500 tracking-widest uppercase font-mono">Track</th>
@@ -184,7 +184,7 @@ export default function CatalogManager() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   onClick={() => navigate(`/releases/${release.id}/status`)}
-                  className="hover:bg-gray-50 transition-colors cursor-pointer"
+                  className="transition-colors cursor-pointer"
                 >
                   <td className="px-6 py-5">
                     <div className="flex items-center gap-4">
@@ -214,7 +214,7 @@ export default function CatalogManager() {
                     </div>
                   </td>
                   <td className="px-6 py-5 text-right">
-                    <button className="p-2 text-gray-300 hover:text-[#F05A28] transition-colors">
+                    <button className="p-2 text-gray-300 transition-colors">
                       <MoreHorizontal className="w-4 h-4" />
                     </button>
                   </td>
@@ -233,7 +233,7 @@ export default function CatalogManager() {
           </p>
           <button
             onClick={() => navigate('/video/distribute')}
-            className="mt-6 px-8 py-3 bg-[#F05A28] text-white text-[10px] font-black uppercase tracking-widest font-mono italic hover:bg-[#d94d20] transition-all"
+            className="beam mt-6 px-8 py-3 bg-[#F05A28] text-white text-[10px] font-black uppercase tracking-widest font-mono italic transition-all"
           >
             Distribute a Video
           </button>

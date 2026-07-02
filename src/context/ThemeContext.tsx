@@ -1,7 +1,9 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 export type Theme = 'dark' | 'light';
-export type VisualStyle = 'default' | 'neumorphism' | 'material' | 'brutalism' | 'skeuomorphism' | 'minimalist' | 'glassmorphism';
+// Three supported looks only: Minimal (the clean 'default' base), Skeu, Glass.
+export type VisualStyle = 'default' | 'skeuomorphism' | 'glassmorphism';
+const VALID_STYLES: VisualStyle[] = ['default', 'skeuomorphism', 'glassmorphism'];
 export type Vibe = 'LVRN_GREEN' | 'TECHNICAL_ORANGE' | 'NEON_PINK' | 'CYBER_BLUE' | 'MONO_WHITE' | 'CUSTOM';
 export type UserRole = 'ARTIST' | 'INFLUENCER' | 'DJ' | 'LABEL';
 
@@ -34,9 +36,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   });
 
   const [visualStyle, setVisualStyleState] = useState<VisualStyle>(() => {
-    const saved = localStorage.getItem('campaign-os-visual-style');
-    // Technical ('default') is the clean, on-brand look — the default for everyone.
-    return (saved as VisualStyle) || 'default';
+    const saved = localStorage.getItem('campaign-os-visual-style') as VisualStyle | null;
+    // Minimal ('default') is the clean, on-brand look — the default for everyone.
+    // Coerce any legacy/removed style (neumorphism, brutalism, etc.) back to Minimal.
+    return saved && VALID_STYLES.includes(saved) ? saved : 'default';
   });
 
   const [vibe, setVibeState] = useState<Vibe>(() => {

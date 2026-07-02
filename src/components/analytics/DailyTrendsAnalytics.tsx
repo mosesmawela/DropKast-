@@ -48,7 +48,7 @@ export default function DailyTrendsAnalytics() {
   const ChartIcon = chartMode === 'bar' ? BarChart : chartMode === 'area' ? AreaChart : LineChart;
 
   return (
-    <div className="space-y-10 max-w-7xl mx-auto py-8">
+    <div className="space-y-8 sm:space-y-10 max-w-7xl mx-auto py-8 px-4 sm:px-0">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 border-b border-[var(--border-main)] pb-8">
         <div>
@@ -56,15 +56,15 @@ export default function DailyTrendsAnalytics() {
             <TrendingUp className="w-4 h-4 text-[#F05A28]" />
             <span className="text-[10px] font-bold tracking-widest uppercase font-mono">DAILY TRENDS CONSUMPTION INTERFACE</span>
           </div>
-          <h1 className="text-3xl font-black tracking-tight text-[var(--text-main)] uppercase font-mono">Daily Trends</h1>
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-[var(--text-main)] uppercase font-mono">Daily Trends</h1>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-3 sm:gap-4">
           <div className="flex items-center gap-2 px-4 py-3 border border-[var(--border-main)] text-[#9A9AA6] text-[10px] font-bold font-mono">
             <Calendar className="w-4 h-4" />
             <span>{dateRange}</span>
             <ChevronDown className="w-3 h-3" />
           </div>
-          <button className="flex items-center gap-2 px-6 py-3 bg-[#F05A28] text-white text-[10px] font-black uppercase tracking-widest font-mono italic hover:bg-[#d94d20] transition-all">
+          <button className="beam flex items-center gap-2 px-6 py-3 bg-[#F05A28] text-white text-[10px] font-black uppercase tracking-widest font-mono italic transition-all">
             <Download className="w-4 h-4" />
             Export
           </button>
@@ -78,8 +78,8 @@ export default function DailyTrendsAnalytics() {
             key={t}
             onClick={() => setTab(t)}
             className={cn(
-              'px-8 py-4 text-[10px] font-black uppercase tracking-widest font-mono transition-all',
-              tab === t ? 'text-[#F05A28] border-b-2 border-[#F05A28]' : 'text-[#6A6A75] hover:text-[#9A9AA6]',
+              'px-6 sm:px-8 py-4 text-[10px] font-black uppercase tracking-widest font-mono transition-all',
+              tab === t ? 'text-[#F05A28] border-b-2 border-[#F05A28]' : 'text-[#6A6A75]',
             )}
           >
             {t === 'streams' ? 'MUSIC STREAMS' : 'MUSIC DOWNLOADS'}
@@ -88,7 +88,7 @@ export default function DailyTrendsAnalytics() {
       </div>
 
       {/* Metrics Bar */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {stats.map((s) => (
           <div key={s.label} className="bg-[var(--card-bg)] border border-[var(--border-main)] p-6 flex items-start justify-between">
             <div>
@@ -113,7 +113,7 @@ export default function DailyTrendsAnalytics() {
                 onClick={() => setFilterDim(d)}
                 className={cn(
                   'px-5 py-3 text-[9px] font-black uppercase tracking-widest font-mono transition-all flex items-center gap-2',
-                  filterDim === d ? 'bg-[#F05A28] text-white' : 'text-[#8A8A93] hover:text-[#B0B0B8]',
+                  filterDim === d ? 'bg-[#F05A28] text-white' : 'text-[#8A8A93]',
                 )}
               >
                 {d === 'track' && <Music className="w-3 h-3" />}
@@ -128,7 +128,7 @@ export default function DailyTrendsAnalytics() {
             <option>Tracks: All Tracks</option>
           </select>
 
-          <button className="flex items-center gap-1 px-4 py-3 border border-dashed border-[var(--border-main)] text-[#6A6A75] hover:border-[#F05A28] hover:text-[#F05A28] transition-all text-[9px] font-bold uppercase tracking-widest font-mono">
+          <button className="beam flex items-center gap-1 px-4 py-3 border border-dashed border-[var(--border-main)] text-[#6A6A75] transition-all text-[9px] font-bold uppercase tracking-widest font-mono">
             <Plus className="w-3 h-3" />
             ADD FILTER
           </button>
@@ -162,7 +162,7 @@ export default function DailyTrendsAnalytics() {
                     onClick={() => setChartMode(c)}
                     className={cn(
                       'px-4 py-2 transition-all',
-                      chartMode === c ? 'bg-[#F05A28] text-white' : 'text-[#6A6A75] hover:text-[#9A9AA6]',
+                      chartMode === c ? 'bg-[#F05A28] text-white' : 'text-[#6A6A75]',
                     )}
                   >
                     <IconComponent className="w-4 h-4" />
@@ -175,7 +175,7 @@ export default function DailyTrendsAnalytics() {
       </div>
 
       {/* Chart */}
-      <div className="bg-[var(--card-bg)] border border-[var(--border-main)] p-8 min-h-[350px]">
+      <div className="bg-[var(--card-bg)] border border-[var(--border-main)] p-4 sm:p-8 min-h-[350px]">
         {streamData.length === 0 ? (
           <div className="h-[300px] flex flex-col items-center justify-center border border-dashed border-[var(--border-main)] bg-black/20">
             <BarChart3 className="w-12 h-12 text-white/30 mb-4" />
@@ -217,8 +217,8 @@ export default function DailyTrendsAnalytics() {
       {/* Top Tracks Table */}
       <div className="space-y-4">
         <h2 className="text-sm font-black text-[#C9C9CF] uppercase font-mono tracking-tight">Top Tracks Acquisition Lifecycle</h2>
-        <div className="bg-[var(--card-bg)] border border-[var(--border-main)] overflow-hidden">
-          <table className="w-full text-left border-collapse">
+        <div className="bg-[var(--card-bg)] border border-[var(--border-main)] overflow-x-auto">
+          <table className="w-full min-w-[600px] text-left border-collapse">
             <thead>
               <tr className="border-b border-[var(--border-main)] bg-black/20/50">
                 {['TRACK', 'STREAMS', 'CHANGE', 'SKIPS', 'ACTIONS'].map((h) => (
@@ -237,7 +237,7 @@ export default function DailyTrendsAnalytics() {
                 </tr>
               )}
               {topTracks.map((t, i) => (
-                <tr key={i} className="border-b border-[var(--border-main)] hover:bg-black/20 transition-colors">
+                <tr key={i} className="border-b border-[var(--border-main)] transition-colors">
                   <td className="px-6 py-5 text-xs font-bold text-[#C9C9CF] font-mono">{t.track}</td>
                   <td className="px-6 py-5 text-[10px] font-bold text-[#9A9AA6] font-mono">{t.streams}</td>
                   <td className="px-6 py-5">

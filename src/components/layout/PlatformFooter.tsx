@@ -60,13 +60,13 @@ export default function PlatformFooter() {
               Enterprise music distribution platform powering independent artists and labels worldwide.
             </p>
             <div className="flex items-center gap-4">
-              <a href="#" className="w-10 h-10 border border-white/10 flex items-center justify-center hover:border-primary hover:text-primary transition-all text-white/40">
+              <a href="#" className="beam w-10 h-10 border border-white/10 flex items-center justify-center transition-all text-white/40">
                 <Facebook className="w-4 h-4" />
               </a>
-              <a href="#" className="w-10 h-10 border border-white/10 flex items-center justify-center hover:border-primary hover:text-primary transition-all text-white/40">
+              <a href="#" className="beam w-10 h-10 border border-white/10 flex items-center justify-center transition-all text-white/40">
                 <Twitter className="w-4 h-4" />
               </a>
-              <a href="#" className="w-10 h-10 border border-white/10 flex items-center justify-center hover:border-primary hover:text-primary transition-all text-white/40">
+              <a href="#" className="beam w-10 h-10 border border-white/10 flex items-center justify-center transition-all text-white/40">
                 <Instagram className="w-4 h-4" />
               </a>
             </div>
@@ -83,7 +83,7 @@ export default function PlatformFooter() {
                   <li key={link.label}>
                     <Link
                       to={link.path}
-                      className="text-xs text-white/40 hover:text-white transition-colors font-medium"
+                      className="text-xs text-white/40 transition-colors font-medium"
                     >
                       {link.label}
                     </Link>
@@ -96,7 +96,7 @@ export default function PlatformFooter() {
 
         {/* Compliance Badges */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 pt-8">
-          <div className="flex items-center gap-6">
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
             <div className="flex items-center gap-2 px-4 py-2 border border-white/10 bg-white/5">
               <Shield className="w-4 h-4 text-primary" />
               <span className="text-[9px] font-bold text-white/60 uppercase tracking-widest italic font-mono">

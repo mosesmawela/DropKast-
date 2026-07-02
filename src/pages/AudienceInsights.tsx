@@ -28,15 +28,15 @@ export default function AudienceInsights() {
   return (
     <div className="max-w-7xl mx-auto py-12 px-6">
       <div className="mb-10">
-        <Link to="/analytics" className="inline-flex items-center gap-2 text-[10px] font-black text-white/40 hover:text-white uppercase italic tracking-widest mb-6">
+        <Link to="/analytics" className="inline-flex items-center gap-2 text-[10px] font-black text-white/40 uppercase italic tracking-widest mb-6">
           <ChevronLeft className="w-3 h-3" /> Back to analytics
         </Link>
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-          <div className="space-y-3">
+          <div className="space-y-3 min-w-0">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-[0.4em] italic">
               <Users className="w-3 h-3" /> Audience Insights
             </div>
-            <h1 className="text-5xl md:text-6xl font-black text-white italic uppercase tracking-tighter leading-none">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-white italic uppercase tracking-tighter leading-none">
               Who's <span className="text-primary">listening</span>
             </h1>
             <p className="text-white/40 text-sm italic max-w-2xl">
@@ -61,8 +61,8 @@ export default function AudienceInsights() {
               key={t.id}
               onClick={() => setView(t.id)}
               className={cn(
-                'flex items-center gap-2 px-4 py-2 text-[10px] font-black uppercase italic tracking-widest transition-all border-b-2',
-                active ? 'text-primary border-primary' : 'text-white/40 border-transparent hover:text-white',
+                'beam flex items-center gap-2 px-4 py-2 min-h-[40px] text-[10px] font-black uppercase italic tracking-widest transition-all border-b-2',
+                active ? 'text-primary border-primary' : 'text-white/40 border-transparent',
               )}
             >
               <Icon className="w-3 h-3" />
@@ -104,7 +104,7 @@ export default function AudienceInsights() {
                     initial={{ opacity: 0, y: 4 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.04 }}
-                    className="border-b border-white/5 hover:bg-white/[0.02]"
+                    className="border-b border-white/5"
                   >
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-3">
@@ -167,12 +167,11 @@ export default function AudienceInsights() {
               Reach map
             </div>
             <p className="text-sm text-white/60 italic leading-relaxed mb-4">
-              South Africa + Nigeria are your top markets and account for nearly half of your
-              streams. Consider running pre-release seeding in those two regions first — your
-              algorithmic reach there is 3.4× higher per dollar than US/UK.
+              Once your streams start rolling in, we'll show you which countries are driving them —
+              so you can focus your pre-release push where it lands hardest.
             </p>
-            <Link to="/studio/strategy" className="inline-flex items-center gap-2 text-[10px] font-black text-primary hover:underline italic uppercase tracking-widest">
-              Generate a region-weighted campaign →
+            <Link to="/studio/strategy" className="inline-flex items-center gap-2 text-[10px] font-black text-primary italic uppercase tracking-widest">
+              Build a region-focused campaign →
             </Link>
           </div>
         </div>

@@ -145,13 +145,13 @@ export default function CommandCenter() {
           <div className="space-y-3">
             <Link
               to="/login"
-              className="block w-full h-12 bg-white text-black hover:bg-primary hover:text-white text-[10px] font-black uppercase italic tracking-widest transition-all flex items-center justify-center gap-2"
+              className="beam block w-full h-12 bg-white text-black text-[10px] font-black uppercase italic tracking-widest transition-all flex items-center justify-center gap-2"
             >
               Sign in
             </Link>
 
             <details className="text-left">
-              <summary className="text-[10px] font-black text-white/30 uppercase tracking-widest italic cursor-pointer hover:text-white">
+              <summary className="text-[10px] font-black text-white/30 uppercase tracking-widest italic cursor-pointer">
                 Emergency password
               </summary>
               <div className="mt-3 space-y-2">
@@ -169,7 +169,7 @@ export default function CommandCenter() {
                     setEmergencyAttempted(true);
                     toast.message('Emergency password set — backend will validate on each request.');
                   }}
-                  className="w-full h-10 border border-primary/30 text-primary hover:bg-primary hover:text-white text-[10px] font-black uppercase italic tracking-widest transition-all"
+                  className="beam w-full h-10 border border-primary/30 text-primary text-[10px] font-black uppercase italic tracking-widest transition-all"
                 >
                   Use emergency password
                 </button>
@@ -179,7 +179,7 @@ export default function CommandCenter() {
 
           <Link
             to="/dashboard"
-            className="inline-flex items-center gap-2 mt-8 text-[10px] font-black text-white/30 hover:text-white tracking-[0.3em] uppercase italic"
+            className="inline-flex items-center gap-2 mt-8 text-[10px] font-black text-white/30 tracking-[0.3em] uppercase italic"
           >
             <ChevronLeft className="w-3 h-3" /> Back to dashboard
           </Link>
@@ -194,7 +194,7 @@ export default function CommandCenter() {
       <header className="border-b border-white/10 bg-gradient-to-r from-primary/5 via-black to-black sticky top-0 z-30 backdrop-blur-xl">
         <div className="max-w-[1600px] mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link to="/dashboard" className="text-white/40 hover:text-white" title="Back to app">
+            <Link to="/dashboard" className="text-white/40" title="Back to app">
               <ChevronLeft className="w-4 h-4" />
             </Link>
             <Shield className="w-5 h-5 text-primary" />
@@ -216,7 +216,7 @@ export default function CommandCenter() {
               onClick={() => setPrivacyBlur(!privacyBlur)}
               className={cn(
                 'h-7 px-2 border text-[9px] font-black uppercase tracking-widest italic transition-colors',
-                privacyBlur ? 'border-primary bg-primary/10 text-primary' : 'border-white/15 text-white/50 hover:text-white',
+                privacyBlur ? 'border-primary bg-primary/10 text-primary' : 'border-white/15 text-white/50',
               )}
               title="Toggle blur on financial values · for screen sharing"
             >
@@ -241,8 +241,8 @@ export default function CommandCenter() {
                   key={t.id}
                   onClick={() => setActiveTab(t.id)}
                   className={cn(
-                    'relative flex items-center gap-2 px-5 py-3 text-[10px] font-black uppercase italic tracking-widest transition-all whitespace-nowrap',
-                    isActive ? 'text-primary' : 'text-white/40 hover:text-white',
+                    'relative flex items-center gap-2 px-5 py-3 min-h-[40px] text-[10px] font-black uppercase italic tracking-widest transition-all whitespace-nowrap',
+                    isActive ? 'text-primary' : 'text-white/40',
                   )}
                 >
                   {isActive && (
@@ -332,7 +332,7 @@ function OverviewTab({ liveEvents = [] as any[] }: { liveEvents?: any[] }) {
         <button
           onClick={refresh}
           disabled={loading}
-          className="flex items-center gap-2 h-9 px-4 border border-white/10 text-[10px] font-black uppercase italic tracking-widest text-white/60 hover:bg-white hover:text-black transition-all"
+          className="beam flex items-center gap-2 h-9 px-4 min-h-[40px] border border-white/10 text-[10px] font-black uppercase italic tracking-widest text-white/60 transition-all"
         >
           {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
           Refresh
@@ -372,7 +372,7 @@ function OverviewTab({ liveEvents = [] as any[] }: { liveEvents?: any[] }) {
           return (
             <div
               key={k.label}
-              className="col-span-6 md:col-span-3 relative bg-dark border border-white/10 p-4 hover:border-white/30 transition-colors"
+              className="col-span-6 md:col-span-3 relative bg-dark border border-white/10 p-4 transition-colors"
             >
               <CornerTicks small />
               <div className="flex items-center gap-2 text-[8px] font-black text-white/40 uppercase tracking-[0.3em] italic mb-2">
@@ -451,7 +451,7 @@ function TokensTab() {
         <button
           onClick={refresh}
           disabled={loading}
-          className="flex items-center gap-2 h-9 px-4 border border-white/10 text-[10px] font-black uppercase italic tracking-widest text-white/60 hover:bg-white hover:text-black transition-all"
+          className="beam flex items-center gap-2 h-9 px-4 min-h-[40px] border border-white/10 text-[10px] font-black uppercase italic tracking-widest text-white/60 transition-all"
         >
           {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
           Refresh
@@ -613,7 +613,7 @@ function AIWorkspaceTab({ health, setHealth }: { health: any; setHealth: (h: any
         <button
           onClick={ping}
           disabled={pinging}
-          className="flex items-center gap-2 h-9 px-4 border border-white/10 text-[10px] font-black uppercase italic tracking-widest text-white/60 hover:bg-white hover:text-black transition-all"
+          className="beam flex items-center gap-2 h-9 px-4 min-h-[40px] border border-white/10 text-[10px] font-black uppercase italic tracking-widest text-white/60 transition-all"
         >
           {pinging ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
           Ping providers
@@ -635,7 +635,7 @@ function AIWorkspaceTab({ health, setHealth }: { health: any; setHealth: (h: any
             <div
               key={p.id}
               className={cn(
-                'flex items-center gap-4 px-4 py-2.5 border-b border-white/5 text-[11px] hover:bg-white/[0.02] transition-colors last:border-b-0',
+                'flex items-center gap-4 px-4 py-2.5 border-b border-white/5 text-[11px] transition-colors last:border-b-0',
                 !p.ok && 'bg-red-500/[0.03]',
               )}
             >
@@ -707,7 +707,7 @@ function AIWorkspaceTab({ health, setHealth }: { health: any; setHealth: (h: any
                     <tr
                       key={j.id}
                       className={cn(
-                        'border-b border-white/5 hover:bg-white/[0.02] relative',
+                        'border-b border-white/5 relative',
                         isLive && 'job-row-live',
                       )}
                     >
@@ -753,7 +753,7 @@ function AIWorkspaceTab({ health, setHealth }: { health: any; setHealth: (h: any
               <Link
                 key={studioId}
                 to={`/studio/${studioId}`}
-                className="manifest-card p-4 bg-dark border border-white/10 hover:border-primary transition-all flex items-center gap-3"
+                className="manifest-card p-4 bg-dark border border-white/10 transition-all flex items-center gap-3"
               >
                 <Icon className="w-4 h-4 text-primary" />
                 <div className="flex-1 min-w-0">
@@ -820,7 +820,7 @@ function ArtistsTab() {
           </thead>
           <tbody>
             {roster.map((a: any) => (
-              <tr key={a.id} className="border-b border-white/5 hover:bg-white/[0.02]">
+              <tr key={a.id} className="border-b border-white/5">
                 <td className="px-4 py-3 text-sm font-black italic text-white">{a.name}</td>
                 <td className="px-4 py-3 text-[11px] text-white/60">{a.genre || '—'}</td>
                 <td className="px-4 py-3"><StatusPill status={a.status} /></td>
@@ -1067,7 +1067,7 @@ function KeysTab() {
         <h2 className="text-3xl font-black italic tracking-tighter">API keys</h2>
         <button
           onClick={refresh}
-          className="flex items-center gap-2 h-9 px-4 border border-white/10 text-[10px] font-black uppercase italic tracking-widest text-white/60 hover:bg-white hover:text-black transition-all"
+          className="beam flex items-center gap-2 h-9 px-4 min-h-[40px] border border-white/10 text-[10px] font-black uppercase italic tracking-widest text-white/60 transition-all"
         >
           <RefreshCw className="w-3 h-3" /> Refresh
         </button>

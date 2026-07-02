@@ -43,12 +43,8 @@ import {
 import Switch from '../components/ui/Switch';
 
 const styles: { id: VisualStyle; label: string; icon: any; desc: string }[] = [
-  { id: 'default', label: 'Technical', icon: Cpu, desc: 'Industrial terminal aesthetic' },
-  { id: 'neumorphism', label: 'Neumorphism', icon: Smartphone, desc: 'Soft shadows, plastic surfaces' },
-  { id: 'material', label: 'Material', icon: Box, desc: 'Clean shadows and flat cards' },
-  { id: 'brutalism', label: 'Neo-Brutalism', icon: Zap, desc: 'High contrast, thick borders' },
-  { id: 'skeuomorphism', label: 'Skeuomorphic', icon: Palette, desc: 'Real-world textures and depth' },
-  { id: 'minimalist', label: 'Minimal', icon: Minus, desc: 'Zero distraction, absolute focus' },
+  { id: 'default', label: 'Minimal', icon: Minus, desc: 'Clean, flat, zero distraction' },
+  { id: 'skeuomorphism', label: 'Skeu', icon: Palette, desc: 'Real-world textures and depth' },
   { id: 'glassmorphism', label: 'Glass', icon: GlassWater, desc: 'Frosted surfaces, fluid motion' },
 ];
 
@@ -137,7 +133,7 @@ export default function Settings() {
                   'w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-mono font-black uppercase italic tracking-widest transition-all',
                   active
                     ? 'bg-primary/10 text-primary border-l-2 border-primary'
-                    : 'text-[var(--text-main)]/40 hover:text-[var(--text-main)] hover:bg-white/[0.02] border-l-2 border-transparent',
+                    : 'text-[var(--text-main)]/40 border-l-2 border-transparent',
                 )}
               >
                 <Icon className="w-3.5 h-3.5" />
@@ -150,7 +146,7 @@ export default function Settings() {
               logout();
               navigate('/login');
             }}
-            className="w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-mono font-black uppercase italic tracking-widest text-red-500/60 hover:text-red-500 hover:bg-red-500/5 transition-all border-l-2 border-transparent mt-4"
+            className="w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-mono font-black uppercase italic tracking-widest text-red-500/60 transition-all border-l-2 border-transparent mt-4"
           >
             <LogOut className="w-3.5 h-3.5" />
             Sign Out
@@ -184,7 +180,7 @@ export default function Settings() {
                         'flex flex-col items-start gap-2 p-4 border transition-all text-left',
                         active
                           ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
-                          : 'border-[var(--border-main)] hover:border-white/20',
+                          : 'border-[var(--border-main)]',
                       )}
                     >
                       <Icon className={cn('w-4 h-4', active ? 'text-primary' : 'text-[var(--text-main)]/40')} />
@@ -214,9 +210,9 @@ export default function Settings() {
                         <button
                           key={p}
                           onClick={() => setWorkspacePreset(p)}
-                          className="manifest-card p-5 bg-dark border border-white/10 hover:border-primary text-left transition-all group"
+                          className="manifest-card p-5 bg-dark border border-white/10 text-left transition-all group"
                         >
-                          <div className="text-base font-black italic text-white mb-2 group-hover:text-primary transition-colors">
+                          <div className="text-base font-black italic text-white mb-2 transition-colors">
                             {preset.label}
                           </div>
                           <div className="text-[11px] text-white/40 leading-relaxed italic mb-3">
@@ -256,7 +252,7 @@ export default function Settings() {
                                   'flex items-start gap-3 p-3 border transition-all text-left',
                                   isOn
                                     ? 'border-primary bg-primary/5'
-                                    : 'border-white/5 hover:border-white/20',
+                                    : 'border-white/5',
                                   isLocked && 'opacity-60 cursor-not-allowed',
                                 )}
                               >
@@ -317,7 +313,7 @@ export default function Settings() {
                           'flex flex-col items-center gap-2 p-3 border transition-all',
                           active
                             ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
-                            : 'border-[var(--border-main)] hover:border-white/20',
+                            : 'border-[var(--border-main)]',
                         )}
                       >
                         <div
@@ -360,7 +356,7 @@ export default function Settings() {
                   </label>
                   <button
                     onClick={applyCustomColor}
-                    className="h-10 px-4 bg-primary text-white text-[10px] font-mono font-black uppercase italic tracking-widest hover:scale-[1.03] active:scale-95 transition-all"
+                    className="h-10 px-4 bg-primary text-white text-[10px] font-mono font-black uppercase italic tracking-widest active:scale-95 transition-all"
                   >
                     Apply Custom
                   </button>
@@ -380,7 +376,7 @@ export default function Settings() {
                           'p-3 border text-left transition-all',
                           active
                             ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
-                            : 'border-[var(--border-main)] hover:border-white/20',
+                            : 'border-[var(--border-main)]',
                         )}
                       >
                         <div className="flex items-center justify-between mb-1.5">
@@ -411,7 +407,7 @@ export default function Settings() {
               <Card title="API Keys" desc="Connect your own AI provider keys (BYOK).">
                 <a
                   href="/ai-providers"
-                  className="inline-flex items-center gap-2 h-10 px-4 border border-primary/50 text-primary text-[10px] font-mono font-black uppercase italic tracking-widest hover:bg-primary hover:text-white transition-all"
+                  className="inline-flex items-center gap-2 h-10 px-4 border border-primary/50 text-primary text-[10px] font-mono font-black uppercase italic tracking-widest transition-all"
                 >
                   Manage Connectors →
                 </a>
@@ -440,7 +436,7 @@ export default function Settings() {
                     localStorage.removeItem('dropkast_tutorial_seen');
                     startTutorial();
                   }}
-                  className="h-9 px-4 bg-primary text-white text-[10px] font-mono font-black uppercase italic tracking-widest hover:scale-[1.03] active:scale-95 transition-all"
+                  className="h-9 px-4 bg-primary text-white text-[10px] font-mono font-black uppercase italic tracking-widest active:scale-95 transition-all"
                 >
                   Start tour
                 </button>
@@ -494,7 +490,7 @@ export default function Settings() {
                 <>
                   <button 
                     onClick={() => setShowExportModal(true)}
-                    className="h-10 px-4 border border-[var(--border-main)] hover:border-primary hover:text-primary text-[var(--text-main)]/60 text-[10px] font-mono font-black uppercase italic tracking-widest transition-all"
+                    className="h-10 px-4 border border-[var(--border-main)] text-[var(--text-main)]/60 text-[10px] font-mono font-black uppercase italic tracking-widest transition-all"
                   >
                     Request Export
                   </button>
@@ -504,7 +500,7 @@ export default function Settings() {
                         <h3 className="text-xl font-black italic font-mono uppercase tracking-tight text-white">Export Data</h3>
                         <p className="text-sm text-white/60 italic font-medium">Download a JSON archive of your releases, campaigns, and analytics. This may take a few moments.</p>
                         <div className="flex gap-4">
-                          <button onClick={() => setShowExportModal(false)} className="flex-1 h-12 border border-white/10 text-white/60 text-[10px] font-mono font-black uppercase italic tracking-widest hover:border-white transition-all">Cancel</button>
+                          <button onClick={() => setShowExportModal(false)} className="flex-1 h-12 border border-white/10 text-white/60 text-[10px] font-mono font-black uppercase italic tracking-widest transition-all">Cancel</button>
                           <button onClick={() => {
                             const data = {
                               releases: JSON.parse(localStorage.getItem('dropkast_releases') || '[]'),
@@ -518,7 +514,7 @@ export default function Settings() {
                             URL.revokeObjectURL(url);
                             notify('success', 'EXPORT_COMPLETE', 'Your data has been downloaded.');
                             setShowExportModal(false);
-                          }} className="flex-1 h-12 bg-primary text-white text-[10px] font-mono font-black uppercase italic tracking-widest hover:bg-white hover:text-black transition-all">Confirm Export</button>
+                          }} className="beam flex-1 h-12 bg-primary text-white text-[10px] font-mono font-black uppercase italic tracking-widest transition-all">Confirm Export</button>
                         </div>
                       </div>
                     </div>
@@ -529,7 +525,7 @@ export default function Settings() {
                 <>
                   <button 
                     onClick={() => setShowDeleteModal(true)}
-                    className="h-10 px-4 border border-red-500/50 text-red-500 text-[10px] font-mono font-black uppercase italic tracking-widest hover:bg-red-500 hover:text-white transition-all"
+                    className="h-10 px-4 border border-red-500/50 text-red-500 text-[10px] font-mono font-black uppercase italic tracking-widest transition-all"
                   >
                     Delete Account
                   </button>
@@ -545,7 +541,7 @@ export default function Settings() {
                           className="w-full bg-white/5 border border-white/10 p-3 text-white font-mono text-xs outline-none focus:border-red-500 transition-all"
                         />
                         <div className="flex gap-4">
-                          <button onClick={() => setShowDeleteModal(false)} className="flex-1 h-12 border border-white/10 text-white/60 text-[10px] font-mono font-black uppercase italic tracking-widest hover:border-white transition-all">Cancel</button>
+                          <button onClick={() => setShowDeleteModal(false)} className="flex-1 h-12 border border-white/10 text-white/60 text-[10px] font-mono font-black uppercase italic tracking-widest transition-all">Cancel</button>
                           <button onClick={() => {
                             const input = document.getElementById('delete-confirm-input') as HTMLInputElement;
                             if (input?.value !== 'DELETE') { notify('error', 'CONFIRM_REQUIRED', 'Type DELETE to confirm.'); return; }
@@ -553,7 +549,7 @@ export default function Settings() {
                             notify('error', 'ACCOUNT_DELETED', 'All local data has been cleared.');
                             setShowDeleteModal(false);
                             setTimeout(() => window.location.href = '/', 1500);
-                          }} className="flex-1 h-12 bg-red-500 text-white text-[10px] font-mono font-black uppercase italic tracking-widest hover:bg-white hover:text-black transition-all">Delete Forever</button>
+                          }} className="beam flex-1 h-12 bg-red-500 text-white text-[10px] font-mono font-black uppercase italic tracking-widest transition-all">Delete Forever</button>
                         </div>
                       </div>
                     </div>

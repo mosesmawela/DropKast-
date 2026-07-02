@@ -77,8 +77,8 @@ export default function ProductionOptions({ data, update }: Props) {
                 type="button"
                 onClick={() => update({ [opt.key]: !isOn })}
                 className={cn(
-                  'w-full flex items-start gap-3 p-4 border transition-all text-left',
-                  isOn ? 'border-primary bg-primary/5' : 'border-white/10 hover:border-white/20',
+                  'beam w-full flex items-start gap-3 p-4 border transition-all text-left',
+                  isOn ? 'border-primary bg-primary/5' : 'border-white/10',
                 )}
               >
                 <div

@@ -140,13 +140,13 @@ export default function StudioShell({ studio }: Props) {
   const Icon = studio.icon;
 
   return (
-    <div className="max-w-7xl mx-auto py-10 px-6">
+    <div className="max-w-7xl mx-auto py-6 sm:py-10 px-4 sm:px-6">
       {/* Header */}
-      <div className="flex items-start justify-between gap-6 mb-10 pb-8 border-b border-white/5">
+      <div className="flex flex-wrap items-start justify-between gap-4 sm:gap-6 mb-8 sm:mb-10 pb-6 sm:pb-8 border-b border-white/5">
         <div className="flex items-start gap-5">
           <Link
             to="/studios"
-            className="text-white/30 hover:text-white transition-colors mt-2"
+            className="text-white/30 transition-colors mt-2"
             title="Back to studios"
           >
             <ChevronLeft className="w-5 h-5" />
@@ -161,7 +161,7 @@ export default function StudioShell({ studio }: Props) {
             <div className="text-[10px] font-black tracking-[0.4em] uppercase italic mb-2" style={{ color: studio.accentColor }}>
               {studio.category} · Studio
             </div>
-            <h1 className="text-4xl md:text-5xl font-black italic tracking-tighter text-white leading-none mb-2">
+            <h1 className="text-3xl md:text-5xl font-black italic tracking-tighter text-white leading-none mb-2">
               {studio.name}
             </h1>
             <p className="text-white/50 italic text-sm">{studio.tagline}</p>
@@ -172,10 +172,10 @@ export default function StudioShell({ studio }: Props) {
           <button
             onClick={() => { setPipelineMode(!pipelineMode); setWfRun(null); setSelectedWorkflow(null); }}
             className={cn(
-              'flex items-center gap-2 px-4 py-2 text-[9px] font-black uppercase tracking-widest italic transition-all border',
+              'beam flex items-center gap-2 px-4 py-2 min-h-[40px] text-[9px] font-black uppercase tracking-widest italic transition-all border',
               pipelineMode
                 ? 'bg-primary text-black border-primary'
-                : 'bg-transparent text-white/50 border-white/10 hover:border-white/30',
+                : 'bg-transparent text-white/50 border-white/10',
             )}
           >
             <GitBranch className="w-3.5 h-3.5" />
@@ -238,9 +238,9 @@ export default function StudioShell({ studio }: Props) {
                 onClick={handleRun}
                 disabled={comingSoon || !canRun || runningCount > 0}
                 className={cn(
-                  'w-full h-14 flex items-center justify-center gap-3 text-[11px] font-black uppercase italic tracking-widest transition-all',
+                  'beam w-full h-14 flex items-center justify-center gap-3 text-[11px] font-black uppercase italic tracking-widest transition-all',
                   !comingSoon && canRun && runningCount === 0
-                    ? 'bg-white text-black hover:bg-primary hover:text-white'
+                    ? 'bg-white text-black'
                     : 'bg-white/10 text-white/30 cursor-not-allowed',
                 )}
               >
@@ -279,7 +279,7 @@ export default function StudioShell({ studio }: Props) {
                   </div>
                   <button
                     onClick={clearCompleted}
-                    className="text-[9px] font-black text-white/30 hover:text-white uppercase tracking-widest italic"
+                    className="text-[9px] font-black text-white/30 uppercase tracking-widest italic"
                   >
                     Clear done
                   </button>
@@ -470,7 +470,7 @@ function ReferenceImagesField({ value, onChange }: { value: string[] | undefined
             <button
               type="button"
               onClick={() => onChange(items.filter((_, idx) => idx !== i))}
-              className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
+              className="absolute inset-0 bg-black/70 flex items-center justify-center transition-opacity"
               aria-label="Remove reference"
             >
               <Trash2 className="w-3 h-3 text-red-400" />
@@ -498,7 +498,7 @@ function ReferenceImagesField({ value, onChange }: { value: string[] | undefined
             onChange([...items, draftUrl.trim()]);
             setDraftUrl('');
           }}
-          className="h-9 px-4 bg-white text-black text-[10px] font-black uppercase italic tracking-widest hover:bg-primary hover:text-white"
+          className="beam h-10 px-4 bg-white text-black text-[10px] font-black uppercase italic tracking-widest"
         >
           Add
         </button>
@@ -550,7 +550,7 @@ function FileField({ field, value, onChange }: { field: StudioInputField; value:
           if (!file) return;
           handleFile(file);
         }}
-        className="block w-full text-xs text-white/60 file:mr-3 file:py-2 file:px-4 file:border-0 file:bg-white file:text-black file:font-black file:uppercase file:text-[10px] file:tracking-widest file:italic hover:file:bg-primary hover:file:text-white file:cursor-pointer disabled:opacity-40"
+        className="block w-full text-xs text-white/60 file:mr-3 file:py-2 file:px-4 file:border-0 file:bg-white file:text-black file:font-black file:uppercase file:text-[10px] file:tracking-widest file:italic file:cursor-pointer disabled:opacity-40"
       />
       {uploading && progress && (
         <div className="mt-2 space-y-1">
@@ -600,7 +600,7 @@ function OutputCard({
   const isMedia = output.kind === 'image' || output.kind === 'video';
 
   return (
-    <div className="border border-white/5 hover:border-primary/40 transition-all bg-black/40 group">
+    <div className="beam border border-white/5 transition-all bg-black/40 group">
       {isMedia && output.url ? (
         <button
           onClick={onPreview}
@@ -622,13 +622,13 @@ function OutputCard({
       <div className="p-2 flex items-center justify-between text-[9px] text-white/40 italic font-mono uppercase tracking-widest">
         <span>{new Date(output.createdAt).toLocaleDateString()}</span>
         <div className="flex items-center gap-1">
-          <button onClick={onPreview} aria-label="Preview" className="p-1.5 hover:text-white">
+          <button onClick={onPreview} aria-label="Preview" className="p-1.5">
             <Eye className="w-3 h-3" />
           </button>
-          <button onClick={onStar} aria-label="Star" className={cn('p-1.5 hover:text-primary', output.starred && 'text-primary')}>
+          <button onClick={onStar} aria-label="Star" className={cn('p-1.5', output.starred && 'text-primary')}>
             <Star className={cn('w-3 h-3', output.starred && 'fill-primary')} />
           </button>
-          <button onClick={onReuse} aria-label="Reuse inputs" className="p-1.5 hover:text-white">
+          <button onClick={onReuse} aria-label="Reuse inputs" className="p-1.5">
             <RefreshCw className="w-3 h-3" />
           </button>
           {output.url && (
@@ -636,13 +636,13 @@ function OutputCard({
               href={output.url}
               download
               aria-label="Download"
-              className="p-1.5 hover:text-white"
+              className="p-1.5"
               onClick={(e) => e.stopPropagation()}
             >
               <Download className="w-3 h-3" />
             </a>
           )}
-          <button onClick={onRemove} aria-label="Delete" className="p-1.5 hover:text-red-500">
+          <button onClick={onRemove} aria-label="Delete" className="p-1.5">
             <Trash2 className="w-3 h-3" />
           </button>
         </div>
@@ -667,7 +667,7 @@ function JobRow({ job, onCancel }: { job: StudioJob; onCancel: () => void }) {
       </span>
       <span className="text-white/30 italic">{job.status}</span>
       {(job.status === 'queued' || job.status === 'running') && (
-        <button onClick={onCancel} aria-label="Cancel" className="text-white/30 hover:text-red-400">
+        <button onClick={onCancel} aria-label="Cancel" className="text-white/30">
           <XCircle className="w-3 h-3" />
         </button>
       )}
@@ -704,11 +704,11 @@ function PreviewModal({ output, onClose }: { output: StudioOutput; onClose: () =
           <div className="flex items-center gap-2">
             <button
               onClick={copy}
-              className="text-[10px] font-black text-white/60 hover:text-white uppercase italic tracking-widest flex items-center gap-1"
+              className="text-[10px] font-black text-white/60 uppercase italic tracking-widest flex items-center gap-1"
             >
               <Copy className="w-3 h-3" /> Copy
             </button>
-            <button onClick={onClose} aria-label="Close" className="text-white/60 hover:text-white">
+            <button onClick={onClose} aria-label="Close" className="text-white/60">
               <XCircle className="w-5 h-5" />
             </button>
           </div>

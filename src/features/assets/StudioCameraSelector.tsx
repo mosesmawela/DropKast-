@@ -1,6 +1,5 @@
-import { useState } from "react";
-import { X, Aperture, Video, Focus, Scan, RotateCw } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+import { X, Aperture, Video, Scan, RotateCw } from "lucide-react";
+import { motion } from "motion/react";
 import { cn } from "../../lib/utils";
 
 interface CameraSettings {
@@ -34,15 +33,15 @@ export default function StudioCameraSelector({ settings, onUpdate, onClose }: { 
         <div className="p-10 pb-0">
           <div className="flex items-center justify-between mb-12">
             <h2 className="text-xl font-bold text-white">Camera Settings</h2>
-            <button 
+            <button
               onClick={onClose}
-              className="w-10 h-10 bg-white/5 hover:bg-white/10 rounded-full flex items-center justify-center transition-all"
+              className="beam w-10 h-10 bg-white/5 rounded-full flex items-center justify-center transition-all"
             >
               <X className="w-5 h-5 text-white/50" />
             </button>
           </div>
           
-          <div className="grid grid-cols-4 gap-4 mb-10">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
              {sections.map((s) => (
                 <div key={s.id} className="space-y-4">
                    <div className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] font-mono border-b border-white/5 pb-4 text-center">{s.label}</div>
@@ -52,10 +51,10 @@ export default function StudioCameraSelector({ settings, onUpdate, onClose }: { 
                           key={val}
                           onClick={() => onUpdate({ ...settings, [s.id]: val })}
                           className={cn(
-                            "w-full p-4 rounded-xl text-left transition-all border",
-                            settings[s.id as keyof CameraSettings] === val 
-                              ? "bg-primary/10 border-primary/40 text-white" 
-                              : "bg-white/[0.02] border-white/5 text-white/40 hover:bg-white/5 hover:text-white"
+                            "beam w-full p-4 rounded-xl text-left transition-all border",
+                            settings[s.id as keyof CameraSettings] === val
+                              ? "bg-primary/10 border-primary/40 text-white"
+                              : "bg-white/[0.02] border-white/5 text-white/40"
                           )}
                         >
                           <div className="text-[12px] font-bold">{val}</div>
@@ -68,9 +67,9 @@ export default function StudioCameraSelector({ settings, onUpdate, onClose }: { 
         </div>
 
         <div className="p-10 pt-0 flex justify-end">
-           <button 
+           <button
             onClick={onClose}
-            className="px-8 h-12 bg-white text-black font-black uppercase text-[10px] tracking-widest rounded-xl hover:bg-primary hover:text-white transition-all shadow-xl"
+            className="beam px-8 h-12 bg-white text-black font-black uppercase text-[10px] tracking-widest rounded-xl transition-all shadow-xl"
            >
              Save_Configuration
            </button>

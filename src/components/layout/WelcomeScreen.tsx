@@ -453,12 +453,8 @@ const FeatureSlide: React.FC<{ feature: typeof FEATURES[number]; accent: string 
  * one slide so onboarding doesn't drag.
  */
 const VISUAL_STYLES: { id: VisualStyle; label: string }[] = [
-  { id: 'default', label: 'Technical' },
-  { id: 'neumorphism', label: 'Neumorphism' },
-  { id: 'material', label: 'Material' },
-  { id: 'brutalism', label: 'Brutalism' },
-  { id: 'skeuomorphism', label: 'Skeuomorphic' },
-  { id: 'minimalist', label: 'Minimal' },
+  { id: 'default', label: 'Minimal' },
+  { id: 'skeuomorphism', label: 'Skeu' },
   { id: 'glassmorphism', label: 'Glass' },
 ];
 

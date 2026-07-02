@@ -7,7 +7,7 @@ export default function Terms() {
       <div className="max-w-3xl mx-auto">
         <Link
           to="/"
-          className="inline-flex items-center gap-2 text-white/40 hover:text-primary text-[11px] font-black tracking-[0.3em] uppercase italic mb-12 transition-colors"
+          className="inline-flex items-center gap-2 text-white/40 text-[11px] font-black tracking-[0.3em] uppercase italic mb-12 transition-colors"
         >
           <ChevronLeft className="w-3 h-3" /> Back home
         </Link>

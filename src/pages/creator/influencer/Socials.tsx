@@ -18,8 +18,8 @@ export default function InfluencerSocials() {
   const [platforms, setPlatforms] = useState([
     { id: 'tiktok', name: 'TikTok', icon: Video, connected: true, stats: '2.4M reach', color: 'text-primary' },
     { id: 'ig', name: 'Instagram', icon: Instagram, connected: true, stats: '840K reach', color: 'text-pink-500' },
-    { id: 'tw', name: 'Twitter / X', icon: Hexagon, connected: false, stats: 'disconnected', color: 'text-sky-400' },
-    { id: 'li', name: 'LinkedIn', icon: Linkedin, connected: false, stats: 'disconnected', color: 'text-blue-600' },
+    { id: 'tw', name: 'Twitter / X', icon: Hexagon, connected: false, stats: 'Not connected', color: 'text-sky-400' },
+    { id: 'li', name: 'LinkedIn', icon: Linkedin, connected: false, stats: 'Not connected', color: 'text-blue-600' },
   ]);
 
   const [loadingId, setLoadingId] = useState<string | null>(null);
@@ -28,7 +28,7 @@ export default function InfluencerSocials() {
     setLoadingId(platformId);
     await new Promise(r => setTimeout(r, 2000));
     setPlatforms(prev => prev.map(p =>
-      p.id === platformId ? { ...p, connected: true, stats: 'Awaiting sync' } : p
+      p.id === platformId ? { ...p, connected: true, stats: 'Syncing your stats' } : p
     ));
     setLoadingId(null);
     toast.success(`Connected to ${platforms.find(p => p.id === platformId)?.name}`);
@@ -49,7 +49,7 @@ export default function InfluencerSocials() {
             <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
             <span className="text-[10px] font-black text-primary uppercase tracking-[0.4em] font-mono italic">Connected accounts</span>
           </div>
-          <h1 className="text-6xl md:text-8xl font-black italic text-white uppercase tracking-tighter leading-[0.8]">Your socials</h1>
+          <h1 className="text-5xl sm:text-6xl md:text-8xl font-black italic text-white uppercase tracking-tighter leading-[0.8]">Your socials</h1>
           <p className="text-[11px] font-bold text-white/30 uppercase tracking-[0.2em] font-mono italic">Connect your platforms so we can verify your posts and pay you faster.</p>
         </div>
       </header>
@@ -58,18 +58,18 @@ export default function InfluencerSocials() {
         {platforms.map((p) => (
           <div key={p.id} className={cn(
             "manifest-card p-10 bg-black/40 border transition-all group",
-            p.connected ? "border-primary/20" : "border-white/5 opacity-60 hover:opacity-100"
+            p.connected ? "border-primary/20" : "border-white/5 opacity-60"
           )}>
-            <div className="flex justify-between items-start mb-10">
-              <div className="flex items-center gap-6">
+            <div className="flex justify-between items-start mb-10 gap-4">
+              <div className="flex items-center gap-6 min-w-0">
                 <div className={cn(
-                  "w-16 h-16 border-2 flex items-center justify-center transition-all",
+                  "w-16 h-16 border-2 flex items-center justify-center transition-all shrink-0",
                   p.connected ? "border-primary text-primary" : "border-white/10 text-white/20"
                 )}>
                   <p.icon className="w-8 h-8" />
                 </div>
-                <div className="space-y-1">
-                  <h3 className="text-3xl font-black italic text-white lowercase tracking-tight">{p.name}</h3>
+                <div className="space-y-1 min-w-0">
+                  <h3 className="text-3xl font-black italic text-white lowercase tracking-tight truncate">{p.name}</h3>
                   <span className={cn(
                     "text-[9px] font-black uppercase tracking-widest font-mono italic",
                     p.connected ? "text-primary" : "text-white/20"
@@ -78,14 +78,14 @@ export default function InfluencerSocials() {
               </div>
               
               {p.connected ? (
-                <div className="flex items-center gap-2 text-primary">
+                <div className="flex items-center gap-2 text-primary shrink-0">
                    <ShieldCheck className="w-4 h-4" />
-                   <span className="text-[8px] font-black uppercase font-mono italic">ACTIVE</span>
+                   <span className="text-[8px] font-black uppercase font-mono italic">Connected</span>
                 </div>
               ) : (
-                <div className="flex items-center gap-2 text-white/20">
+                <div className="flex items-center gap-2 text-white/20 shrink-0">
                    <Hexagon className="w-4 h-4" />
-                   <span className="text-[8px] font-black uppercase font-mono italic">OFFLINE</span>
+                   <span className="text-[8px] font-black uppercase font-mono italic">Not connected</span>
                 </div>
               )}
             </div>
@@ -96,13 +96,13 @@ export default function InfluencerSocials() {
                    onClick={() => handleRefresh(p.id)}
                    disabled={loadingId === p.id}
                    className={cn(
-                     "h-14 w-full border transition-all text-[10px] font-black font-mono uppercase italic tracking-widest flex items-center justify-center gap-4",
+                     "beam h-14 w-full border transition-all text-[10px] font-black font-mono uppercase italic tracking-widest flex items-center justify-center gap-4",
                      loadingId === p.id
                        ? "bg-white/5 border-white/5 text-white/20 cursor-not-allowed"
-                       : "bg-white/5 border-white/5 hover:border-white text-white/40 hover:text-white"
+                       : "bg-white/5 border-white/5 text-white/40"
                    )}
                   >
-                    <span>{loadingId === p.id ? 'REFRESHING...' : 'REFRESH_CONNECTION'}</span>
+                    <span>{loadingId === p.id ? 'Refreshing...' : 'Refresh connection'}</span>
                     <Zap className={cn("w-3 h-3", loadingId === p.id && "animate-spin")} />
                   </button>
                ) : (
@@ -110,13 +110,13 @@ export default function InfluencerSocials() {
                    onClick={() => handleConnect(p.id)}
                    disabled={loadingId === p.id}
                    className={cn(
-                     "h-14 w-full transition-all text-[10px] font-black font-mono uppercase italic tracking-widest flex items-center justify-center gap-4",
+                     "beam h-14 w-full transition-all text-[10px] font-black font-mono uppercase italic tracking-widest flex items-center justify-center gap-4",
                      loadingId === p.id
                        ? "bg-white/30 text-black/50 cursor-not-allowed"
-                       : "bg-white text-black hover:bg-primary hover:text-white"
+                       : "bg-white text-black"
                    )}
                   >
-                    <span>{loadingId === p.id ? 'CONNECTING...' : 'INITIALIZE_AUTH_FLOW'}</span>
+                    <span>{loadingId === p.id ? 'Connecting...' : 'Connect account'}</span>
                     <Plus className={cn("w-4 h-4", loadingId === p.id && "animate-spin")} />
                   </button>
                )}

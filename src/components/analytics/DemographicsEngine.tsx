@@ -29,7 +29,7 @@ export default function DemographicsEngine() {
         >
           <option value="">Select an artist to filter</option>
         </select>
-        <button className="flex items-center gap-1 px-4 py-3 border border-dashed border-[var(--border-main)] text-[#6A6A75] hover:border-[#F05A28] hover:text-[#F05A28] transition-all text-[9px] font-bold uppercase tracking-widest font-mono">
+        <button className="beam flex items-center gap-1 px-4 py-3 border border-dashed border-[var(--border-main)] text-[#6A6A75] transition-all text-[9px] font-bold uppercase tracking-widest font-mono">
           <Plus className="w-3 h-3" />
           ADD FILTER
         </button>

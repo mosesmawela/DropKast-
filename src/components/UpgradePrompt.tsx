@@ -33,7 +33,7 @@ export function UpgradeBanner({ feature, requiredTier, description, variant = 'f
       <Link
         to={`/subscription?upgrade=${requiredTier}`}
         className={cn(
-          'inline-flex items-center gap-2 px-3 py-1.5 border border-primary/30 bg-primary/5 text-primary text-[10px] font-black uppercase italic tracking-widest hover:bg-primary hover:text-white transition-all',
+          'beam inline-flex items-center gap-2 px-3 py-1.5 border border-primary/30 bg-primary/5 text-primary text-[10px] font-black uppercase italic tracking-widest transition-all',
           className,
         )}
       >
@@ -58,7 +58,7 @@ export function UpgradeBanner({ feature, requiredTier, description, variant = 'f
         </p>
         <Link
           to={`/subscription?upgrade=${requiredTier}`}
-          className="inline-flex items-center gap-2 h-10 px-5 bg-white text-black hover:bg-primary hover:text-white text-[10px] font-black uppercase italic tracking-widest transition-all"
+          className="beam inline-flex items-center gap-2 h-10 px-5 bg-white text-black text-[10px] font-black uppercase italic tracking-widest transition-all"
         >
           Upgrade to {required.name}
           <ArrowRight className="w-3 h-3" />
@@ -102,7 +102,7 @@ export function UpgradeModal({
           <div className="w-12 h-12 border border-primary flex items-center justify-center">
             <Sparkles className="w-5 h-5 text-primary" />
           </div>
-          <button onClick={onClose} aria-label="Close" className="text-white/40 hover:text-white">
+          <button onClick={onClose} aria-label="Close" className="text-white/40">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -141,14 +141,14 @@ export function UpgradeModal({
         <Link
           to={`/subscription?upgrade=${requiredTier}`}
           onClick={onClose}
-          className="block w-full h-12 bg-white text-black hover:bg-primary hover:text-white text-[10px] font-black uppercase italic tracking-widest transition-all flex items-center justify-center gap-2"
+          className="beam block w-full h-12 bg-white text-black text-[10px] font-black uppercase italic tracking-widest transition-all flex items-center justify-center gap-2"
         >
           Upgrade to {required.name}
           <ArrowRight className="w-3 h-3" />
         </Link>
         <button
           onClick={onClose}
-          className="w-full mt-2 h-10 text-[10px] font-black text-white/40 hover:text-white uppercase italic tracking-widest"
+          className="w-full mt-2 h-10 text-[10px] font-black text-white/40 uppercase italic tracking-widest"
         >
           Maybe later
         </button>

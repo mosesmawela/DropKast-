@@ -236,7 +236,7 @@ export default function AIProviders() {
               key={envVar}
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              className="manifest-card border border-[var(--border-main)] bg-[var(--card-bg)] hover:border-primary/40 transition-colors"
+              className="manifest-card border border-[var(--border-main)] bg-[var(--card-bg)] transition-colors"
             >
               <div className="p-4">
                 <div className="flex items-start justify-between gap-4 mb-3">
@@ -275,8 +275,8 @@ export default function AIProviders() {
                 </div>
 
                 {/* Key input */}
-                <div className="flex items-center gap-2">
-                  <div className="relative flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="relative flex-1 min-w-[180px]">
                     <input
                       type={conn?.visible ? 'text' : 'password'}
                       value={conn?.key || ''}
@@ -294,7 +294,7 @@ export default function AIProviders() {
                     <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                       <button
                         onClick={() => toggleVisible(envVar)}
-                        className="p-1 text-[var(--text-main)]/30 hover:text-[var(--text-main)] transition-colors"
+                        className="p-1 text-[var(--text-main)]/30 transition-colors"
                         title={conn?.visible ? 'Hide key' : 'Show key'}
                       >
                         {conn?.visible ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
@@ -305,7 +305,7 @@ export default function AIProviders() {
                   <button
                     onClick={() => testKey(envVar)}
                     disabled={!hasKey || conn?.status === 'testing'}
-                    className="h-10 px-3 border border-[var(--border-main)] hover:border-primary hover:text-primary text-[var(--text-main)]/60 text-[10px] font-mono font-black uppercase italic tracking-widest transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5"
+                    className="h-10 px-3 border border-[var(--border-main)] text-[var(--text-main)]/60 text-[10px] font-mono font-black uppercase italic tracking-widest transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5"
                     title="Test this key"
                   >
                     <TestTube className="w-3 h-3" />
@@ -316,7 +316,7 @@ export default function AIProviders() {
                     href={mainProvider.signupUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="h-10 px-3 border border-[var(--border-main)] hover:border-primary hover:text-primary text-[var(--text-main)]/60 text-[10px] font-mono font-black uppercase italic tracking-widest transition-all flex items-center gap-1.5"
+                    className="h-10 px-3 border border-[var(--border-main)] text-[var(--text-main)]/60 text-[10px] font-mono font-black uppercase italic tracking-widest transition-all flex items-center gap-1.5"
                     title="Get API key"
                   >
                     <ExternalLink className="w-3 h-3" />
@@ -326,7 +326,7 @@ export default function AIProviders() {
                   {hasKey && (
                     <button
                       onClick={() => clearKey(envVar)}
-                      className="h-10 px-3 border border-red-500/30 hover:border-red-500 text-red-500/60 hover:text-red-500 text-[10px] font-mono font-black uppercase italic tracking-widest transition-all flex items-center gap-1.5"
+                      className="h-10 px-3 border border-red-500/30 text-red-500/60 text-[10px] font-mono font-black uppercase italic tracking-widest transition-all flex items-center gap-1.5"
                       title="Remove key"
                     >
                       <Trash2 className="w-3 h-3" />
@@ -358,8 +358,8 @@ export default function AIProviders() {
 
       {/* Save all */}
       {hasLocalKeys && (
-        <div className="flex items-center justify-between manifest-card border border-primary/30 bg-primary/5 p-4">
-          <div>
+        <div className="flex items-center justify-between gap-4 manifest-card border border-primary/30 bg-primary/5 p-4">
+          <div className="min-w-0">
             <p className="text-xs font-mono font-black italic text-primary uppercase tracking-widest">
               {configuredCount} key{configuredCount !== 1 ? 's' : ''} saved locally
             </p>
@@ -369,7 +369,7 @@ export default function AIProviders() {
           </div>
           <button
             onClick={saveAllKeys}
-            className="h-10 px-5 bg-primary text-white text-[10px] font-mono font-black uppercase italic tracking-widest hover:scale-[1.03] active:scale-95 transition-all flex items-center gap-2"
+            className="h-10 px-5 shrink-0 bg-primary text-white text-[10px] font-mono font-black uppercase italic tracking-widest active:scale-95 transition-all flex items-center gap-2"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             Save All
@@ -382,7 +382,7 @@ export default function AIProviders() {
         <div className="flex items-center gap-2 mb-3">
           <Cpu className="w-4 h-4 text-primary" />
           <span className="text-[10px] font-mono font-black uppercase tracking-[0.3em] text-primary italic">
-            How BYOK Works
+            How It Works
           </span>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-[var(--text-main)]/70 leading-relaxed">
@@ -408,7 +408,7 @@ export default function AIProviders() {
         </div>
         <p className="text-xs text-[var(--text-main)]/70 leading-relaxed">
           If the workspace has pre-configured keys (NVIDIA, Groq, Cerebras, OpenRouter free tiers), they're available
-          immediately without adding anything. BYOK is for upgrading to premium models or using your own accounts.
+          immediately without adding anything. Adding your own key is for upgrading to premium models or using your own accounts.
         </p>
       </section>
     </div>

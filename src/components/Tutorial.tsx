@@ -129,7 +129,7 @@ export default function Tutorial() {
             </span>
             <button
               onClick={skip}
-              className="ml-auto text-white/40 hover:text-white transition-colors"
+              className="ml-auto text-white/40 transition-colors"
               aria-label="Skip tutorial"
             >
               <X className="w-3.5 h-3.5" />
@@ -145,14 +145,14 @@ export default function Tutorial() {
             <button
               onClick={prev}
               disabled={step === 0}
-              className="flex items-center gap-1 text-[9px] font-mono font-black uppercase tracking-widest italic text-white/40 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+              className="flex items-center gap-1 text-[9px] font-mono font-black uppercase tracking-widest italic text-white/40 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronLeft className="w-3 h-3" />
               Back
             </button>
             <button
               onClick={skip}
-              className="text-[9px] font-mono font-black uppercase tracking-widest italic text-white/40 hover:text-white transition-colors"
+              className="text-[9px] font-mono font-black uppercase tracking-widest italic text-white/40 transition-colors"
             >
               Skip Tour
             </button>

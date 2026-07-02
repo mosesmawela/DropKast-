@@ -265,6 +265,18 @@ export const FEATURE_MATRIX: FeatureRow[] = [
     values: { free: true, indie: true, pro: true, label: true },
   },
   {
+    key: 'ai-splits',
+    label: 'AI split-sheet analysis (global PROs, cited)',
+    description: 'Grounded royalty breakdown across SAMRO, ASCAP/BMI, PRS, The MLC and more — with live sources.',
+    values: { free: false, indie: true, pro: true, label: true },
+  },
+  {
+    key: 'whatsapp',
+    label: 'Submit music via WhatsApp',
+    description: 'Conversational AI onboarding — submit a track straight from WhatsApp.',
+    values: { free: true, indie: true, pro: true, label: true },
+  },
+  {
     key: 'smartlinks',
     label: 'Smart links / pre-saves',
     values: { free: true, indie: true, pro: true, label: true },

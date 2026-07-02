@@ -55,11 +55,11 @@ export default function Trending() {
     <div className="max-w-7xl mx-auto py-12 px-6">
       {/* Header */}
       <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-8">
-        <div className="space-y-4">
+        <div className="space-y-4 min-w-0">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-[0.4em] italic">
             <Flame className="w-3 h-3" /> What's Trending
           </div>
-          <h1 className="text-6xl md:text-7xl font-black text-white italic uppercase tracking-tighter leading-none">
+          <h1 className="text-4xl sm:text-6xl md:text-7xl font-black text-white italic uppercase tracking-tighter leading-none">
             New <span className="text-primary">sub-genres</span> moving now
           </h1>
           <p className="text-white/40 text-base font-medium leading-relaxed max-w-2xl">
@@ -68,7 +68,7 @@ export default function Trending() {
           </p>
         </div>
 
-        <div className="manifest-card p-5 bg-dark border-primary/20 min-w-[240px]">
+        <div className="manifest-card p-5 bg-dark border-primary/20 w-full md:w-auto md:min-w-[240px] shrink-0">
           <div className="flex items-center gap-2 text-[10px] font-black text-primary uppercase tracking-[0.3em] italic mb-3">
             <TrendingUp className="w-3 h-3" /> Heat right now
           </div>
@@ -103,10 +103,10 @@ export default function Trending() {
             key={m}
             onClick={() => setMomentum(m)}
             className={cn(
-              'h-9 px-4 text-[10px] font-black uppercase italic tracking-widest border transition-all',
+              'beam h-10 px-4 text-[10px] font-black uppercase italic tracking-widest border transition-all',
               momentum === m
                 ? 'bg-primary text-white border-primary'
-                : 'text-white/50 border-white/10 hover:border-white/30 hover:text-white',
+                : 'text-white/50 border-white/10',
             )}
           >
             {m === 'all' ? 'All' : momentumLabel(m as TrendMomentum)}
@@ -117,7 +117,7 @@ export default function Trending() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search genre, vibe, or hashtag..."
-          className="ml-auto bg-dark border border-white/10 py-2 px-4 text-sm text-white focus:outline-none focus:border-primary w-72"
+          className="w-full sm:w-72 sm:ml-auto bg-dark border border-white/10 py-2 px-4 text-sm text-white focus:outline-none focus:border-primary"
         />
       </div>
 
@@ -156,7 +156,7 @@ export default function Trending() {
           </p>
           <Link
             to="/studio"
-            className="inline-flex items-center gap-2 text-[10px] font-black text-primary hover:underline uppercase italic tracking-widest"
+            className="inline-flex items-center gap-2 text-[10px] font-black text-primary uppercase italic tracking-widest"
           >
             Submit to A&R <ChevronRight className="w-3 h-3" />
           </Link>
@@ -172,23 +172,23 @@ function TrendCard({ trend, idx }: { trend: SubGenre; idx: number }) {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: Math.min(idx * 0.04, 0.4) }}
-      className="manifest-card bg-dark border border-white/5 hover:border-white/20 transition-all overflow-hidden group"
+      className="manifest-card bg-dark border border-white/5 transition-all overflow-hidden group"
       style={{ borderTop: `3px solid ${trend.accent}` }}
     >
       {/* Header */}
       <div className="p-6 pb-4 relative">
         <div className="flex items-start justify-between gap-3 mb-4">
-          <div>
+          <div className="min-w-0">
             <div
               className="text-[9px] font-black uppercase tracking-[0.3em] italic mb-2"
               style={{ color: trend.accent }}
             >
               {trend.parentGenre}
             </div>
-            <h3 className="text-2xl font-black italic text-white tracking-tight">{trend.name}</h3>
+            <h3 className="text-2xl font-black italic text-white tracking-tight break-words">{trend.name}</h3>
           </div>
           <div
-            className="text-[9px] font-black tracking-widest italic px-2 py-1 border whitespace-nowrap"
+            className="text-[9px] font-black tracking-widest italic px-2 py-1 border whitespace-nowrap shrink-0"
             style={{ color: momentumColor(trend.momentum), borderColor: `${momentumColor(trend.momentum)}55` }}
           >
             {momentumLabel(trend.momentum)}

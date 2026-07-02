@@ -64,7 +64,7 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
       {/* Mobile menu button */}
       <button
         onClick={onMenuClick}
-        className="md:hidden p-2 -ml-2 text-white/60 hover:text-white transition-colors shrink-0"
+        className="md:hidden p-2 -ml-2 text-white/60 transition-colors shrink-0"
         aria-label="Open menu"
       >
         <Menu className="w-5 h-5" />
@@ -108,7 +108,7 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
                             setQuery('');
                             setIsFocused(false);
                           }}
-                          className="w-full flex items-center gap-4 px-6 py-4 hover:bg-primary/10 transition-all group text-left border-b border-white/5 last:border-0"
+                          className="w-full flex items-center gap-4 px-6 py-4 transition-all group text-left border-b border-white/5 last:border-0"
                         >
                           {res.type === 'release' && <Music className="w-3.5 h-3.5 text-primary" />}
                           {res.type === 'page' && <LayoutDashboard className="w-3.5 h-3.5 text-primary" />}
@@ -158,7 +158,7 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
           <Link
             to="/academy"
             data-tour="navbar-academy"
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 border border-primary/30 hover:border-primary text-primary text-[10px] font-mono font-black uppercase italic tracking-widest transition-all"
+            className="beam hidden sm:flex items-center gap-1.5 px-3 py-1.5 border border-primary/30 text-primary text-[10px] font-mono font-black uppercase italic tracking-widest transition-all"
             title="DropKast Academy"
           >
             <GraduationCap className="w-3.5 h-3.5" />
@@ -167,7 +167,7 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
           <Link
             to="/academy"
             data-tour="navbar-academy-mobile"
-            className="sm:hidden p-2 text-primary hover:text-primary/70 transition-colors"
+            className="sm:hidden p-2 text-primary transition-colors"
             title="Academy"
           >
             <GraduationCap className="w-4 h-4" />
@@ -183,10 +183,10 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
             <Link
               to="/profile"
               data-tour="navbar-profile"
-              className="text-right hidden md:block hover:text-primary transition-colors"
+              className="text-right hidden md:block transition-colors"
               title="View profile"
             >
-              <div className="text-[10px] font-black text-white italic leading-none tracking-widest uppercase group-hover:text-primary transition-colors">
+              <div className="text-[10px] font-black text-white italic leading-none tracking-widest uppercase transition-colors">
                 {user?.artistName || 'Your Profile'}
               </div>
               <div className="text-[8px] text-white/20 font-black uppercase tracking-[0.2em] mt-1 italic">
@@ -196,7 +196,7 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
             <div className="flex items-center gap-2 sm:gap-3">
               <Link
                 to="/profile"
-                className="w-8 h-8 manifest-card corner-marker p-0.5 border-white/20 shrink-0 hover:border-primary transition-colors"
+                className="w-8 h-8 manifest-card corner-marker p-0.5 border-white/20 shrink-0 transition-colors"
                 title="Profile"
               >
                 <img
@@ -214,7 +214,7 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
               </Link>
               <button
                 onClick={handleLogout}
-                className="p-1.5 border border-white/5 hover:border-primary hover:text-primary text-white/40 transition-all"
+                className="beam p-1.5 border border-white/5 text-white/40 transition-all"
                 title="Sign out"
               >
                 <LogOut className="w-3 h-3" />

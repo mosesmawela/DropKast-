@@ -71,17 +71,17 @@ export default function Dashboard() {
       case 'INFLUENCER':
         return {
           title: 'Influencer dashboard',
-          greeting: `HELLO, ${user?.artistName?.split(' ')[0] || 'CREATOR'}`,
+          greeting: `Hello, ${user?.artistName?.split(' ')[0] || 'Creator'}`,
           metrics: [
             { label: 'Total Engagement', value: '—', trend: '', color: 'text-primary', icon: Users },
             { label: 'Pending Missions', value: '—', trend: '', color: 'text-emerald-400', icon: Target },
-            { label: 'Active Campaigns', value: activeCampaignsCount.toString().padStart(2, '0'), trend: 'Protocols Ready', color: 'text-white', icon: Layers },
-            { label: 'Est. Earnings', value: `$${(revenueCents / 100).toFixed(1)}K`, trend: 'Global Reach', color: 'text-white/40', icon: Wallet },
+            { label: 'Active Campaigns', value: activeCampaignsCount.toString().padStart(2, '0'), trend: 'Ready to go', color: 'text-white', icon: Layers },
+            { label: 'Est. Earnings', value: `$${(revenueCents / 100).toFixed(1)}K`, trend: 'Global reach', color: 'text-white/40', icon: Wallet },
           ],
           actions: [
-            { title: 'Find Missions', icon: Target, path: '/influencer/missions', desc: 'Browse and accept new campaign directives.' },
-            { title: 'Social Connect', icon: LinkIcon, path: '/influencer/socials', desc: 'Sync your social nodes for tracking.' },
-            { title: 'Earnings Hub', icon: Wallet, path: '/influencer/earnings', desc: 'Review finalized payment clearings.' },
+            { title: 'Find Missions', icon: Target, path: '/influencer/missions', desc: 'Browse and accept new campaigns.' },
+            { title: 'Social Connect', icon: LinkIcon, path: '/influencer/socials', desc: 'Link your social accounts for tracking.' },
+            { title: 'Earnings Hub', icon: Wallet, path: '/influencer/earnings', desc: 'Review completed payments.' },
             { title: 'Creator Kit', icon: Sparkles, path: '/influencer/missions', desc: 'Access high-res assets for your content.' },
           ],
           chartLabel: 'Engagement Velocity',
@@ -89,8 +89,8 @@ export default function Dashboard() {
         };
       case 'DJ':
         return {
-          title: 'VIBE_DISTRIBUTOR',
-          greeting: `HELLO, ${user?.artistName?.split(' ')[0] || 'SELECTA'}`,
+          title: 'DJ dashboard',
+          greeting: `Hello, ${user?.artistName?.split(' ')[0] || 'Selecta'}`,
           metrics: [
             { label: 'Pack Downloads', value: '—', trend: '', color: 'text-primary', icon: Download },
             { label: 'Direct Feedbacks', value: '—', trend: '', color: 'text-emerald-400', icon: MessageSquare },
@@ -98,10 +98,10 @@ export default function Dashboard() {
             { label: 'Elite Rank', value: '—', trend: '', color: 'text-white/40', icon: Star },
           ],
           actions: [
-            { title: 'Promo Packs', icon: Download, path: '/dj/packs', desc: 'Download exclusive pre-release audio buffers.' },
-            { title: 'Submit Feedback', icon: MessageSquare, path: '/dj/feedback', desc: 'Send direct telemetry to artists and labels.' },
-            { title: 'Sonic Charts', icon: BarChart3, path: '/dj/packs', desc: 'View global club and radio transmission rankings.' },
-            { title: 'Relay Nodes', icon: Globe2, path: '/dj/packs', desc: 'Connect with other broadcast professionals.' },
+            { title: 'Promo Packs', icon: Download, path: '/dj/packs', desc: 'Download exclusive pre-release audio.' },
+            { title: 'Submit Feedback', icon: MessageSquare, path: '/dj/feedback', desc: 'Send direct feedback to artists and labels.' },
+            { title: 'Charts', icon: BarChart3, path: '/dj/packs', desc: 'View global club and radio rankings.' },
+            { title: 'Network', icon: Globe2, path: '/dj/packs', desc: 'Connect with other DJs and broadcasters.' },
           ],
           chartLabel: 'Audience reach',
           chartUnit: 'Listeners'
@@ -109,7 +109,7 @@ export default function Dashboard() {
       case 'LABEL':
         return {
           title: 'Label HQ',
-          greeting: `HELLO, ${user?.label || user?.artistName?.split(' ')[0] || 'LABEL'}`,
+          greeting: `Hello, ${user?.label || user?.artistName?.split(' ')[0] || 'Label'}`,
           metrics: [
             { label: 'Artists on roster', value: String(rosterCount), trend: rosterCount > 0 ? 'Active' : 'Add your first', color: 'text-primary', icon: Users },
             { label: 'Catalogue releases', value: String(releaseCount), trend: 'All artists', color: 'text-white', icon: TrendingUp },
@@ -128,7 +128,7 @@ export default function Dashboard() {
       default:
         return {
           title: 'Artist Hub',
-          greeting: `HELLO, ${user?.artistName?.split(' ')[0] || 'ARTIST'}`,
+          greeting: `Hello, ${user?.artistName?.split(' ')[0] || 'Artist'}`,
           metrics: [
             { label: 'Total releases', value: String(releaseCount), trend: 'Catalogue', color: 'text-primary', icon: TrendingUp },
             { label: 'Upcoming releases', value: String(preReleaseCount).padStart(2, '0'), trend: preReleaseCount > 0 ? 'Scheduled' : 'None pending', color: 'text-emerald-400', icon: Zap },
@@ -161,10 +161,10 @@ export default function Dashboard() {
       )}
       <ScrollReveal direction="down" variant="blur">
         <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-[var(--border-main)] pb-10 relative">
-          <div className="flex items-start gap-8">
-            <CircularPulse 
-              size={64} 
-              className="manifest-card flex items-center justify-center"
+          <div className="flex items-start gap-8 min-w-0">
+            <CircularPulse
+              size={64}
+              className="manifest-card flex items-center justify-center shrink-0"
               color="var(--color-primary)"
             >
                <Terminal className="w-8 h-8 text-primary z-10" />
@@ -175,7 +175,7 @@ export default function Dashboard() {
                 <div className="w-8 h-[1px] bg-[var(--border-main)]"></div>
                 <span className="text-[10px] font-bold text-primary tracking-[0.2em] font-mono italic animate-pulse">Online</span>
               </div>
-              <h1 className="text-3xl md:text-5xl font-black tracking-tight text-[var(--text-main)] leading-none uppercase italic font-mono">
+              <h1 className="text-3xl md:text-5xl font-black tracking-tight text-[var(--text-main)] leading-none italic font-mono break-words min-w-0">
                 {config.greeting}
               </h1>
             </div>
@@ -187,15 +187,15 @@ export default function Dashboard() {
                     <AnimatedBeam containerClassName="w-full sm:w-auto">
                       <button 
                         onClick={() => navigate('/campaigns/new')}
-                        className="primary-button h-12 flex items-center px-10 bg-primary text-white border-none relative overflow-hidden group shadow-[0_0_20px_rgba(255,77,0,0.15)] transition-all hover:scale-105 active:scale-95"
+                        className="primary-button h-12 flex items-center px-10 bg-primary text-white border-none relative overflow-hidden group shadow-[0_0_20px_rgba(255,77,0,0.15)] transition-all active:scale-95"
                       >
                         <Sparkles className="w-4 h-4 mr-3" />
                         New campaign
                       </button>
                     </AnimatedBeam>
-                    <button 
+                    <button
                       onClick={() => navigate('/releases/new')}
-                      className="secondary-button h-12 flex items-center px-10 border-white/10 text-white hover:border-white bg-white/5 transition-all hover:scale-105 active:scale-95"
+                      className="secondary-button h-12 flex items-center px-10 border-white/10 text-white bg-white/5 transition-all active:scale-95"
                     >
                       Upload music
                     </button>
@@ -204,7 +204,7 @@ export default function Dashboard() {
                 {role === 'INFLUENCER' && (
                   <button 
                     onClick={() => navigate('/influencer/missions')}
-                    className="primary-button h-12 flex items-center px-10 bg-primary text-white border-none transition-all hover:scale-105 active:scale-95"
+                    className="primary-button h-12 flex items-center px-10 bg-primary text-white border-none transition-all active:scale-95"
                   >
                     <Target className="w-4 h-4 mr-3" />
                     Browse campaigns
@@ -213,7 +213,7 @@ export default function Dashboard() {
                 {role === 'DJ' && (
                   <button 
                     onClick={() => navigate('/dj/packs')}
-                    className="primary-button h-12 flex items-center px-10 bg-primary text-white border-none transition-all hover:scale-105 active:scale-95"
+                    className="primary-button h-12 flex items-center px-10 bg-primary text-white border-none transition-all active:scale-95"
                   >
                     <Download className="w-4 h-4 mr-3" />
                     Open DJ packs
@@ -228,7 +228,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 border border-[var(--border-main)] bg-[var(--card-bg)]">
         {loading ? (
           Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="p-10 border-r last:border-r-0 border-[var(--border-main)]">
+            <div key={i} className="p-5 sm:p-10 border-r last:border-r-0 border-[var(--border-main)]">
               <StatSkeleton />
             </div>
           ))
@@ -253,14 +253,14 @@ export default function Dashboard() {
     };
     navigate(routeMap[stat.label] || '/analytics');
   }}
-                className="p-10 relative group border-r last:border-r-0 border-[var(--border-main)] hover:bg-[var(--text-main)]/[0.04] transition-all hover-parallax cursor-pointer h-full"
+                className="beam p-5 sm:p-10 relative group border-r last:border-r-0 border-[var(--border-main)] transition-all hover-parallax cursor-pointer h-full"
               >
                 <div className="text-[var(--text-main)]/20 text-[10px] font-bold uppercase tracking-[0.2em] mb-8 font-mono flex items-center gap-2">
                   <div className="w-1 h-1 bg-primary"></div>
                   {stat.label}
                 </div>
-                <div className="text-4xl font-black text-white mb-4 tracking-tighter leading-none font-mono italic group-hover:text-primary transition-colors uppercase">{stat.value}</div>
-                <div className={cn("text-[10px] flex items-center gap-2 font-bold tracking-widest font-mono uppercase transition-all group-hover:translate-x-2 italic", stat.color)}>
+                <div className="text-4xl font-black text-white mb-4 tracking-tighter leading-none font-mono italic transition-colors uppercase">{stat.value}</div>
+                <div className={cn("text-[10px] flex items-center gap-2 font-bold tracking-widest font-mono uppercase transition-all italic", stat.color)}>
                    {stat.icon && <stat.icon className="w-3.5 h-3.5" />}
                   {stat.trend}
                 </div>
@@ -285,11 +285,11 @@ export default function Dashboard() {
                     onClick={() => navigate(n.path)}
                     className="manifest-card p-8 text-left flex items-start gap-6 group w-full"
                   >
-                    <div className="w-12 h-12 border border-white/10 flex items-center justify-center bg-white/5 group-hover:bg-primary/10 transition-colors">
+                    <div className="w-12 h-12 border border-white/10 flex items-center justify-center bg-white/5 transition-colors">
                       <n.icon className="w-5 h-5 text-primary" />
                     </div>
                     <div className="space-y-2">
-                       <h4 className="text-lg font-black italic font-mono uppercase tracking-tight text-white group-hover:text-primary transition-colors">{n.title}</h4>
+                       <h4 className="text-lg font-black italic font-mono uppercase tracking-tight text-white transition-colors">{n.title}</h4>
                       <p className="text-[10px] text-white/30 italic font-medium leading-relaxed font-sans">{n.desc}</p>
                     </div>
                   </button>
@@ -301,9 +301,9 @@ export default function Dashboard() {
         {/* Sidebar Activity */}
         <div className="col-span-12 lg:col-span-4 space-y-8">
            <div className="manifest-card p-10 space-y-8">
-              <div className="flex items-center justify-between mb-4">
-                 <h3 className="text-[10px] font-bold text-white/20 uppercase tracking-[0.4em] font-mono italic">AI Signal Feed</h3>
-                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              <div className="flex items-center justify-between gap-3 mb-4">
+                 <h3 className="text-[10px] font-bold text-white/20 uppercase tracking-[0.4em] font-mono italic min-w-0 truncate">Recent Activity</h3>
+                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shrink-0" />
               </div>
               <div className="space-y-6">
                   {signalFeed.length === 0 && (
@@ -315,15 +315,15 @@ export default function Dashboard() {
                         <log.icon className="w-3.5 h-3.5" />
                       </div>
                       <div>
-                        <p className="text-[11px] text-white/50 leading-relaxed italic font-medium font-sans mb-1 group-hover:text-white transition-colors">{log.msg}</p>
+                        <p className="text-[11px] text-white/50 leading-relaxed italic font-medium font-sans mb-1 transition-colors">{log.msg}</p>
                         <span className="text-[9px] font-bold text-white/20 font-mono italic">{log.time}</span>
                       </div>
                    </div>
                  ))}
               </div>
               <button 
-                onClick={() => { setSignalFeed([]); notify('info', 'BUFFER_CLEARED', 'Signal buffer flushed.'); }}
-                className="w-full py-4 border border-white/5 text-[10px] font-black font-mono tracking-widest text-white/20 hover:text-white transition-all uppercase"
+                onClick={() => { setSignalFeed([]); notify('info', 'Notifications cleared', 'Your activity feed is now empty.'); }}
+                className="w-full py-4 border border-white/5 text-[10px] font-black font-mono tracking-widest text-white/20 transition-all uppercase"
               >
                 Clear notifications
               </button>
@@ -344,7 +344,7 @@ export default function Dashboard() {
                     className="primary-button w-full h-14 flex items-center justify-center gap-3 bg-primary text-white border-none"
                  >
                    <ArrowUpRight className="w-4 h-4" />
-                   START_A_RELEASE
+                   Start a release
                  </button>
               </div>
            </div>
@@ -359,15 +359,15 @@ export default function Dashboard() {
               localStorage.removeItem('dropkast_welcome_seen');
               window.location.reload();
             }}
-            className="w-full h-40 bg-black hover:bg-black/90 flex flex-col items-center justify-center gap-6 group transition-all relative overflow-hidden"
+            className="beam w-full h-40 bg-black flex flex-col items-center justify-center gap-6 group transition-all relative overflow-hidden"
           >
-            <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="absolute inset-0 bg-primary/5 opacity-100 transition-opacity" />
             <div className="flex items-center gap-8 text-primary relative z-10">
-              <div className="w-16 h-16 border-2 border-primary/40 flex items-center justify-center group-hover:border-primary transition-colors">
-                <Users className="w-10 h-10 group-hover:scale-110 transition-transform" />
+              <div className="w-16 h-16 border-2 border-primary/40 flex items-center justify-center transition-colors">
+                <Users className="w-10 h-10 transition-transform" />
               </div>
               <div className="text-left">
-                <span className="text-4xl font-black italic font-mono uppercase tracking-[0.2em] group-hover:tracking-[0.3em] transition-all block text-white">Switch portal</span>
+                <span className="text-2xl sm:text-4xl font-black italic font-mono uppercase tracking-[0.2em] transition-all block text-white">Switch portal</span>
                 <span className="text-[10px] text-primary font-bold uppercase tracking-[0.5em] font-mono mt-2 block">Change your account type</span>
               </div>
             </div>
@@ -402,15 +402,15 @@ function BalanceStrip() {
   return (
     <Link
       to="/earnings"
-      className="manifest-card flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-gradient-to-r from-primary/[0.08] via-dark to-dark border border-primary/30 p-6 hover:border-primary transition-all group"
+      className="manifest-card flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-gradient-to-r from-primary/[0.08] via-dark to-dark border border-primary/30 p-6 transition-all group"
     >
-      <div className="flex items-center gap-6">
-        <Wallet className="w-7 h-7 text-primary" />
-        <div>
+      <div className="flex items-center gap-6 min-w-0">
+        <Wallet className="w-7 h-7 text-primary shrink-0" />
+        <div className="min-w-0">
           <div className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic mb-1">
             Available balance
           </div>
-          <div className="text-4xl md:text-5xl font-black italic text-white tabular-nums">
+          <div className="text-3xl sm:text-4xl md:text-5xl font-black italic text-white tabular-nums truncate">
             ${balance.toFixed(2)}
           </div>
           <div className="text-[10px] text-white/40 italic mt-1">
@@ -419,7 +419,7 @@ function BalanceStrip() {
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 shrink-0">
         <div className="text-right hidden md:block">
           <div className="text-[9px] font-black text-white/40 uppercase tracking-widest italic">Next payout</div>
           <div className="text-sm font-black italic text-white">
@@ -428,7 +428,7 @@ function BalanceStrip() {
         </div>
         <button
           onClick={(e) => { e.preventDefault(); window.location.href = '/earnings?action=withdraw'; }}
-          className="h-12 px-6 bg-white text-black hover:bg-primary hover:text-white text-[10px] font-black uppercase italic tracking-widest transition-all flex items-center gap-2"
+          className="h-12 px-6 bg-white text-black text-[10px] font-black uppercase italic tracking-widest transition-all flex items-center gap-2"
         >
           Withdraw
           <ArrowUpRight className="w-3.5 h-3.5" />

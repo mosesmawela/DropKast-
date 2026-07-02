@@ -95,6 +95,35 @@ export default function Splits() {
   const [newCollab, setNewCollab] = useState({ name: '', email: '', role: 'Songwriter', share: 0 });
   const [savingSheet, setSavingSheet] = useState(false);
 
+  // --- AI royalty analysis (grounded global split-sheet) ---
+  const [aiOpen, setAiOpen] = useState(false);
+  const [aiSong, setAiSong] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiReport, setAiReport] = useState<{ text: string; sources: { title: string; uri: string }[] } | null>(null);
+  const [aiError, setAiError] = useState<string | null>(null);
+
+  const runAiAnalysis = async () => {
+    setAiLoading(true);
+    setAiError(null);
+    setAiReport(null);
+    try {
+      const contributors = collaborators.map((c) => ({ name: c.name, roles: [c.role], percentage: c.share }));
+      const res = await fetch('/api/splits/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ songTitle: aiSong || 'Untitled', contributors }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to generate analysis');
+      setAiReport({ text: data.text, sources: data.sources || [] });
+    } catch (e: any) {
+      const msg = String(e?.message || e);
+      setAiError(/GOOGLE_API_KEY/i.test(msg) ? 'Grounded analysis needs a Google API key on the server (GOOGLE_API_KEY). Add it in your env to enable this.' : msg);
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   useEffect(() => {
     saveDraft(collaborators);
   }, [collaborators]);
@@ -261,12 +290,12 @@ export default function Splits() {
     <div className="space-y-12 max-w-7xl mx-auto py-8">
       {/* Header */}
       <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 border-b border-white/5 pb-10">
-        <div className="space-y-3">
+        <div className="space-y-3 min-w-0">
           <div className="flex items-center gap-2 text-primary font-mono">
-            <FileText className="w-3.5 h-3.5" />
+            <FileText className="w-3.5 h-3.5 shrink-0" />
             <span className="text-[10px] font-black uppercase tracking-[0.4em] italic">Royalty Splits</span>
           </div>
-          <h1 className="text-5xl md:text-6xl font-black tracking-tighter text-white italic uppercase">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tighter text-white italic uppercase break-words">
             Split sheet
           </h1>
           <p className="text-white/40 text-sm italic max-w-2xl leading-relaxed">
@@ -275,10 +304,16 @@ export default function Splits() {
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
+          <button
+            onClick={() => setAiOpen(true)}
+            className="beam h-12 px-6 border border-primary/50 text-primary text-[10px] font-black uppercase italic tracking-widest transition-all flex items-center gap-2"
+          >
+            <Sparkles className="w-3 h-3" /> AI Royalty Analysis
+          </button>
           {draftCount > 0 && (
             <button
               onClick={sendAllPending}
-              className="h-12 px-6 border border-primary text-primary text-[10px] font-black uppercase italic tracking-widest hover:bg-primary hover:text-white transition-all flex items-center gap-2"
+              className="beam h-12 px-6 border border-primary text-primary text-[10px] font-black uppercase italic tracking-widest transition-all flex items-center gap-2"
             >
               <Send className="w-3 h-3" /> Invite all ({draftCount})
             </button>
@@ -286,14 +321,14 @@ export default function Splits() {
           <button
             onClick={exportPdf}
             disabled={!isComplete}
-            className="h-12 px-6 border border-white/20 text-[10px] font-black uppercase italic tracking-widest text-white hover:bg-white hover:text-black transition-all flex items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed"
+            className="beam h-12 px-6 border border-white/20 text-[10px] font-black uppercase italic tracking-widest text-white transition-all flex items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed"
           >
             <Download className="w-3 h-3" /> Download
           </button>
           <button
             onClick={saveSplitSheet}
             disabled={!isComplete || savingSheet}
-            className="h-12 px-6 bg-white text-black hover:bg-primary hover:text-white text-[10px] font-black uppercase italic tracking-widest transition-all flex items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed"
+            className="beam h-12 px-6 bg-white text-black text-[10px] font-black uppercase italic tracking-widest transition-all flex items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed"
           >
             {savingSheet ? 'Saving...' : 'Save split sheet'}
           </button>
@@ -325,7 +360,7 @@ export default function Splits() {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, x: 20 }}
-                  className="manifest-card p-6 bg-dark border border-white/5 hover:border-white/15 transition-all space-y-4 group"
+                  className="manifest-card p-6 bg-dark border border-white/5 transition-all space-y-4 group"
                 >
                   <div className="flex items-start gap-5">
                     <div className="w-12 h-12 border border-white/10 flex items-center justify-center bg-white/5 italic font-black text-primary text-xl shrink-0">
@@ -353,7 +388,7 @@ export default function Splits() {
                       <button
                         onClick={() => removeCollaborator(c.id)}
                         aria-label="Remove collaborator"
-                        className="w-8 h-8 border border-white/5 flex items-center justify-center text-white/30 hover:text-red-500 hover:border-red-500/40 transition-all opacity-0 group-hover:opacity-100"
+                        className="beam w-8 h-8 border border-white/5 flex items-center justify-center text-white/30 transition-all opacity-70"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -375,7 +410,7 @@ export default function Splits() {
                         <button
                           key={v}
                           onClick={() => updateShare(c.id, v)}
-                          className="px-2 h-7 bg-white/5 border border-white/10 text-[9px] font-black text-white/60 hover:text-white hover:border-white transition-all uppercase tracking-widest"
+                          className="px-2 h-7 bg-white/5 border border-white/10 text-[9px] font-black text-white/60 transition-all uppercase tracking-widest"
                         >
                           {v}%
                         </button>
@@ -385,11 +420,11 @@ export default function Splits() {
 
                   {/* Per-row actions */}
                   {c.id !== '1' && (
-                    <div className="flex items-center gap-2 pt-2 border-t border-white/5">
+                    <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-white/5">
                       {c.status === 'draft' && (
                         <button
                           onClick={() => sendInvite(c.id)}
-                          className="h-9 px-4 bg-primary text-white text-[9px] font-black uppercase italic tracking-widest hover:bg-white hover:text-black transition-all flex items-center gap-2"
+                          className="beam h-9 px-4 bg-primary text-white text-[9px] font-black uppercase italic tracking-widest transition-all flex items-center gap-2"
                         >
                           <Mail className="w-3 h-3" /> Send invite
                         </button>
@@ -401,13 +436,13 @@ export default function Splits() {
                           </span>
                           <button
                             onClick={() => sendInvite(c.id)}
-                            className="h-9 px-3 border border-white/10 text-[9px] font-black text-white/60 uppercase italic tracking-widest hover:border-white hover:text-white transition-all"
+                            className="beam h-9 px-3 border border-white/10 text-[9px] font-black text-white/60 uppercase italic tracking-widest transition-all"
                           >
                             Resend
                           </button>
                           <button
                             onClick={() => simulateAccept(c.id)}
-                            className="h-9 px-3 border border-green-500/30 text-green-400 text-[9px] font-black uppercase italic tracking-widest hover:bg-green-500 hover:text-black transition-all"
+                            className="beam h-9 px-3 border border-green-500/30 text-green-400 text-[9px] font-black uppercase italic tracking-widest transition-all"
                             title="Demo: simulate the collaborator accepting"
                           >
                             Demo accept
@@ -469,7 +504,7 @@ export default function Splits() {
                 <button
                   onClick={addCollaborator}
                   aria-label="Add collaborator"
-                  className="bg-white text-black px-4 hover:bg-primary hover:text-white transition-all"
+                  className="beam bg-white text-black px-4 transition-all"
                 >
                   <Plus className="w-4 h-4" />
                 </button>
@@ -554,6 +589,121 @@ export default function Splits() {
           </div>
         </div>
       </div>
+
+      {/* AI Royalty Analysis modal */}
+      <AnimatePresence>
+        {aiOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[120] bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6"
+            onClick={() => setAiOpen(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 12, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 12, scale: 0.98 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-3xl max-h-[90vh] flex flex-col bg-[var(--card-bg)] border border-white/10"
+            >
+              <div className="flex items-center justify-between gap-4 p-5 border-b border-white/10 shrink-0">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Sparkles className="w-4 h-4 text-primary shrink-0" />
+                  <div className="min-w-0">
+                    <div className="text-[10px] font-black uppercase tracking-[0.3em] italic text-primary">AI Royalty Analysis</div>
+                    <div className="text-[10px] text-white/40 italic truncate">Grounded in live SAMRO / ASCAP / BMI / PRS / MLC rules with cited sources</div>
+                  </div>
+                </div>
+                <button onClick={() => setAiOpen(false)} className="text-white/40 shrink-0" aria-label="Close"><XIcon className="w-4 h-4" /></button>
+              </div>
+
+              <div className="p-5 overflow-y-auto custom-scrollbar space-y-4">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <input
+                    value={aiSong}
+                    onChange={(e) => setAiSong(e.target.value)}
+                    placeholder="Song title (optional)"
+                    className="flex-1 h-11 px-3 bg-[var(--bg-main)] border border-white/10 text-white text-sm italic outline-none focus:border-primary"
+                  />
+                  <button
+                    onClick={runAiAnalysis}
+                    disabled={aiLoading || collaborators.length === 0}
+                    className="beam h-11 px-6 bg-primary text-white text-[10px] font-black uppercase italic tracking-widest flex items-center justify-center gap-2 disabled:opacity-40 shrink-0"
+                  >
+                    <Sparkles className={cn('w-3.5 h-3.5', aiLoading && 'animate-pulse')} />
+                    {aiLoading ? 'Researching…' : 'Analyze splits'}
+                  </button>
+                </div>
+                <div className="text-[10px] text-white/40 italic">
+                  Analyzing {collaborators.length} contributor{collaborators.length !== 1 ? 's' : ''} · total {totalShare}%.
+                  {totalShare !== 100 && <span className="text-yellow-400"> Shares don't total 100% — the analysis will flag this.</span>}
+                </div>
+
+                {aiError && (
+                  <div className="border border-red-500/30 bg-red-500/5 p-4 text-xs text-red-300 italic">{aiError}</div>
+                )}
+
+                {aiLoading && (
+                  <div className="py-12 text-center text-white/40 italic text-sm">
+                    <Sparkles className="w-6 h-6 text-primary/50 mx-auto mb-3 animate-pulse" />
+                    Researching current royalty rules across SAMRO, ASCAP, BMI, SESAC, PRS, The MLC & more…
+                  </div>
+                )}
+
+                {aiReport && (
+                  <div className="space-y-5">
+                    <div className="border border-white/10 bg-[var(--bg-main)] p-5">
+                      <MarkdownLite text={aiReport.text} />
+                    </div>
+                    {aiReport.sources.length > 0 && (
+                      <div>
+                        <div className="text-[10px] font-black uppercase tracking-widest italic text-white/40 mb-2">Sources ({aiReport.sources.length})</div>
+                        <div className="space-y-1.5">
+                          {aiReport.sources.map((s, i) => (
+                            <a key={i} href={s.uri} target="_blank" rel="noopener noreferrer" className="block text-[11px] text-primary italic truncate">
+                              ↗ {s.title}
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    <div className="text-[9px] text-white/30 italic">AI-researched guidance, not legal advice. Confirm shares with your collaborators and societies before release.</div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+/** Minimal Markdown renderer for the AI report (headings, bold, bullets). */
+function mdInline(s: string) {
+  return s.split(/(\*\*[^*]+\*\*)/g).map((p, i) =>
+    p.startsWith('**') && p.endsWith('**')
+      ? <strong key={i} className="text-white font-bold">{p.slice(2, -2)}</strong>
+      : <span key={i}>{p}</span>,
+  );
+}
+
+function MarkdownLite({ text }: { text: string }) {
+  const lines = text.split('\n');
+  return (
+    <div className="space-y-1.5 text-sm text-white/80 leading-relaxed">
+      {lines.map((raw, i) => {
+        const line = raw.trimEnd();
+        if (!line.trim()) return <div key={i} className="h-2" />;
+        if (line.startsWith('### ')) return <h3 key={i} className="text-primary font-black uppercase italic tracking-widest text-[11px] mt-4">{mdInline(line.slice(4))}</h3>;
+        if (line.startsWith('## ')) return <h2 key={i} className="text-white font-black uppercase italic tracking-tight text-base mt-5 border-b border-white/10 pb-1.5">{mdInline(line.slice(3))}</h2>;
+        if (line.startsWith('# ')) return <h2 key={i} className="text-white font-black uppercase italic text-lg mt-5">{mdInline(line.slice(2))}</h2>;
+        if (/^\s*[-*]\s+/.test(line)) return <div key={i} className="flex gap-2 pl-1"><span className="text-primary shrink-0">•</span><span>{mdInline(line.replace(/^\s*[-*]\s+/, ''))}</span></div>;
+        if (/^\s*\d+\.\s+/.test(line)) return <div key={i} className="flex gap-2 pl-1"><span className="text-primary shrink-0 font-mono">{line.match(/^\s*(\d+)\./)?.[1]}.</span><span>{mdInline(line.replace(/^\s*\d+\.\s+/, ''))}</span></div>;
+        if (line.startsWith('|')) return <div key={i} className="font-mono text-[10px] text-white/55 whitespace-pre-wrap break-words">{line}</div>;
+        return <p key={i}>{mdInline(line)}</p>;
+      })}
     </div>
   );
 }

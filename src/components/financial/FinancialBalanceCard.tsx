@@ -63,7 +63,7 @@ export default function FinancialBalanceCard() {
         </div>
         <button
           onClick={handleWithdraw}
-          className="h-12 px-8 bg-[#F05A28] text-white hover:bg-[#d94d20] text-[10px] font-black uppercase tracking-widest font-mono italic transition-all flex items-center gap-2"
+          className="beam h-12 px-8 bg-[#F05A28] text-white text-[10px] font-black uppercase tracking-widest font-mono italic transition-all flex items-center gap-2"
         >
           <ArrowUpRight className="w-4 h-4" />
           Withdraw

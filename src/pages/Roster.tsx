@@ -141,13 +141,13 @@ export default function Roster() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto py-12 px-6">
-      <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-8">
+    <div className="max-w-7xl mx-auto py-8 sm:py-12 px-4 sm:px-6">
+      <div className="mb-8 sm:mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6 sm:gap-8">
         <div className="space-y-4">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-[0.4em] italic">
             <Building2 className="w-3 h-3" /> Label Roster
           </div>
-          <h1 className="text-6xl md:text-7xl font-black text-white italic uppercase tracking-tighter leading-none">
+          <h1 className="text-4xl sm:text-6xl md:text-7xl font-black text-white italic uppercase tracking-tighter leading-none">
             Your <span className="text-primary">artists</span>
           </h1>
           <p className="text-white/40 text-base font-medium leading-relaxed max-w-2xl">
@@ -158,7 +158,7 @@ export default function Roster() {
 
         <button
           onClick={() => setShowAdd(true)}
-          className="h-14 px-8 bg-white text-black hover:bg-primary hover:text-white transition-all flex items-center gap-3 text-[11px] font-black uppercase italic tracking-widest"
+          className="beam h-14 px-8 bg-white text-black transition-all flex items-center justify-center gap-3 text-[11px] font-black uppercase italic tracking-widest w-full md:w-auto"
         >
           <Plus className="w-4 h-4" /> Add artist
         </button>
@@ -210,7 +210,7 @@ export default function Roster() {
               transition={{ delay: idx * 0.04 }}
               className={cn(
                 'manifest-card p-6 bg-dark border transition-all flex flex-col gap-4',
-                isActive ? 'border-primary' : 'border-white/5 hover:border-white/20',
+                isActive ? 'border-primary' : 'border-white/5',
               )}
             >
               <div className="flex items-start justify-between">
@@ -236,9 +236,9 @@ export default function Roster() {
                 </div>
               </div>
 
-              <div>
-                <h3 className="text-2xl font-black text-white italic tracking-tight">{a.name}</h3>
-                {a.genre && <div className="text-[11px] text-white/40 italic">{a.genre}</div>}
+              <div className="min-w-0">
+                <h3 className="text-2xl font-black text-white italic tracking-tight truncate">{a.name}</h3>
+                {a.genre && <div className="text-[11px] text-white/40 italic truncate">{a.genre}</div>}
               </div>
 
               <div className="grid grid-cols-3 gap-2 pt-3 border-t border-white/5">
@@ -272,17 +272,17 @@ export default function Roster() {
                 <button
                   onClick={() => switchTo(a)}
                   className={cn(
-                    'flex-1 h-11 text-[10px] font-black uppercase italic tracking-widest transition-all flex items-center justify-center gap-2',
+                    'flex-1 min-h-[44px] h-11 text-[10px] font-black uppercase italic tracking-widest transition-all flex items-center justify-center gap-2',
                     isActive
                       ? 'bg-primary text-white'
-                      : 'bg-white text-black hover:bg-primary hover:text-white',
+                      : 'bg-white text-black',
                   )}
                 >
                   {isActive ? 'Currently active' : 'Switch to'} <ArrowRight className="w-3 h-3" />
                 </button>
                 <button
                   onClick={() => removeArtist(a.id)}
-                  className="h-11 px-3 border border-white/10 text-white/40 hover:border-red-500 hover:text-red-500 transition-all"
+                  className="min-h-[44px] h-11 px-3 border border-white/10 text-white/40 transition-all"
                   title="Remove from roster"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -375,13 +375,13 @@ export default function Roster() {
             <div className="flex gap-3 pt-2">
               <button
                 onClick={() => setShowAdd(false)}
-                className="h-12 px-6 border border-white/10 text-white/60 text-[10px] font-black uppercase italic tracking-widest hover:border-white hover:text-white transition-all"
+                className="h-12 px-6 border border-white/10 text-white/60 text-[10px] font-black uppercase italic tracking-widest transition-all"
               >
                 Cancel
               </button>
               <button
                 onClick={addArtist}
-                className="flex-1 h-12 bg-white text-black hover:bg-primary hover:text-white text-[10px] font-black uppercase italic tracking-widest transition-all"
+                className="flex-1 h-12 bg-white text-black text-[10px] font-black uppercase italic tracking-widest transition-all"
               >
                 Add to roster
               </button>

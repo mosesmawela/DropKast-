@@ -136,16 +136,16 @@ export default function DJs() {
               <Radio className="w-4 h-4" />
               <span className="text-[11px] font-bold uppercase tracking-widest italic font-mono">DJ Network</span>
             </div>
-            <h1 className="text-5xl font-black tracking-tighter text-white italic font-mono uppercase">DJ Packs</h1>
+            <h1 className="text-3xl sm:text-5xl font-black tracking-tighter text-white italic font-mono uppercase">DJ Packs</h1>
           </div>
-          <div className="flex bg-black border border-white/10 p-1 shrink-0">
+          <div className="flex flex-wrap bg-black border border-white/10 p-1 shrink-0">
              {['BUILD', 'SEND', 'VAULT'].map(tab => (
-               <button 
+               <button
                   key={tab}
                   onClick={() => setActiveTab(tab as any)}
                   className={cn(
-                    "px-8 py-3 text-[10px] font-bold tracking-widest font-mono transition-all uppercase",
-                    activeTab === tab ? "bg-primary text-white" : "text-white/20 hover:text-white"
+                    "px-6 sm:px-8 py-3 min-h-[40px] text-[10px] font-bold tracking-widest font-mono transition-all uppercase",
+                    activeTab === tab ? "bg-primary text-white" : "text-white/20"
                   )}
                >
                   {tab === 'VAULT' ? 'The Vault' : tab.charAt(0) + tab.slice(1).toLowerCase().replace('pack', '')}
@@ -172,7 +172,7 @@ export default function DJs() {
                    { label: 'Clean Edit', status: 'PENDING', icon: ShieldCheck },
                    { label: 'Radio Edit', status: 'PENDING', icon: Radio },
                  ].map((file, i) => (
-                   <div key={i} className="p-8 border border-white/5 bg-dark space-y-6 group hover:border-primary/20 transition-all">
+                   <div key={i} className="p-8 border border-white/5 bg-dark space-y-6 group transition-all">
                       <div className="flex items-center justify-between">
                          <div className="w-10 h-10 border border-white/10 flex items-center justify-center bg-white/5">
                             <file.icon className="w-5 h-5 text-primary" />
@@ -182,9 +182,9 @@ export default function DJs() {
                          </div>
                       </div>
                       <h3 className="text-xl font-bold font-mono italic uppercase text-white">{file.label}</h3>
-                      <button 
+                      <button
                          onClick={() => handleUpload(file.label)}
-                         className="w-full py-3 border border-white/10 text-[10px] font-bold font-mono tracking-widest uppercase hover:bg-white hover:text-black transition-all flex items-center justify-center gap-2"
+                         className="beam w-full py-3 min-h-[40px] border border-white/10 text-[10px] font-bold font-mono tracking-widest uppercase transition-all flex items-center justify-center gap-2"
                        >
                          <Upload className="w-3 h-3" />
                          {file.status === 'READY' ? 'Re-Upload' : 'Upload File'}
@@ -199,7 +199,7 @@ export default function DJs() {
                     <Cpu className="w-48 h-48" />
                   </div>
                   <div className="relative z-10 max-w-2xl">
-                    <h3 className="text-3xl font-black italic font-mono uppercase tracking-tight text-white mb-4">Auto-Stem Generation</h3>
+                    <h3 className="text-2xl sm:text-3xl font-black italic font-mono uppercase tracking-tight text-white mb-4">Auto-Stem Generation</h3>
                     <p className="text-white/40 text-sm leading-relaxed italic font-medium mb-8">
                        Our AI engine analyzes your master track to automatically generate clean edits, 8-bar intro/outro transitions, and high-fidelity instrumentals. All assets are packed into a professional DJ pack file ready to send to DJs worldwide.
                     </p>
@@ -227,25 +227,25 @@ export default function DJs() {
           >
              {/* Search & Filter */}
              <div className="flex flex-col sm:flex-row items-center justify-between gap-6 bg-white/5 p-6 border border-white/5">
-                <div className="flex items-center gap-6 w-full sm:w-auto">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-6 w-full sm:w-auto">
                   <div className="relative w-full sm:w-80">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       placeholder="Search DJs..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="bg-black border border-white/10 pl-12 pr-6 py-3 text-xs font-mono tracking-widest text-white outline-none focus:border-primary transition-all w-full uppercase"
                     />
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     {['ALL', 'EU', 'US', 'UK', 'NG'].map(reg => (
-                      <button 
+                      <button
                         key={reg}
                         onClick={() => setRegionFilter(reg)}
                         className={cn(
-                          "px-4 py-2 text-[10px] font-bold tracking-widest font-mono border transition-all",
-                          regionFilter === reg ? "bg-primary border-primary text-white" : "border-white/5 text-white/20 hover:text-white"
+                          "px-4 py-2 min-h-[40px] text-[10px] font-bold tracking-widest font-mono border transition-all",
+                          regionFilter === reg ? "bg-primary border-primary text-white" : "border-white/5 text-white/20"
                         )}
                       >
                         {reg}
@@ -279,7 +279,7 @@ export default function DJs() {
                    <ScrollReveal key={dj.id} delay={i * 0.05} direction="up">
                       <div className={cn(
                         "p-8 border bg-dark group transition-all relative overflow-hidden",
-                        selectedDJs.includes(dj.id) ? "border-primary bg-primary/[0.02]" : "border-white/5 hover:border-white/20"
+                        selectedDJs.includes(dj.id) ? "border-primary bg-primary/[0.02]" : "border-white/5"
                       )}>
                          <div className="absolute top-0 right-0 p-4">
                            <div className="w-10 h-10 border border-white/10 flex items-center justify-center font-mono text-primary text-[10px] font-bold">
@@ -289,7 +289,7 @@ export default function DJs() {
                          
                          <div className="space-y-6">
                             <div className="flex items-center gap-4">
-                               <div className="w-12 h-12 bg-white/5 border border-white/10 flex items-center justify-center text-white/20 group-hover:text-primary transition-colors">
+                               <div className="w-12 h-12 bg-white/5 border border-white/10 flex items-center justify-center text-white/20 transition-colors">
                                   <Disc className="w-6 h-6" />
                                </div>
                                <div>
@@ -312,11 +312,11 @@ export default function DJs() {
                                </div>
                             </div>
 
-                            <button 
+                            <button
                               onClick={() => toggleSelect(dj.id, dj.name)}
                               className={cn(
-                                "w-full py-4 font-mono text-[10px] font-black tracking-[0.2em] uppercase italic transition-all",
-                                selectedDJs.includes(dj.id) ? "bg-primary text-white" : "border border-white/10 text-white hover:bg-white hover:text-black"
+                                "beam w-full py-4 min-h-[40px] font-mono text-[10px] font-black tracking-[0.2em] uppercase italic transition-all",
+                                selectedDJs.includes(dj.id) ? "bg-primary text-white" : "border border-white/10 text-white"
                               )}
                             >
                               {selectedDJs.includes(dj.id) ? 'Selected' : 'Add to list'}
@@ -333,12 +333,12 @@ export default function DJs() {
                   { title: 'DJ Early Access', desc: 'Allow vetted DJs to preview tracks 48h before official release.', icon: Zap },
                   { title: 'Trending Pool', desc: 'See which global DJ sets are currently playing your previous packs.', icon: TrendingUp },
                 ].map((cta, i) => (
-                  <button 
+                  <button
                      key={i}
                      onClick={() => navigate(cta.title === 'DJ Early Access' ? '/settings' : '/analytics')}
-                     className="p-10 border border-white/5 bg-white/[0.01] hover:border-primary/40 transition-all text-left flex items-start gap-8 group"
+                     className="beam p-10 border border-white/5 bg-white/[0.01] transition-all text-left flex items-start gap-8 group"
                    >
-                     <div className="w-14 h-14 border border-white/10 flex items-center justify-center bg-white/5 group-hover:bg-primary/10 transition-colors">
+                     <div className="w-14 h-14 border border-white/10 flex items-center justify-center bg-white/5 transition-colors">
                        <cta.icon className="w-6 h-6 text-primary" />
                      </div>
                      <div className="space-y-2">
@@ -388,14 +388,14 @@ export default function DJs() {
                             <div className="text-sm font-black text-white italic">{pack.downloads} DJs</div>
                          </div>
                          <button className={cn(
-                           "h-12 px-6 font-mono text-[9px] font-black uppercase tracking-widest italic transition-all",
-                           pack.status === 'UNLOCKED' ? "bg-white text-black hover:bg-primary hover:text-white" : "border border-white/10 text-white/20 cursor-not-allowed"
+                           "beam h-12 px-6 font-mono text-[9px] font-black uppercase tracking-widest italic transition-all",
+                           pack.status === 'UNLOCKED' ? "bg-white text-black" : "border border-white/10 text-white/20 cursor-not-allowed"
                          )}>
                             {pack.status === 'UNLOCKED' ? 'Enter Vault' : 'Locked'}
                          </button>
                       </div>
 
-                      <div className="absolute -bottom-4 -right-4 opacity-[0.02] group-hover:scale-110 transition-transform">
+                      <div className="absolute -bottom-4 -right-4 opacity-[0.02] transition-transform">
                          <pack.icon className="w-48 h-48" />
                       </div>
                    </div>

@@ -99,7 +99,7 @@ export default function Reactions() {
                <Youtube className="w-4 h-4" />
                <span className="text-[11px] font-bold uppercase tracking-widest italic font-mono">Reaction Network</span>
             </div>
-            <h1 className="text-5xl font-black tracking-tighter text-white italic font-mono uppercase">Reaction Channels</h1>
+            <h1 className="text-3xl sm:text-5xl font-black tracking-tighter text-white italic font-mono uppercase">Reaction Channels</h1>
             <p className="text-white/30 text-sm italic font-medium max-w-xl leading-relaxed">
               Auto-scout and pitch to reaction channels. AI analyzes past reaction history to ensure maximum conversion for your specific sonic profile.
             </p>
@@ -133,14 +133,14 @@ export default function Reactions() {
                  <Sparkles className="w-5 h-5" />
                  AI recommendations ready
                </div>
-               <h3 className="text-3xl font-black italic font-mono uppercase tracking-tight text-white">Target Fast-Growing Channels</h3>
+               <h3 className="text-2xl sm:text-3xl font-black italic font-mono uppercase tracking-tight text-white">Target Fast-Growing Channels</h3>
                <p className="text-white/40 text-sm italic font-medium max-w-lg leading-relaxed">
                   Pitch your release to reaction channels matched on genre and audience. Strategy recommendations appear here once you've pitched a track and we have response data to learn from.
                </p>
             </div>
             <button 
               onClick={() => notify('success', 'Applied', 'Filters tuned to AI recommendations.')}
-              className="primary-button py-5 px-10 font-mono text-[11px] font-black uppercase tracking-widest bg-white text-black hover:bg-white/80"
+              className="primary-button py-5 px-10 font-mono text-[11px] font-black uppercase tracking-widest bg-white text-black"
             >
               Adopt AI Strategy
             </button>
@@ -148,7 +148,7 @@ export default function Reactions() {
       </div>
 
       <div className="flex flex-col md:flex-row items-center justify-between gap-6 bg-white/5 p-6 border border-white/5">
-         <div className="flex items-center gap-6 w-full md:w-auto">
+         <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-6 w-full md:w-auto">
             <div className="relative w-full md:w-80">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
               <input 
@@ -159,14 +159,14 @@ export default function Reactions() {
                 className="bg-black border border-white/10 pl-12 pr-6 py-3 text-xs font-mono tracking-widest text-white outline-none focus:border-primary transition-all w-full uppercase"
               />
             </div>
-            <div className="hidden lg:flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
                {['ALL', 'HIP-HOP', 'R&B', 'ELECTRONIC', 'POP'].map(g => (
-                 <button 
-                   key={g} 
+                 <button
+                   key={g}
                    onClick={() => setActiveGenre(g)}
                    className={cn(
-                    "px-4 py-2 text-[10px] font-bold tracking-widest font-mono border transition-all uppercase",
-                    activeGenre === g ? "bg-primary border-primary text-white" : "border-white/5 text-white/20 hover:text-white"
+                    "px-4 py-2 min-h-[40px] text-[10px] font-bold tracking-widest font-mono border transition-all uppercase",
+                    activeGenre === g ? "bg-primary border-primary text-white" : "border-white/5 text-white/20"
                    )}
                  >
                    {g}
@@ -174,9 +174,9 @@ export default function Reactions() {
                ))}
             </div>
          </div>
-         <button 
+         <button
            onClick={() => notify('info', 'Detailed search', 'Searching reaction history for more matches.')}
-           className="flex items-center gap-2 text-[10px] font-bold font-mono tracking-widest text-white/30 hover:text-white transition-colors"
+           className="flex items-center gap-2 min-h-[40px] text-[10px] font-bold font-mono tracking-widest text-white/30 transition-colors"
          >
            <Filter className="w-3.5 h-3.5" />
            More filters
@@ -192,15 +192,15 @@ export default function Reactions() {
           <ScrollReveal key={r.id} delay={i * 0.1} direction="up">
             <div className={cn(
               "p-10 border transition-all group relative overflow-hidden bg-dark",
-              selectedReactors.includes(r.id) ? "border-primary bg-primary/[0.02]" : "border-white/5 hover:border-white/20"
+              selectedReactors.includes(r.id) ? "border-primary bg-primary/[0.02]" : "border-white/5"
             )}>
-              <div className="flex items-start justify-between">
+              <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                  <div className="flex items-center gap-6">
-                    <div className="w-20 h-20 bg-white/5 border border-white/10 flex items-center justify-center text-4xl font-black italic font-mono text-white/10 group-hover:text-primary transition-colors">
+                    <div className="w-20 h-20 bg-white/5 border border-white/10 flex items-center justify-center text-4xl font-black italic font-mono text-white/10 transition-colors">
                        {r.avatar}
                     </div>
                     <div>
-                       <h3 className="text-3xl font-black italic font-mono uppercase tracking-tight text-white mb-2">{r.channel}</h3>
+                       <h3 className="text-2xl sm:text-3xl font-black italic font-mono uppercase tracking-tight text-white mb-2">{r.channel}</h3>
                        <div className="flex flex-wrap gap-2">
                           {r.tags.map(tag => (
                             <span key={tag} className="px-2 py-0.5 bg-white/5 border border-white/5 text-[8px] font-bold text-white/30 font-mono tracking-widest uppercase">
@@ -234,19 +234,19 @@ export default function Reactions() {
                  </div>
               </div>
 
-              <div className="mt-8 flex items-center justify-between">
-                 <button 
+              <div className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+                 <button
                    onClick={() => notify('info', 'Pro only', 'Preview is available with LVRN Pro membership.')}
-                   className="flex items-center gap-2 text-[10px] font-bold font-mono tracking-widest text-white/40 hover:text-white transition-colors"
+                   className="flex items-center gap-2 min-h-[40px] text-[10px] font-bold font-mono tracking-widest text-white/40 transition-colors"
                  >
                     <Play className="w-3 h-3" />
                     View latest reaction
                  </button>
-                 <button 
+                 <button
                    onClick={() => toggleSelect(r.id, r.channel)}
                    className={cn(
-                    "flex items-center gap-2 px-8 py-3 font-mono text-[11px] font-black tracking-widest uppercase italic transition-all",
-                    selectedReactors.includes(r.id) ? "bg-primary text-white" : "border border-white/10 text-white hover:bg-white hover:text-black"
+                    "beam flex items-center justify-center gap-2 px-8 py-3 min-h-[40px] font-mono text-[11px] font-black tracking-widest uppercase italic transition-all",
+                    selectedReactors.includes(r.id) ? "bg-primary text-white" : "border border-white/10 text-white"
                    )}
                  >
                     {selectedReactors.includes(r.id) ? 'Selected' : 'Select channel'}

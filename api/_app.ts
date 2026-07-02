@@ -131,6 +131,8 @@ export function createApiApp() {
   app.use('/api/', limiter);
 
   app.use(express.json({ limit: '4mb' }));
+  // Twilio WhatsApp webhooks post application/x-www-form-urlencoded bodies.
+  app.use(express.urlencoded({ extended: false, limit: '4mb' }));
 
   // ---- Phase 6 + 7: structured logging + security headers (early in chain) ----
   app.use(httpLog);
@@ -622,6 +624,68 @@ export function createApiApp() {
     const splitRecord = { id: Date.now().toString(), ...req.body, paid: false, createdAt: new Date() };
     await store.insertSplit(splitRecord);
     res.json({ success: true, splitRecord });
+  });
+
+  // --- WhatsApp submission bot (Twilio) ---
+  // Twilio verification / health check.
+  app.get("/api/whatsapp/webhook", (_req, res) => {
+    res.type("text/plain").send("DropKast WhatsApp webhook is live.");
+  });
+  // Inbound WhatsApp messages from Twilio (application/x-www-form-urlencoded).
+  app.post("/api/whatsapp/webhook", async (req, res) => {
+    try {
+      const { processInbound } = await import("./_whatsapp.js");
+      const from = String(req.body.From || req.body.from || "");
+      const body = String(req.body.Body || req.body.body || "");
+      const numMedia = Number(req.body.NumMedia || 0);
+      const mediaUrl = numMedia > 0 ? String(req.body.MediaUrl0 || "") : undefined;
+      const mediaContentType = numMedia > 0 ? String(req.body.MediaContentType0 || "") : undefined;
+
+      const { reply, completed } = processInbound({ from, body, mediaUrl, mediaContentType });
+
+      if (completed) {
+        // Persist into the same A&R pipeline the web submission uses.
+        const id = `WA-${Date.now()}`;
+        await store.insertAnrSubmission({
+          id,
+          trackTitle: completed.title,
+          artistName: completed.artist,
+          source: "whatsapp",
+          phone: completed.phone,
+          genre: completed.genre,
+          releaseDate: completed.releaseDate,
+          links: completed.links,
+          audioUrl: completed.audioUrl,
+          notes: completed.notes,
+          status: "pending",
+          critique: null,
+          createdAt: new Date(),
+        } as any);
+        try {
+          notifyAnrSubmission("moses@lvrn.com", completed.artist, completed.title, `WhatsApp submission from ${completed.phone}. Links: ${completed.links || "—"}. Audio: ${completed.audioUrl || "not attached"}`);
+        } catch { /* email best-effort */ }
+      }
+
+      const { twiml } = await import("./_whatsapp.js");
+      res.type("text/xml").send(twiml(reply));
+    } catch (e: any) {
+      const { twiml } = await import("./_whatsapp.js");
+      res.type("text/xml").send(twiml("Sorry, something went wrong on our side. Send *restart* to try again."));
+    }
+  });
+
+  // --- AI Split-Sheet: grounded global royalty analysis (Gemini + Google Search) ---
+  // body: { songTitle, contributors: [{ name, roles[], percentage }] }
+  app.post("/api/splits/generate", async (req, res) => {
+    try {
+      const { songTitle, contributors } = req.body || {};
+      const { generateSplitSheet } = await import("./_splitsheet.js");
+      const result = await generateSplitSheet(songTitle || "", contributors || []);
+      res.json(result);
+    } catch (e: any) {
+      const status = typeof e?.status === "number" ? e.status : 502;
+      res.status(status).json({ error: e?.message || "Split-sheet generation failed" });
+    }
   });
 
   // --- Assets API ---

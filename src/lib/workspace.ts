@@ -117,11 +117,14 @@ export type WorkspacePreset = 'minimal' | 'creator' | 'full';
 export const PRESETS: Record<WorkspacePreset, { label: string; description: string; modules: ModuleId[] }> = {
   minimal: {
     label: 'Minimal',
-    description: 'Just distribute, see numbers, get paid. No AI, no creator marketplace.',
+    description: 'Distribute, get paid, and make content — without the creator marketplace or back-office extras.',
     modules: [
+      // core distribution + money
       'home', 'releases', 'settings',
       'messages', 'analytics', 'earnings', 'platforms', 'assets',
-      'splits',
+      'splits', 'publishing', 'video',
+      // generation/content tools are always included — they're paid features
+      'studios', 'marketing', 'ai-providers',
     ],
   },
   creator: {

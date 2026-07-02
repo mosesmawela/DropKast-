@@ -5,14 +5,14 @@ export default function PublishingOnboarding() {
   const navigate = useNavigate();
 
   return (
-    <div className="space-y-12 max-w-4xl mx-auto py-8">
+    <div className="space-y-12 max-w-4xl mx-auto py-8 px-4 sm:px-0">
       {/* Hero */}
       <div className="text-center space-y-6 pb-8 border-b border-[var(--border-main)]">
         <div className="flex items-center justify-center gap-2 text-[#F05A28] mb-4">
           <FileText className="w-5 h-5" />
           <span className="text-[10px] font-bold tracking-widest uppercase font-mono">PUBLISHING ADMINISTRATION</span>
         </div>
-        <h1 className="text-4xl font-black text-[var(--text-main)] uppercase font-mono tracking-tight">
+        <h1 className="text-3xl sm:text-4xl font-black text-[var(--text-main)] uppercase font-mono tracking-tight">
           Would you like to use our publishing services?
         </h1>
         <p className="text-sm text-[#8A8A93] max-w-2xl mx-auto leading-relaxed">
@@ -62,7 +62,7 @@ export default function PublishingOnboarding() {
       <div className="flex justify-center pt-8">
         <button
           onClick={() => navigate('/publishing/shares')}
-          className="inline-flex items-center gap-3 px-12 py-5 bg-[#F05A28] text-white text-xs font-black uppercase tracking-widest font-mono italic hover:bg-[#d94d20] transition-all"
+          className="beam inline-flex items-center gap-3 px-8 sm:px-12 py-5 bg-[#F05A28] text-white text-xs font-black uppercase tracking-widest font-mono italic transition-all"
         >
           <FileText className="w-5 h-5" />
           JOIN LVRN PUBLISHING

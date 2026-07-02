@@ -34,7 +34,7 @@ export default function StepReview({ data, back, onSubmit }: StepReviewProps) {
   return (
     <div className="space-y-12">
       <div className="space-y-4">
-        <h2 className="text-4xl font-black text-white italic uppercase tracking-tighter font-mono">Final Review</h2>
+        <h2 className="text-3xl sm:text-4xl font-black text-white italic uppercase tracking-tighter font-mono">Final Review</h2>
         <p className="text-white/30 text-xs font-bold uppercase tracking-[0.2em] font-mono italic">
           Audit the following parameters before cluster synchronization.
         </p>
@@ -121,15 +121,15 @@ export default function StepReview({ data, back, onSubmit }: StepReviewProps) {
       <div className="flex justify-between pt-12 items-center">
         <button 
           onClick={back}
-          className="flex items-center gap-3 text-white/20 hover:text-white transition-colors text-[10px] font-black uppercase tracking-[0.3em] font-mono italic"
+          className="flex items-center gap-3 text-white/20 transition-colors text-[10px] font-black uppercase tracking-[0.3em] font-mono italic"
         >
           <ChevronLeft className="w-4 h-4" />
           Previous_Entry
         </button>
-        <button 
+        <button
           onClick={handleSubmit}
           disabled={isSubmitting}
-          className="h-20 px-16 bg-white text-black hover:bg-primary hover:text-white font-mono font-black italic tracking-widest uppercase text-xs transition-all active:scale-95 disabled:opacity-20 flex items-center gap-6 shadow-[0_0_50px_rgba(255,255,255,0.05)]"
+          className="beam h-20 px-16 bg-white text-black font-mono font-black italic tracking-widest uppercase text-xs transition-all active:scale-95 disabled:opacity-20 flex items-center gap-6 shadow-[0_0_50px_rgba(255,255,255,0.05)]"
         >
           {isSubmitting ? 'ENCRYPTING_TRANSMISSION...' : 'SUBMIT_TO_RELAY_NODES'}
           <Send className="w-5 h-5" />

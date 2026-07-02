@@ -63,11 +63,11 @@ export default function Drafts() {
   return (
     <div className="max-w-7xl mx-auto py-12 px-6">
       <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-8">
-        <div className="space-y-4">
+        <div className="space-y-4 min-w-0">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-[0.4em] italic">
-            <FileEdit className="w-3 h-3" /> Drafts
+            <FileEdit className="w-3 h-3 shrink-0" /> Drafts
           </div>
-          <h1 className="text-6xl md:text-7xl font-black text-white italic uppercase tracking-tighter leading-none">
+          <h1 className="text-6xl md:text-7xl font-black text-white italic uppercase tracking-tighter leading-none break-words">
             Pick up <span className="text-primary">where you left off</span>
           </h1>
           <p className="text-white/40 text-base font-medium leading-relaxed max-w-2xl">
@@ -78,9 +78,9 @@ export default function Drafts() {
 
         <button
           onClick={() => navigate('/releases/new')}
-          className="h-14 px-8 bg-white text-black hover:bg-primary hover:text-white transition-all flex items-center gap-3 text-[11px] font-black uppercase italic tracking-widest"
+          className="beam h-14 px-8 shrink-0 bg-white text-black transition-all flex items-center gap-3 text-[11px] font-black uppercase italic tracking-widest"
         >
-          <Plus className="w-4 h-4" /> Start new release
+          <Plus className="w-4 h-4 shrink-0" /> Start new release
         </button>
       </div>
 
@@ -102,7 +102,7 @@ export default function Drafts() {
               key={idx}
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              className="manifest-card p-6 bg-dark border border-primary/20 hover:border-primary transition-all flex flex-col gap-4"
+              className="manifest-card p-6 bg-dark border border-primary/20 transition-all flex flex-col gap-4"
             >
               <div className="flex items-start justify-between">
                 <div className="w-12 h-12 border border-white/10 flex items-center justify-center bg-white/5">
@@ -144,14 +144,14 @@ export default function Drafts() {
               <div className="flex gap-2 pt-2">
                 <button
                   onClick={handleResume}
-                  className="flex-1 h-11 bg-white text-black text-[10px] font-black uppercase italic tracking-widest hover:bg-primary hover:text-white transition-all flex items-center justify-center gap-2"
+                  className="beam flex-1 h-11 bg-white text-black text-[10px] font-black uppercase italic tracking-widest transition-all flex items-center justify-center gap-2"
                 >
                   Resume <ArrowRight className="w-3 h-3" />
                 </button>
                 <button
                   onClick={handleDiscard}
                   aria-label="Discard draft"
-                  className="h-11 px-3 border border-white/10 text-white/40 hover:border-red-500 hover:text-red-500 transition-all"
+                  className="beam h-11 px-3 border border-white/10 text-white/40 transition-all"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>

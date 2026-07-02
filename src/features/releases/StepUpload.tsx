@@ -11,13 +11,13 @@ export default function StepUpload({ data, update, next }: StepUploadProps) {
   return (
     <div className="space-y-12">
       <div className="space-y-4">
-        <h2 className="text-4xl font-black text-white italic uppercase tracking-tighter font-mono">Upload Audio</h2>
+        <h2 className="text-3xl sm:text-4xl font-black text-white italic uppercase tracking-tighter font-mono">Upload Audio</h2>
         <p className="text-white/30 text-xs font-bold uppercase tracking-[0.2em] font-mono italic">
           Deliver high-fidelity master nodes (WAV/FLAC).
         </p>
       </div>
 
-      <div className="flex flex-col items-center justify-center p-20 border-2 border-dashed border-white/5 bg-white/[0.01] hover:bg-white/[0.03] transition-all cursor-pointer group relative">
+      <div className="beam flex flex-col items-center justify-center p-10 sm:p-20 border-2 border-dashed border-white/5 bg-white/[0.01] transition-all cursor-pointer group relative">
         <input 
           type="file" 
           accept="audio/wav,audio/flac,audio/mpeg"
@@ -45,8 +45,8 @@ export default function StepUpload({ data, update, next }: StepUploadProps) {
           </div>
         ) : (
           <>
-            <div className="w-16 h-16 border border-white/10 flex items-center justify-center mb-8 group-hover:border-primary transition-all">
-              <Upload className="w-5 h-5 text-white/20 group-hover:text-primary" />
+            <div className="w-16 h-16 border border-white/10 flex items-center justify-center mb-8 transition-all">
+              <Upload className="w-5 h-5 text-white/20" />
             </div>
             <div className="text-center">
               <p className="text-xl font-black text-white mb-2 font-mono italic tracking-widest uppercase">Select Audio Node</p>
@@ -70,7 +70,7 @@ export default function StepUpload({ data, update, next }: StepUploadProps) {
         <button 
           onClick={next}
           disabled={!data.audio}
-          className="h-16 px-14 bg-white text-black hover:bg-primary hover:text-white font-mono font-black italic tracking-widest uppercase text-xs transition-all active:scale-95 disabled:opacity-20 flex items-center gap-4"
+          className="beam h-16 px-14 bg-white text-black font-mono font-black italic tracking-widest uppercase text-xs transition-all active:scale-95 disabled:opacity-20 flex items-center gap-4"
         >
           Confirm Audio
           <CheckCircle2 className="w-4 h-4" />

@@ -192,16 +192,14 @@ export default function SelfServiceFixes({ release, onUpdated }: { release: Rele
               key={opt.id}
               onClick={() => setOpen(opt.id)}
               className={cn(
-                'border p-4 text-left transition-all group',
-                opt.id === 'takedown'
-                  ? 'border-white/10 bg-black/40 hover:border-red-500/40 hover:bg-red-500/5'
-                  : 'border-white/10 bg-black/40 hover:border-primary hover:bg-primary/5',
+                'beam border p-4 text-left transition-all group',
+                'border-white/10 bg-black/40',
               )}
             >
               <Icon
                 className={cn(
                   'w-4 h-4 mb-3',
-                  opt.id === 'takedown' ? 'text-red-400 group-hover:text-red-500' : 'text-white/60 group-hover:text-primary',
+                  opt.id === 'takedown' ? 'text-red-400' : 'text-white/60',
                 )}
               />
               <div className="text-sm font-black italic text-white mb-1">{opt.label}</div>
@@ -262,14 +260,14 @@ export default function SelfServiceFixes({ release, onUpdated }: { release: Rele
                   <div className="flex gap-3 pt-2">
                     <button
                       onClick={() => setOpen(null)}
-                      className="h-11 px-5 border border-white/10 text-white/60 text-[10px] font-black uppercase italic tracking-widest hover:border-white hover:text-white transition-all"
+                      className="beam h-11 px-5 border border-white/10 text-white/60 text-[10px] font-black uppercase italic tracking-widest transition-all"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={submitMetadata}
                       disabled={submitting}
-                      className="h-11 px-5 bg-white text-black hover:bg-primary hover:text-white text-[10px] font-black uppercase italic tracking-widest transition-all flex items-center gap-2 disabled:opacity-50"
+                      className="beam h-11 px-5 bg-white text-black text-[10px] font-black uppercase italic tracking-widest transition-all flex items-center gap-2 disabled:opacity-50"
                     >
                       {submitting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
                       Submit fix
@@ -299,14 +297,14 @@ export default function SelfServiceFixes({ release, onUpdated }: { release: Rele
                   <div className="flex gap-3 pt-2">
                     <button
                       onClick={() => setOpen(null)}
-                      className="h-11 px-5 border border-white/10 text-white/60 text-[10px] font-black uppercase italic tracking-widest hover:border-white hover:text-white transition-all"
+                      className="beam h-11 px-5 border border-white/10 text-white/60 text-[10px] font-black uppercase italic tracking-widest transition-all"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={submitArtwork}
                       disabled={submitting}
-                      className="h-11 px-5 bg-white text-black hover:bg-primary hover:text-white text-[10px] font-black uppercase italic tracking-widest transition-all flex items-center gap-2 disabled:opacity-50"
+                      className="beam h-11 px-5 bg-white text-black text-[10px] font-black uppercase italic tracking-widest transition-all flex items-center gap-2 disabled:opacity-50"
                     >
                       {submitting ? <Loader2 className="w-3 h-3 animate-spin" /> : <ImageIcon className="w-3 h-3" />}
                       Replace + redeliver
@@ -337,14 +335,14 @@ export default function SelfServiceFixes({ release, onUpdated }: { release: Rele
                   <div className="flex gap-3 pt-2">
                     <button
                       onClick={() => setOpen(null)}
-                      className="h-11 px-5 border border-white/10 text-white/60 text-[10px] font-black uppercase italic tracking-widest hover:border-white hover:text-white transition-all"
+                      className="beam h-11 px-5 border border-white/10 text-white/60 text-[10px] font-black uppercase italic tracking-widest transition-all"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={submitTakedown}
                       disabled={submitting}
-                      className="h-11 px-5 bg-red-500 text-white hover:bg-red-600 text-[10px] font-black uppercase italic tracking-widest transition-all flex items-center gap-2 disabled:opacity-50"
+                      className="beam h-11 px-5 bg-red-500 text-white text-[10px] font-black uppercase italic tracking-widest transition-all flex items-center gap-2 disabled:opacity-50"
                     >
                       {submitting ? <Loader2 className="w-3 h-3 animate-spin" /> : <XCircle className="w-3 h-3" />}
                       Take down everywhere

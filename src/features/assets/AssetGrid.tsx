@@ -60,7 +60,7 @@ export default function AssetGrid({ category, searchQuery = "" }: AssetGridProps
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="fixed bottom-12 right-12 z-[300] bg-primary text-white px-6 py-4 rounded-xl font-mono text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-4 shadow-2xl"
+            className="fixed bottom-6 right-6 md:bottom-12 md:right-12 z-[300] bg-primary text-white px-4 py-3 md:px-6 md:py-4 rounded-xl font-mono text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-4 shadow-2xl max-w-[90vw]"
           >
             <CheckCircle2 className="w-4 h-4" />
             {notif}
@@ -74,10 +74,10 @@ export default function AssetGrid({ category, searchQuery = "" }: AssetGridProps
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[500] bg-black/95 flex items-center justify-center p-12 backdrop-blur-3xl"
+            className="fixed inset-0 z-[500] bg-black/95 flex items-center justify-center p-6 md:p-12 backdrop-blur-3xl"
             onClick={() => setPreviewId(null)}
           >
-             <button className="absolute top-12 right-12 text-white/40 hover:text-white transition-colors">
+             <button className="beam absolute top-6 right-6 md:top-12 md:right-12 w-11 h-11 flex items-center justify-center text-white/40 transition-colors">
                 <X className="w-10 h-10" />
              </button>
              <div className="max-w-6xl w-full h-full flex flex-col items-center justify-center gap-8">
@@ -86,12 +86,12 @@ export default function AssetGrid({ category, searchQuery = "" }: AssetGridProps
                   className="max-h-[80vh] rounded-2xl shadow-[0_0_100px_rgba(255,77,0,0.1)] border border-white/10"
                 />
                 <div className="text-center space-y-4">
-                   <h2 className="text-4xl font-black italic uppercase italic font-mono text-white tracking-tighter">
+                   <h2 className="text-2xl md:text-4xl font-black italic uppercase italic font-mono text-white tracking-tighter">
                      {assets.find(a => a.id === previewId)?.title}
                    </h2>
-                   <div className="flex gap-4 justify-center">
-                      <button onClick={(e) => { e.stopPropagation(); showNotif("Download_Initiated"); }} className="px-8 h-12 bg-white text-black font-black uppercase text-[10px] tracking-widest rounded-xl hover:bg-primary hover:text-white transition-all shadow-xl">Download_HQ</button>
-                      <button onClick={(e) => { e.stopPropagation(); handleDeploy(previewId!); }} className="px-8 h-12 bg-white/5 border border-white/10 text-white font-black uppercase text-[10px] tracking-widest rounded-xl hover:border-primary hover:text-primary transition-all">Deploy_To_Campaign</button>
+                   <div className="flex flex-wrap gap-4 justify-center">
+                      <button onClick={(e) => { e.stopPropagation(); showNotif("Download_Initiated"); }} className="beam px-8 h-12 bg-white text-black font-black uppercase text-[10px] tracking-widest rounded-xl transition-all shadow-xl">Download_HQ</button>
+                      <button onClick={(e) => { e.stopPropagation(); handleDeploy(previewId!); }} className="beam px-8 h-12 bg-white/5 border border-white/10 text-white font-black uppercase text-[10px] tracking-widest rounded-xl transition-all">Deploy_To_Campaign</button>
                    </div>
                 </div>
              </div>
@@ -103,9 +103,9 @@ export default function AssetGrid({ category, searchQuery = "" }: AssetGridProps
         {filteredAssets.length > 0 ? filteredAssets.map((a) => (
           <div
             key={a.id}
-            className="manifest-card p-0 overflow-hidden group relative aspect-[3/4] border-white/5 hover:border-primary/20 transition-all shadow-2xl"
+            className="manifest-card p-0 overflow-hidden group relative aspect-[3/4] border-white/5 transition-all shadow-2xl"
           >
-            <img src={a.url} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
+            <img src={a.url} className="w-full h-full object-cover transition-transform duration-1000" />
             
             {deployingId === a.id && (
               <div className="absolute inset-0 bg-primary/20 backdrop-blur-md z-30 flex flex-col items-center justify-center p-8 text-center space-y-4">
@@ -126,20 +126,20 @@ export default function AssetGrid({ category, searchQuery = "" }: AssetGridProps
 
             <button 
               onClick={() => handleDelete(a.id)}
-              className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500 opacity-0 group-hover:opacity-100 transition-all hover:bg-red-500 hover:text-white"
+              className="beam absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500 transition-all"
             >
               <Trash2 className="w-3.5 h-3.5" />
             </button>
 
             {/* Overlay */}
-            <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-all flex flex-col justify-between p-8 backdrop-blur-md translate-y-4 group-hover:translate-y-0 duration-500">
+            <div className="absolute inset-0 bg-black/80 transition-all flex flex-col justify-between p-6 md:p-8 backdrop-blur-md duration-500">
               <div className="flex justify-between items-start">
                  <span className="text-[10px] font-black italic uppercase tracking-widest text-primary border-b border-primary/20 pb-1">{a.type}</span>
                  <div className="flex gap-2">
-                    <button onClick={() => showNotif("Link_Copied_To_Clipboard")} className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:border-white transition-all">
+                    <button onClick={() => showNotif("Link_Copied_To_Clipboard")} className="beam w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-white/40 transition-all">
                       <Share2 className="w-3 h-3" />
                     </button>
-                    <button onClick={() => showNotif("Download_Starting...")} className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:border-white transition-all">
+                    <button onClick={() => showNotif("Download_Starting...")} className="beam w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-white/40 transition-all">
                       <Download className="w-3 h-3" />
                     </button>
                  </div>
@@ -152,11 +152,11 @@ export default function AssetGrid({ category, searchQuery = "" }: AssetGridProps
                  </div>
                  
                  <div className="grid grid-cols-2 gap-3">
-                    <button onClick={() => setPreviewId(a.id)} className="h-10 bg-white text-black text-[9px] font-black uppercase italic tracking-widest flex items-center justify-center gap-2 hover:bg-primary hover:text-white transition-all shadow-xl">
+                    <button onClick={() => setPreviewId(a.id)} className="beam h-10 bg-white text-black text-[9px] font-black uppercase italic tracking-widest flex items-center justify-center gap-2 transition-all shadow-xl">
                       <Eye className="w-3 h-3" />
                       Preview
                     </button>
-                    <button onClick={() => handleDeploy(a.id)} className="h-10 bg-white/5 border border-white/10 text-white text-[9px] font-black uppercase italic tracking-widest flex items-center justify-center gap-2 hover:border-primary hover:text-primary transition-all shadow-xl">
+                    <button onClick={() => handleDeploy(a.id)} className="beam h-10 bg-white/5 border border-white/10 text-white text-[9px] font-black uppercase italic tracking-widest flex items-center justify-center gap-2 transition-all shadow-xl">
                       <Rocket className="w-3 h-3" />
                       Deploy
                     </button>

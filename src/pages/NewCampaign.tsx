@@ -112,9 +112,9 @@ export default function NewCampaign() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto py-12 px-8 font-sans">
+    <div className="max-w-5xl mx-auto py-12 px-4 sm:px-8 font-sans">
       {/* Stepper */}
-      <div className="flex items-center justify-between mb-20">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-20">
         {[1, 2, 3].map((s) => (
           <div key={s} className="flex items-center gap-4 group">
             <div className={cn(
@@ -144,7 +144,7 @@ export default function NewCampaign() {
             className="space-y-12"
           >
             <div>
-              <h2 className="text-6xl font-black italic font-mono uppercase tracking-tighter text-white mb-6">Select Track</h2>
+              <h2 className="text-4xl sm:text-6xl font-black italic font-mono uppercase tracking-tighter text-white mb-6">Select Track</h2>
               <p className="text-white/40 text-lg italic font-medium leading-relaxed max-w-2xl">
                 Pick the track for this campaign. Our AI will analyze it to match with the right creators.
               </p>
@@ -157,7 +157,7 @@ export default function NewCampaign() {
                   <button
                     type="button"
                     onClick={() => navigate('/releases/new')}
-                    className="text-[10px] font-black text-primary uppercase italic tracking-widest hover:text-white transition-colors"
+                    className="text-[10px] font-black text-primary uppercase italic tracking-widest transition-colors"
                   >
                     + Create your first release
                   </button>
@@ -169,11 +169,11 @@ export default function NewCampaign() {
                   onClick={() => setSelectedRelease(rel.id)}
                   className={cn(
                     "manifest-card p-4 transition-all group overflow-hidden bg-black",
-                    selectedRelease === rel.id ? "border-primary ring-1 ring-primary" : "border-white/5 hover:border-white/20"
+                    selectedRelease === rel.id ? "border-primary ring-1 ring-primary" : "border-white/5"
                   )}
                 >
                   <div className="aspect-square mb-6 overflow-hidden relative">
-                    <img src={rel.cover} alt={rel.title} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
+                    <img src={rel.cover} alt={rel.title} className="w-full h-full object-cover grayscale transition-all duration-700" />
                     {selectedRelease === rel.id && (
                       <div className="absolute inset-0 bg-primary/20 flex items-center justify-center backdrop-blur-sm">
                         <Check className="w-12 h-12 text-white stroke-[3px]" />
@@ -214,7 +214,7 @@ export default function NewCampaign() {
             className="space-y-12"
           >
             <div>
-              <h2 className="text-6xl font-black italic font-mono uppercase tracking-tighter text-white mb-6">Set Objective</h2>
+              <h2 className="text-4xl sm:text-6xl font-black italic font-mono uppercase tracking-tighter text-white mb-6">Set Objective</h2>
               <p className="text-white/40 text-lg italic font-medium leading-relaxed max-w-2xl">
                 What is the main goal for this campaign? We'll tune the AI rollout plan accordingly.
               </p>
@@ -226,11 +226,11 @@ export default function NewCampaign() {
                   key={goal.id}
                   onClick={() => setSelectedGoal(goal.id)}
                   className={cn(
-                    "p-10 border transition-all text-left group relative overflow-hidden bg-black",
-                    selectedGoal === goal.id ? "border-primary bg-primary/[0.03]" : "border-white/5 hover:border-white/20"
+                    "beam p-5 sm:p-10 border transition-all text-left group relative overflow-hidden bg-black",
+                    selectedGoal === goal.id ? "border-primary bg-primary/[0.03]" : "border-white/5"
                   )}
                 >
-                  <div className={cn("w-14 h-14 border border-white/10 flex items-center justify-center mb-8 bg-surface-low transition-all group-hover:scale-110", goal.color)}>
+                  <div className={cn("w-14 h-14 border border-white/10 flex items-center justify-center mb-8 bg-surface-low transition-all", goal.color)}>
                     <goal.icon className="w-6 h-6" />
                   </div>
                   <h3 className="text-2xl font-black italic font-mono uppercase tracking-tight text-white mb-4">{goal.title}</h3>
@@ -283,18 +283,18 @@ export default function NewCampaign() {
             animate={{ opacity: 1, scale: 1 }}
             className="space-y-12"
           >
-            <header className="flex items-center justify-between p-12 bg-primary/10 border border-primary/20 relative overflow-hidden">
-               <div className="absolute right-0 top-0 text-[120px] font-black text-primary/[0.05] -mr-10 -mt-10 font-mono italic select-none">AI_READY</div>
-               <div className="relative z-10">
+            <header className="flex items-center justify-between gap-6 p-5 sm:p-12 bg-primary/10 border border-primary/20 relative overflow-hidden">
+               <div className="absolute right-0 top-0 text-[120px] font-black text-primary/[0.05] -mr-10 -mt-10 font-mono italic select-none pointer-events-none">Ready</div>
+               <div className="relative z-10 min-w-0">
                  <div className="flex items-center gap-3 text-primary mb-4 font-mono font-black italic">
-                   <Sparkles className="w-5 h-5" />
+                   <Sparkles className="w-5 h-5 shrink-0" />
                    Plan generated
                  </div>
-                 <h2 className="text-5xl font-black italic font-mono uppercase tracking-tighter text-white">Your Campaign Plan</h2>
+                 <h2 className="text-3xl sm:text-5xl font-black italic font-mono uppercase tracking-tighter text-white break-words">Your Campaign Plan</h2>
                </div>
-               <div className="relative z-10 text-right space-y-4">
+               <div className="relative z-10 text-right space-y-4 shrink-0">
                  <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest font-mono">Predicted return</div>
-                 <div className="text-5xl font-black text-primary font-mono italic">3.8x — 4.5x</div>
+                 <div className="text-3xl sm:text-5xl font-black text-primary font-mono italic">3.8x — 4.5x</div>
                </div>
             </header>
 
@@ -315,7 +315,7 @@ export default function NewCampaign() {
                        "relative flex items-center mb-24 last:mb-0",
                        i % 2 === 0 ? "flex-row-reverse text-right pr-[50%] -translate-x-[20px]" : "pl-[50%] translate-x-[20px]"
                      )}>
-                       <div className="manifest-card p-8 bg-dark border-white/10 w-full max-w-sm hover:border-primary transition-all">
+                       <div className="manifest-card p-8 bg-dark border-white/10 w-full max-w-sm transition-all">
                           <div className={cn("flex items-center gap-3 mb-4 font-mono", i % 2 === 0 ? "flex-row-reverse" : "")}>
                             <item.icon className="w-4 h-4 text-primary" />
                             <span className="text-[11px] font-bold text-white tracking-widest">{item.day}</span>
@@ -337,29 +337,8 @@ export default function NewCampaign() {
                </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="p-10 border border-white/5 bg-black space-y-6">
-                <h3 className="text-sm font-bold text-white tracking-[0.2em] font-mono uppercase italic">Channel Allocation</h3>
-                <div className="space-y-6">
-                  {[
-                    { label: 'Influencers', value: '—', progress: 0 },
-                    { label: 'DJs', value: '—', progress: 0 },
-                    { label: 'Ad Platforms', value: '—', progress: 0 },
-                  ].map(p => (
-                    <div key={p.label} className="space-y-2">
-                       <div className="flex justify-between text-[11px] font-bold font-mono italic uppercase">
-                         <span className="text-white/30">{p.label}</span>
-                         <span className="text-white">{p.value}</span>
-                       </div>
-                       <div className="h-1 bg-white/5">
-                         <div className="h-full bg-white opacity-20 w-full" />
-                       </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="p-10 border border-white/5 bg-primary/5 flex flex-col justify-center items-center text-center space-y-8">
+            <div className="grid grid-cols-1 gap-8">
+              <div className="p-5 sm:p-10 border border-white/5 bg-primary/5 flex flex-col justify-center items-center text-center space-y-8">
                 <div className="w-20 h-20 border-2 border-primary flex items-center justify-center animate-pulse">
                   {isLaunching ? <Cpu className="w-10 h-10 text-primary animate-spin" /> : <Target className="w-10 h-10 text-primary" />}
                 </div>

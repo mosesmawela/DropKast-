@@ -167,7 +167,7 @@ export default function Login() {
                     onClick={() => enterPortal(p.id)}
                     disabled={isLoading}
                     className={cn(
-                      'manifest-card relative p-7 text-left flex flex-col gap-5 transition-all border bg-white/[0.02] hover:bg-white/[0.05] min-h-[300px] group',
+                      'manifest-card relative p-7 text-left flex flex-col gap-5 transition-all border bg-white/[0.02] min-h-[300px] group',
                       active ? 'border-primary scale-[1.02]' : 'border-white/10',
                     )}
                     style={
@@ -215,7 +215,7 @@ export default function Login() {
             <div className="flex flex-col md:flex-row gap-4 max-w-2xl mx-auto">
               <button
                 onClick={() => setStep('creds')}
-                className="primary-button h-16 flex-1 bg-white text-black hover:bg-primary hover:text-white flex items-center justify-between px-8 transition-all"
+                className="primary-button h-16 flex-1 bg-white text-black flex items-center justify-between px-8 transition-all"
               >
                 <span className="text-[12px] font-mono font-black tracking-widest uppercase italic">
                   Continue as {selectedPortal.name}
@@ -244,13 +244,13 @@ export default function Login() {
           >
             <button
               onClick={() => setStep('portal')}
-              className="mb-6 flex items-center gap-2 text-[10px] font-mono font-black text-white/40 hover:text-white tracking-[0.3em] uppercase italic transition-colors"
+              className="mb-6 flex items-center gap-2 text-[10px] font-mono font-black text-white/40 tracking-[0.3em] uppercase italic transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
               Change Portal
             </button>
 
-            <div className="manifest-card corner-marker p-12 relative bg-black shadow-none border-white/10">
+            <div className="manifest-card corner-marker p-6 md:p-12 relative bg-black shadow-none border-white/10">
               <div className="mb-8">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-10 h-10 border border-primary flex items-center justify-center p-1">
@@ -319,7 +319,7 @@ export default function Login() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-0 top-1/2 -translate-y-1/2 text-white/20 hover:text-white transition-colors px-2"
+                      className="absolute right-0 top-1/2 -translate-y-1/2 text-white/20 transition-colors px-2"
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -336,7 +336,7 @@ export default function Login() {
                 )}
                 <button
                   disabled={isLoading}
-                  className="primary-button w-full h-16 bg-white text-black hover:bg-primary hover:text-white active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-between px-8"
+                  className="primary-button w-full h-16 bg-white text-black active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-between px-8"
                 >
                   <span className="text-[12px] font-black tracking-widest uppercase italic">
                     {isLoading ? 'Signing in...' : `Continue as ${selectedPortal.name}`}
@@ -370,10 +370,10 @@ export default function Login() {
                     <div className="h-[1px] flex-1 bg-white/5" />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
-                    <button className="h-12 border border-white/5 text-[9px] font-black text-white/20 uppercase tracking-widest hover:border-white hover:text-white transition-all flex items-center justify-center gap-2">
+                    <button className="beam h-12 border border-white/5 text-[9px] font-black text-white/20 uppercase tracking-widest transition-all flex items-center justify-center gap-2">
                       <User className="w-3 h-3" /> GOOGLE
                     </button>
-                    <button className="h-12 border border-white/5 text-[9px] font-black text-white/20 uppercase tracking-widest hover:border-white hover:text-white transition-all flex items-center justify-center gap-2">
+                    <button className="beam h-12 border border-white/5 text-[9px] font-black text-white/20 uppercase tracking-widest transition-all flex items-center justify-center gap-2">
                       <Github className="w-3 h-3" /> GITHUB
                     </button>
                   </div>
@@ -383,7 +383,7 @@ export default function Login() {
 
             <div className="mt-10 text-center relative">
               <div className="barcode-sim h-4 w-20 mx-auto opacity-10 mb-4" />
-              <p className="text-white/30 text-[9px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-4">
+              <p className="text-white/30 text-[9px] font-black uppercase tracking-[0.3em] flex flex-wrap items-center justify-center gap-4">
                 New here?{' '}
                 <Link to="/signup" className="text-primary hover:underline italic">
                   Create an account

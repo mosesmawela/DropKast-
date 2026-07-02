@@ -106,7 +106,7 @@ export default function ViralIdeaGenerator({ onClose }: ViralIdeaGeneratorProps)
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="fixed bottom-12 right-12 z-[300] bg-primary text-white px-6 py-4 rounded-xl font-mono text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-4 shadow-2xl"
+            className="fixed bottom-6 right-6 md:bottom-12 md:right-12 z-[300] bg-primary text-white px-4 py-3 md:px-6 md:py-4 rounded-xl font-mono text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-4 shadow-2xl max-w-[90vw]"
           >
             <CheckCircle2 className="w-4 h-4 text-white" />
             {notif}
@@ -128,7 +128,7 @@ export default function ViralIdeaGenerator({ onClose }: ViralIdeaGeneratorProps)
         exit={{ opacity: 0, scale: 0.9, y: 30 }}
         className="manifest-card w-full max-w-5xl bg-dark border-primary/20 p-0 relative overflow-hidden shadow-[0_0_100px_rgba(255,77,0,0.2)]"
       >
-        <div className="grid grid-cols-1 md:grid-cols-12 h-[750px]">
+        <div className="grid grid-cols-1 md:grid-cols-12 max-h-[90vh] md:h-[750px] overflow-y-auto">
           {/* Sidebar */}
           <div className="md:col-span-4 border-r border-white/5 p-10 space-y-10 bg-black/40">
             <div className="flex items-center gap-4">
@@ -172,10 +172,10 @@ export default function ViralIdeaGenerator({ onClose }: ViralIdeaGeneratorProps)
                         key={f} 
                         onClick={() => setFocus(f)}
                         className={cn(
-                          "h-10 border text-[9px] font-black uppercase tracking-widest transition-all",
-                          focus === f 
-                            ? "bg-primary text-white border-primary shadow-[0_0_15px_rgba(255,77,0,0.3)]" 
-                            : "bg-black border-white/10 text-white/40 hover:border-white/30"
+                          "beam h-10 border text-[9px] font-black uppercase tracking-widest transition-all",
+                          focus === f
+                            ? "bg-primary text-white border-primary shadow-[0_0_15px_rgba(255,77,0,0.3)]"
+                            : "bg-black border-white/10 text-white/40"
                         )}
                        >
                           {f}
@@ -193,7 +193,7 @@ export default function ViralIdeaGenerator({ onClose }: ViralIdeaGeneratorProps)
             <button
               onClick={generateIdeas}
               disabled={loading}
-              className="w-full h-16 bg-primary text-white text-[11px] font-black uppercase italic tracking-widest flex items-center justify-center gap-4 hover:bg-white hover:text-black transition-all disabled:opacity-50 shadow-[0_10px_30px_rgba(255,77,0,0.2)]"
+              className="beam w-full h-16 bg-primary text-white text-[11px] font-black uppercase italic tracking-widest flex items-center justify-center gap-4 transition-all disabled:opacity-50 shadow-[0_10px_30px_rgba(255,77,0,0.2)]"
             >
               {loading ? <Sparkles className="w-5 h-5 animate-spin" /> : <Lightbulb className="w-5 h-5" />}
               {loading ? "Analyzing_Market_Trends..." : "Generate_Viral_Payload"}
@@ -214,7 +214,7 @@ export default function ViralIdeaGenerator({ onClose }: ViralIdeaGeneratorProps)
                    <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
                    <span className="text-[10px] font-black text-white uppercase tracking-[0.4em] font-mono italic">Script_Nodes_Synthesized</span>
                 </div>
-                <button onClick={onClose} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white/20 hover:text-white transition-colors">
+                <button onClick={onClose} className="beam w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white/20 transition-colors">
                   <X className="w-5 h-5" />
                 </button>
              </div>
@@ -237,9 +237,9 @@ export default function ViralIdeaGenerator({ onClose }: ViralIdeaGeneratorProps)
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.1 }}
-                        className="manifest-card p-8 border-white/5 bg-black/40 hover:border-primary/40 transition-all group relative overflow-hidden"
+                        className="manifest-card p-6 md:p-8 border-white/5 bg-black/40 transition-all group relative overflow-hidden"
                       >
-                         <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                         <div className="absolute top-0 right-0 p-4 transition-opacity">
                             <Sparkles className="w-4 h-4 text-primary" />
                          </div>
 
@@ -248,9 +248,9 @@ export default function ViralIdeaGenerator({ onClose }: ViralIdeaGeneratorProps)
                                <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em] font-mono mb-2 block">{idea.type}</span>
                                <h3 className="text-2xl font-black italic text-white uppercase tracking-tighter font-mono">{idea.title}</h3>
                             </div>
-                            <button 
+                            <button
                               onClick={() => showNotif("Directive_Assigned_To_Nodes")}
-                              className="h-12 w-12 border border-white/10 flex items-center justify-center text-white/20 hover:text-primary hover:border-primary transition-all rounded-full"
+                              className="beam h-12 w-12 border border-white/10 flex items-center justify-center text-white/20 transition-all rounded-full"
                             >
                                <Rocket className="w-5 h-5" />
                             </button>
@@ -268,13 +268,13 @@ export default function ViralIdeaGenerator({ onClose }: ViralIdeaGeneratorProps)
                          </div>
 
                          <div className="mt-8 pt-8 border-t border-white/5 flex items-center justify-between">
-                            <div className="flex items-center gap-4 bg-white/5 px-4 py-2 rounded-lg border border-white/5 group-hover:border-primary/20 transition-all">
+                            <div className="flex items-center gap-4 bg-white/5 px-4 py-2 rounded-lg border border-white/5 transition-all">
                                <MessageSquare className="w-3 h-3 text-white/20" />
-                               <span className="text-[9px] font-mono text-white/20 uppercase tracking-widest group-hover:text-white/60 transition-colors">{idea.caption}</span>
+                               <span className="text-[9px] font-mono text-white/20 uppercase tracking-widest transition-colors">{idea.caption}</span>
                             </div>
-                            <button 
+                            <button
                               onClick={() => showNotif("Directive_Payload_Copied")}
-                              className="text-[9px] text-primary font-black uppercase italic tracking-widest hover:text-white transition-colors border-b border-primary/20"
+                              className="beam text-[9px] text-primary font-black uppercase italic tracking-widest transition-colors border-b border-primary/20"
                             >
                               Copy_Directive
                             </button>

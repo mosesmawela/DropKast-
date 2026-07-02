@@ -164,12 +164,12 @@ export default function SmartLink() {
       <div className="relative z-10 min-h-screen flex flex-col items-center justify-start px-6 py-12 md:py-16">
         {/* Top bar */}
         <div className="w-full max-w-lg flex items-center justify-between mb-12">
-          <Link to="/" className="text-[10px] font-black tracking-[0.4em] uppercase italic text-white/40 hover:text-white transition-colors">
+          <Link to="/" className="text-[10px] font-black tracking-[0.4em] uppercase italic text-white/40 transition-colors">
             DropKast
           </Link>
           <button
             onClick={handleCopy}
-            className="flex items-center gap-2 text-[10px] font-black tracking-[0.3em] uppercase italic text-white/40 hover:text-white transition-colors"
+            className="flex items-center gap-2 text-[10px] font-black tracking-[0.3em] uppercase italic text-white/40 transition-colors"
           >
             {copied ? <Check className="w-3 h-3 text-green-400" /> : <Share2 className="w-3 h-3" />}
             {copied ? 'Copied' : 'Copy link'}
@@ -240,18 +240,13 @@ export default function SmartLink() {
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => handleDspClick(dsp)}
-                  className="flex items-center justify-between gap-4 w-full px-5 py-4 bg-white/5 border border-white/10 hover:bg-white hover:text-black transition-all group"
+                  className="beam flex items-center justify-between gap-4 w-full px-5 py-4 bg-white/5 border border-white/10 transition-all group"
                 >
                   <div className="flex items-center gap-4">
                     <img
                       src={`https://cdn.simpleicons.org/${meta.iconSlug}/ffffff`}
                       alt=""
-                      className="w-6 h-6 group-hover:hidden"
-                    />
-                    <img
-                      src={`https://cdn.simpleicons.org/${meta.iconSlug}/000000`}
-                      alt=""
-                      className="w-6 h-6 hidden group-hover:block"
+                      className="w-6 h-6"
                     />
                     <span className="text-sm font-black italic tracking-tight">{meta.label}</span>
                   </div>
@@ -297,7 +292,7 @@ export default function SmartLink() {
                 </div>
                 <button
                   type="submit"
-                  className="h-12 px-6 text-[10px] font-black uppercase italic tracking-widest transition-all"
+                  className="beam h-12 px-6 text-[10px] font-black uppercase italic tracking-widest transition-all"
                   style={{ background: color, color: '#000' }}
                 >
                   Notify me
@@ -315,23 +310,23 @@ export default function SmartLink() {
           {record.socials && Object.keys(record.socials).length > 0 && (
             <div className="flex items-center justify-center gap-6 text-[10px] font-black tracking-[0.3em] uppercase italic text-white/40">
               {record.socials.instagram && (
-                <a href={record.socials.instagram} target="_blank" rel="noopener noreferrer" className="hover:text-white">Instagram</a>
+                <a href={record.socials.instagram} target="_blank" rel="noopener noreferrer" className="">Instagram</a>
               )}
               {record.socials.tiktok && (
-                <a href={record.socials.tiktok} target="_blank" rel="noopener noreferrer" className="hover:text-white">TikTok</a>
+                <a href={record.socials.tiktok} target="_blank" rel="noopener noreferrer" className="">TikTok</a>
               )}
               {record.socials.twitter && (
-                <a href={record.socials.twitter} target="_blank" rel="noopener noreferrer" className="hover:text-white">X</a>
+                <a href={record.socials.twitter} target="_blank" rel="noopener noreferrer" className="">X</a>
               )}
               {record.socials.youtube && (
-                <a href={record.socials.youtube} target="_blank" rel="noopener noreferrer" className="hover:text-white">YouTube</a>
+                <a href={record.socials.youtube} target="_blank" rel="noopener noreferrer" className="">YouTube</a>
               )}
             </div>
           )}
 
           {/* Footer */}
           <div className="mt-16 text-center text-[9px] font-black tracking-[0.3em] uppercase italic text-white/20">
-            Powered by <Link to="/" className="hover:text-white">DropKast</Link>
+            Powered by <Link to="/" className="">DropKast</Link>
           </div>
         </motion.div>
       </div>

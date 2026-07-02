@@ -118,7 +118,7 @@ export default function AdminDashboard() {
           </p>
           <Link
             to="/dashboard"
-            className="inline-flex items-center gap-2 h-11 px-5 bg-primary text-white text-[10px] font-black uppercase italic tracking-widest hover:bg-white hover:text-black transition-all"
+            className="beam inline-flex items-center gap-2 h-11 px-5 bg-primary text-white text-[10px] font-black uppercase italic tracking-widest transition-all"
           >
             Back to your dashboard <ArrowRight className="w-3 h-3" />
           </Link>
@@ -136,7 +136,7 @@ export default function AdminDashboard() {
         </div>
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <h1 className="text-5xl md:text-6xl font-black text-white italic uppercase tracking-tighter leading-none">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-white italic uppercase tracking-tighter leading-none">
               DropKast <span className="text-primary">control</span>
             </h1>
             <p className="text-white/40 text-sm italic mt-3 max-w-2xl">
@@ -146,7 +146,7 @@ export default function AdminDashboard() {
           </div>
           <button
             onClick={() => setRefreshTick((t) => t + 1)}
-            className="h-11 px-5 border border-white/10 hover:border-primary text-white/60 hover:text-primary text-[10px] font-black uppercase italic tracking-widest transition-all flex items-center gap-2 self-start md:self-end"
+            className="beam h-11 px-5 border border-white/10 text-white/60 text-[10px] font-black uppercase italic tracking-widest transition-all flex items-center gap-2 self-start md:self-end"
           >
             <RefreshCw className={cn('w-3 h-3', loading && 'animate-spin')} /> Refresh
           </button>
@@ -167,8 +167,8 @@ export default function AdminDashboard() {
                 key={t.id}
                 onClick={() => setTab(t.id)}
                 className={cn(
-                  'group flex items-center gap-2 px-5 h-12 text-[10px] font-black uppercase italic tracking-widest transition-all border-b-2 -mb-px whitespace-nowrap',
-                  active ? 'text-primary border-primary' : 'text-white/40 border-transparent hover:text-white',
+                  'flex items-center gap-2 px-5 h-12 text-[10px] font-black uppercase italic tracking-widest transition-all border-b-2 -mb-px whitespace-nowrap',
+                  active ? 'text-primary border-primary' : 'text-white/40 border-transparent',
                 )}
               >
                 <Icon className="w-3.5 h-3.5" />
@@ -246,7 +246,7 @@ function OverviewStats({
   return (
     <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
       {cards.map((c) => (
-        <div key={c.label} className="manifest-card p-4 bg-dark border border-white/10 hover:border-white/20 transition-all">
+        <div key={c.label} className="manifest-card p-4 bg-dark border border-white/10 transition-all">
           <div className="text-[9px] font-black uppercase tracking-[0.3em] italic mb-2" style={{ color: c.accent }}>
             {c.label}
           </div>
@@ -270,7 +270,7 @@ function OverviewTab({ releases, users }: { releases: Release[]; users: Platform
       <div className="manifest-card p-5 bg-dark border border-white/10 lg:col-span-2">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-black italic text-white uppercase tracking-widest">Recent submissions</h3>
-          <Link to="#submissions" className="text-[10px] font-black text-primary uppercase tracking-widest italic hover:text-white">
+          <Link to="#submissions" className="text-[10px] font-black text-primary uppercase tracking-widest italic">
             See all
           </Link>
         </div>
@@ -279,7 +279,7 @@ function OverviewTab({ releases, users }: { releases: Release[]; users: Platform
         ) : (
           <ul className="space-y-2">
             {recent.map((r) => (
-              <li key={r.id} className="flex items-center gap-3 p-2 border border-white/[0.04] hover:border-white/10 transition-all">
+              <li key={r.id} className="flex items-center gap-3 p-2 border border-white/[0.04] transition-all">
                 <Music className="w-3.5 h-3.5 text-white/30 shrink-0" />
                 <div className="flex-1 min-w-0">
                   <div className="text-xs font-black italic text-white truncate">{r.title}</div>
@@ -356,7 +356,7 @@ function UsersTab({ users, loading }: { users: PlatformUser[]; loading: boolean 
               'h-9 px-3 text-[10px] font-black uppercase italic tracking-widest border transition-all',
               roleFilter === 'all'
                 ? 'bg-primary border-primary text-white'
-                : 'border-white/10 text-white/40 hover:text-white',
+                : 'border-white/10 text-white/40',
             )}
           >
             All
@@ -369,7 +369,7 @@ function UsersTab({ users, loading }: { users: PlatformUser[]; loading: boolean 
                 'h-9 px-3 text-[10px] font-black uppercase italic tracking-widest border transition-all',
                 roleFilter === r
                   ? 'bg-primary border-primary text-white'
-                  : 'border-white/10 text-white/40 hover:text-white',
+                  : 'border-white/10 text-white/40',
               )}
             >
               {r}
@@ -395,7 +395,7 @@ function UsersTab({ users, loading }: { users: PlatformUser[]; loading: boolean 
             </thead>
             <tbody>
               {filtered.map((u) => (
-                <tr key={u.id} className="border-b border-white/5 hover:bg-white/[0.02]">
+                <tr key={u.id} className="border-b border-white/5">
                   <td className="px-5 py-3 text-sm font-black italic text-white">{u.email}</td>
                   <td className="px-5 py-3 text-[11px] text-white/60 italic">{u.artistName || '—'}</td>
                   <td className="px-5 py-3">
@@ -457,7 +457,7 @@ function SubmissionsTab({ releases, loading }: { releases: Release[]; loading: b
                 'h-9 px-3 text-[10px] font-black uppercase italic tracking-widest border transition-all',
                 status === s
                   ? 'bg-primary border-primary text-white'
-                  : 'border-white/10 text-white/40 hover:text-white',
+                  : 'border-white/10 text-white/40',
               )}
             >
               {s === 'all' ? 'All' : s}
@@ -484,7 +484,7 @@ function SubmissionsTab({ releases, loading }: { releases: Release[]; loading: b
             </thead>
             <tbody>
               {filtered.map((r) => (
-                <tr key={r.id} className="border-b border-white/5 hover:bg-white/[0.02]">
+                <tr key={r.id} className="border-b border-white/5">
                   <td className="px-5 py-3 text-sm font-black italic text-white">{r.title}</td>
                   <td className="px-5 py-3 text-[11px] text-white/60 italic">{r.artist}</td>
                   <td className="px-5 py-3 text-[10px] font-mono text-white/40 uppercase">{r.format}</td>
@@ -564,7 +564,7 @@ function CreatorsTab() {
         </p>
         <button
           onClick={() => setShowForm((s) => !s)}
-          className="h-9 px-4 bg-primary text-white text-[10px] font-black uppercase italic tracking-widest hover:bg-white hover:text-black transition-all"
+          className="beam h-9 px-4 bg-primary text-white text-[10px] font-black uppercase italic tracking-widest transition-all"
         >
           {showForm ? 'Cancel' : '+ Add creator'}
         </button>
@@ -597,7 +597,7 @@ function CreatorsTab() {
             <button
               onClick={add}
               disabled={!draft.name || !draft.handle || !draft.platform || !draft.tier}
-              className="h-10 px-5 bg-white text-black text-[10px] font-black uppercase italic tracking-widest hover:bg-primary hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+              className="beam h-10 px-5 bg-white text-black text-[10px] font-black uppercase italic tracking-widest disabled:opacity-30 disabled:cursor-not-allowed transition-all"
             >
               Add to roster
             </button>
@@ -622,7 +622,7 @@ function CreatorsTab() {
             </thead>
             <tbody>
               {creators.map((c) => (
-                <tr key={c.id} className="border-b border-white/5 hover:bg-white/[0.02]">
+                <tr key={c.id} className="border-b border-white/5">
                   <td className="px-5 py-3 text-sm font-black italic text-white">{c.name}</td>
                   <td className="px-5 py-3 text-[11px] font-mono text-white/60">@{c.handle}</td>
                   <td className="px-5 py-3 text-[10px] uppercase font-black text-white/60">{c.platform}</td>
@@ -631,7 +631,7 @@ function CreatorsTab() {
                   <td className="px-5 py-3 text-right">
                     <button
                       onClick={() => remove(c.id)}
-                      className="text-[9px] font-black uppercase italic tracking-widest text-white/30 hover:text-red-400 transition-colors"
+                      className="text-[9px] font-black uppercase italic tracking-widest text-white/30 transition-colors"
                     >
                       remove
                     </button>
@@ -679,10 +679,10 @@ function CalendarTab({ releases }: { releases: Release[] }) {
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white">{monthName}</h3>
         <div className="flex gap-1">
-          <button onClick={() => nav(-1)} className="h-9 px-3 border border-white/10 hover:border-primary text-white/60 hover:text-primary text-[10px] font-black uppercase italic tracking-widest transition-all">
+          <button onClick={() => nav(-1)} className="beam h-9 px-3 border border-white/10 text-white/60 text-[10px] font-black uppercase italic tracking-widest transition-all">
             Prev
           </button>
-          <button onClick={() => nav(1)} className="h-9 px-3 border border-white/10 hover:border-primary text-white/60 hover:text-primary text-[10px] font-black uppercase italic tracking-widest transition-all">
+          <button onClick={() => nav(1)} className="beam h-9 px-3 border border-white/10 text-white/60 text-[10px] font-black uppercase italic tracking-widest transition-all">
             Next
           </button>
         </div>

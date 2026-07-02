@@ -154,7 +154,7 @@ export default function Roadmap() {
             <span className="font-black italic tracking-tighter">DROPKAST</span>
             <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/30 hidden sm:inline">· Product Roadmap</span>
           </div>
-          <Link to="/dashboard" className="text-[10px] font-mono font-black uppercase tracking-widest text-white/50 hover:text-primary inline-flex items-center gap-2">
+          <Link to="/dashboard" className="text-[10px] font-mono font-black uppercase tracking-widest text-white/50 inline-flex items-center gap-2">
             <ArrowLeft className="w-3 h-3" /> Back to app
           </Link>
         </div>
@@ -266,6 +266,31 @@ export default function Roadmap() {
                   <li key={i} className="text-[12.5px] text-white/50 pl-4 relative leading-snug before:content-[''] before:absolute before:left-0 before:top-2 before:w-1.5 before:h-1.5 before:bg-primary">{i}</li>
                 ))}
               </ul>
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      {/* Recently shipped */}
+      <Section eyebrow="06b — Shipped recently" title="What just landed">
+        <p className="text-white/50 mb-6 max-w-2xl">Beyond the Q1 cleanup — these shipped in the latest build.</p>
+        <div className="grid md:grid-cols-2 gap-4">
+          {[
+            ['AI split-sheet analysis', 'On /splits — grounded royalty breakdown across global PROs (SAMRO, ASCAP/BMI, PRS, The MLC…) with cited sources.'],
+            ['Submit via WhatsApp', 'Conversational AI onboarding on WhatsApp (Twilio) → straight into the A&R pipeline.'],
+            ['DropKast MCP server', '10 tools (releases, campaigns, analytics, split-sheet, submissions) for Claude Desktop / Code.'],
+            ['Academy: royalty school', 'Real education — composition vs master, royalty types + rates, publishing, PROs by region, ISRC/ISWC.'],
+            ['Workspace presets that work', 'Min / Creator / Full actually reshape the nav; generation tools always available in every portal.'],
+            ['Full mobile + one motion language', 'Every page mobile-optimised (375px), all hover states replaced by a single border-glow beam on cards & buttons.'],
+            ['3 clean themes', 'Minimal · Skeu · Glass — light + dark, consistent across all portals.'],
+            ['AI connectors, current', 'BYOK model catalog refreshed to 2026 (GPT Image 2, Nano Banana Pro, Claude Opus 4.8, GPT-5.5, Gemini 3.1…).'],
+          ].map(([t, d]) => (
+            <div key={t} className={CARD}>
+              <div className="flex items-baseline gap-2 mb-1.5">
+                <span className="text-primary font-mono text-xs">✓</span>
+                <h3 className="text-white font-black italic uppercase tracking-tight text-sm">{t}</h3>
+              </div>
+              <p className="text-white/50 text-[13px] leading-relaxed">{d}</p>
             </div>
           ))}
         </div>
