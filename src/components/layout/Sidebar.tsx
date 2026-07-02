@@ -178,6 +178,89 @@ const treeSections: TreeSection[] = [
   },
 ];
 
+/* Dedicated navigation per portal — same accordion style, portal-specific
+   operations, so every portal is consistent yet purpose-built. */
+const labelTree: TreeSection[] = [
+  { label: 'Label HQ', icon: LayoutDashboard, defaultOpen: true, children: [{ label: 'Overview', path: '/dashboard' }] },
+  { label: 'Roster', icon: Users, defaultOpen: true, children: [
+    { label: 'Manage Artists', path: '/roster' },
+  ] },
+  { label: 'Catalogue', icon: Disc, children: [
+    { label: 'All Releases', path: '/releases' },
+    { label: 'New Release', path: '/releases/new' },
+    { label: 'Publishing', path: '/publishing' },
+  ] },
+  { label: 'Marketing', icon: Megaphone, children: [
+    { label: 'Campaigns', path: '/campaigns' },
+    { label: 'AI Studio', path: '/studio' },
+    { label: 'Pre-Release', path: '/pre-release' },
+  ] },
+  { label: 'Reporting', icon: BarChart, children: [
+    { label: 'Catalogue Analytics', path: '/analytics' },
+    { label: 'Label Earnings', path: '/earnings' },
+    { label: 'Split Sheets', path: '/splits' },
+  ] },
+  { label: 'Operations', icon: Building2, children: [
+    { label: 'Advances', path: '/advances' },
+    { label: 'Connectors', path: '/ai-providers' },
+    { label: 'Compliance', path: '/compliance' },
+  ] },
+  { label: 'Help & Support', icon: Headphones, children: [
+    { label: 'Academy & Guides', path: '/academy' },
+    { label: 'Settings', path: '/settings' },
+  ] },
+  { label: 'LVRN Community', icon: Globe, children: [{ label: 'Product Roadmap', path: '/roadmap' }] },
+];
+
+const influencerTree: TreeSection[] = [
+  { label: 'Overview', icon: LayoutDashboard, defaultOpen: true, children: [{ label: 'Home', path: '/dashboard' }] },
+  { label: 'Work', icon: Target, defaultOpen: true, children: [
+    { label: 'Browse Missions', path: '/influencer/missions' },
+    { label: 'My Campaigns', path: '/campaigns' },
+  ] },
+  { label: 'Content', icon: Camera, children: [
+    { label: 'Creator Assets', path: '/assets' },
+    { label: 'AI Studio', path: '/studio' },
+  ] },
+  { label: 'Channels', icon: Share2, children: [
+    { label: 'Connected Accounts', path: '/influencer/socials' },
+  ] },
+  { label: 'Earnings', icon: Wallet, children: [
+    { label: 'Payouts', path: '/influencer/earnings' },
+  ] },
+  { label: 'Inbox', icon: Mail, children: [{ label: 'Messages', path: '/messages' }] },
+  { label: 'Help & Support', icon: Headphones, children: [
+    { label: 'Academy & Guides', path: '/academy' },
+    { label: 'Settings', path: '/settings' },
+  ] },
+];
+
+const djTree: TreeSection[] = [
+  { label: 'Overview', icon: LayoutDashboard, defaultOpen: true, children: [{ label: 'Home', path: '/dashboard' }] },
+  { label: 'Packs', icon: Radio, defaultOpen: true, children: [
+    { label: 'Promo Packs', path: '/dj/packs' },
+  ] },
+  { label: 'Feedback', icon: MessageSquare, children: [
+    { label: 'Submit Feedback', path: '/dj/feedback' },
+  ] },
+  { label: 'Charts', icon: TrendingUp, children: [
+    { label: 'Trends', path: '/trending' },
+  ] },
+  { label: 'Inbox', icon: Mail, children: [{ label: 'Messages', path: '/messages' }] },
+  { label: 'Help & Support', icon: Headphones, children: [
+    { label: 'Academy & Guides', path: '/academy' },
+    { label: 'Settings', path: '/settings' },
+  ] },
+];
+
+/** Pick the dedicated nav tree for the current portal. */
+function treeForRole(role: string): TreeSection[] {
+  if (role === 'LABEL') return labelTree;
+  if (role === 'INFLUENCER') return influencerTree;
+  if (role === 'DJ') return djTree;
+  return treeSections;
+}
+
 /** Legacy nav groups — used by workspace preset system for compatibility. */
 const artistNavGroups: NavGroup[] = [
   {
@@ -305,7 +388,7 @@ export default function Sidebar({ open = false, onClose }: SidebarProps) {
   const activePreset = detectActivePreset(enabled);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
-    treeSections.forEach((s) => {
+    treeForRole(role).forEach((s) => {
       initial[s.label] = s.defaultOpen ?? false;
     });
     return initial;
@@ -319,20 +402,9 @@ export default function Sidebar({ open = false, onClose }: SidebarProps) {
     return children.some((c) => location.pathname === c.path);
   };
 
-  // For artist/label, render grouped. Filter items by enabled workspace modules.
-  // The Roster item is special — only on label, always pinned at the top.
-  const showsGroups = role === 'ARTIST' || role === 'LABEL';
-
-  const groupsForRender: NavGroup[] = showsGroups
-    ? artistNavGroups
-        .map((g) => ({
-          ...g,
-          items: g.items.filter((item) => isEnabled(item.moduleId)),
-        }))
-        .filter((g) => g.items.length > 0)
-    : [];
-
-  const flatItems = role === 'INFLUENCER' ? influencerNav : role === 'DJ' ? djNav : [];
+  // Every portal renders its own dedicated tree in the same accordion style.
+  const activeTree = treeForRole(role);
+  void artistNavGroups; void influencerNav; void djNav; // legacy, retained for presets
 
   const resetPortal = () => {
     localStorage.removeItem('dropkast_welcome_seen');
@@ -384,11 +456,11 @@ export default function Sidebar({ open = false, onClose }: SidebarProps) {
         </div>
       )}
 
-      {/* Scrollable nav — Tree structure for ARTIST/LABEL */}
+      {/* Scrollable nav — dedicated tree per portal, same accordion style */}
       <nav className="flex-1 overflow-y-auto custom-scrollbar min-h-0 py-2 overscroll-contain">
-        {showsGroups ? (
+        {(
           <div className="space-y-0.5">
-            {treeSections.map((section) => {
+            {activeTree.map((section) => {
               const isOpen = openSections[section.label] ?? false;
               const hasActiveChild = isChildActive(section.children);
               const isActive = section.children.some((c) => location.pathname === c.path) || hasActiveChild;
@@ -464,14 +536,6 @@ export default function Sidebar({ open = false, onClose }: SidebarProps) {
               );
             })}
           </div>
-        ) : (
-          flatItems.map((item: any) => (
-            <NavLinkRow
-              key={item.path}
-              item={{ ...item, moduleId: 'home' as ModuleId }}
-              active={location.pathname === item.path}
-            />
-          ))
         )}
       </nav>
 
