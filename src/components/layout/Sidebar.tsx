@@ -124,6 +124,7 @@ const treeSections: TreeSection[] = [
     badge: 'NEW',
     children: [
       { label: 'Amplifier Engine', path: '/campaigns' },
+      { label: 'AI Studio', path: '/studio', icon: Sparkles },
       {
         label: 'Promotional Tools',
         icon: Sparkles,
