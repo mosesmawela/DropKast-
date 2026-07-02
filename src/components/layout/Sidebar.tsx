@@ -133,10 +133,10 @@ const treeSections: TreeSection[] = [
         icon: Globe,
         path: '#',
         children: [
-          { label: 'Spotify for Artists', path: '/settings?tab=GATEWAYS' },
-          { label: 'YouTube Official Artist Channel', path: '/settings?tab=GATEWAYS' },
-          { label: 'Apple for Artists', path: '/settings?tab=GATEWAYS' },
-          { label: 'Audiomack Artist Account', path: '/settings?tab=GATEWAYS' },
+          { label: 'Spotify for Artists', path: 'https://artists.spotify.com' },
+          { label: 'YouTube Official Artist Channel', path: 'https://artists.youtube.com' },
+          { label: 'Apple for Artists', path: 'https://artists.apple.com' },
+          { label: 'Audiomack Artist Account', path: 'https://artists.audiomack.com' },
         ],
       },
     ],
@@ -172,7 +172,6 @@ const treeSections: TreeSection[] = [
     icon: Globe,
     children: [
       { label: 'Academy', path: '/academy' },
-      { label: 'Product Roadmap', path: '/roadmap' },
       { label: 'Latest Releases', path: '/releases' },
     ],
   },
@@ -209,7 +208,7 @@ const labelTree: TreeSection[] = [
     { label: 'Academy & Guides', path: '/academy' },
     { label: 'Settings', path: '/settings' },
   ] },
-  { label: 'LVRN Community', icon: Globe, children: [{ label: 'Product Roadmap', path: '/roadmap' }] },
+  { label: 'LVRN Community', icon: Globe, children: [{ label: 'Academy', path: '/academy' }] },
 ];
 
 const influencerTree: TreeSection[] = [
@@ -710,20 +709,22 @@ function NestedTreeItem({
       </button>
       {open && (
         <div className="ml-4 border-l border-white/5 pl-2">
-          {items.map((child) => (
-            <Link
-              key={child.path}
-              to={child.path}
-              className={cn(
-                'block px-4 py-1.5 text-[8px] font-bold uppercase tracking-widest font-mono transition-all',
-                location.pathname === child.path
-                  ? 'text-primary'
-                  : 'text-white/20 hover:text-white/60',
-              )}
-            >
-              {child.label}
-            </Link>
-          ))}
+          {items.map((child) => {
+            const external = /^https?:\/\//.test(child.path);
+            const cls = cn(
+              'block px-4 py-1.5 text-[8px] font-bold uppercase tracking-widest font-mono transition-all',
+              location.pathname === child.path ? 'text-primary' : 'text-white/20 hover:text-white/60',
+            );
+            return external ? (
+              <a key={child.path} href={child.path} target="_blank" rel="noopener noreferrer" className={cls}>
+                {child.label} ↗
+              </a>
+            ) : (
+              <Link key={child.path} to={child.path} className={cls}>
+                {child.label}
+              </Link>
+            );
+          })}
         </div>
       )}
     </div>

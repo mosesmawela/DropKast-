@@ -15,7 +15,6 @@ const footerColumns = [
   {
     title: 'About Us',
     links: [
-      { label: 'Product Roadmap', path: '/roadmap' },
       { label: 'Blog', path: '#' },
       { label: 'Press Releases', path: '#' },
       { label: 'Distribution Partners', path: '#' },

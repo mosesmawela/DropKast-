@@ -36,6 +36,7 @@ export default function Landing() {
             <a href="#roster" className="hover:text-primary transition-colors">Roster</a>
             <a href="#streaming" className="hover:text-primary transition-colors">Streaming Grid</a>
             <Link to="/pricing" className="hover:text-primary transition-colors">Pricing</Link>
+            <Link to="/roadmap" className="hover:text-primary transition-colors">Roadmap</Link>
           </div>
           <div className="flex items-center gap-4">
             <ThemeToggle />
