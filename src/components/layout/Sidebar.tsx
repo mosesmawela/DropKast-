@@ -178,6 +178,7 @@ const treeSections: TreeSection[] = [
     badgeColor: 'bg-[#F05A28]',
     children: [
       { label: 'Academy', path: '/academy' },
+      { label: 'Product Roadmap', path: '/roadmap' },
       { label: 'Latest Releases', path: '/releases' },
     ],
   },
